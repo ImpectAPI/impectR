@@ -1,16 +1,20 @@
-######
-#
-# This function returns a dataframe that contains all events for a
-# given match ID
-#
-######
-
+#' Return a dataframe that contains all events for a given match ID
+#'
+#' @param match Impect match ID
+#' @param token bearer token
+#'
+#' @return a dataframe conatining all events for the given match ID
+#' @export
+#' @importFrom dplyr %>%
+#' @importFrom rlang .data
+#'
+#' @examples
+#' \donttest{
+#' try({ # prevent cran errors
+#'   events <- getEventData(84248, token)
+#' })
+#' }
 getEventData <- function (match, token) {
-  # require packages
-  require(httr)
-  require(jsonlite)
-  require(tidyverse)
-
   # get match events
   response <-
     httr::GET(
@@ -31,7 +35,7 @@ getEventData <- function (match, token) {
 
   # convert to dataframe and add column with matchId
   events <- jsonlite::flatten(base::as.data.frame(data)) %>%
-    dplyr::mutate(matchId = match)
+    dplyr::mutate(matchId = .data$match)
 
   # fix column names using regex
   base::names(events) <-
@@ -61,7 +65,7 @@ getEventData <- function (match, token) {
                               data$squadHome$players[[key]]
                             ))) %>%
     base::as.data.frame() %>%
-    dplyr::mutate(playerId = base::as.integer(playerId))
+    dplyr::mutate(playerId = base::as.integer(.data$playerId))
 
   # get match info
   match_info <- data$competition
@@ -99,15 +103,15 @@ getEventData <- function (match, token) {
   # add playerName columns to events dataframe
   events <- events %>%
     dplyr::left_join(players, by = base::c("playerId" = "playerId")) %>%
-    dplyr::rename(playerName = commonname) %>%
+    dplyr::rename(playerName = .data$commonname) %>%
     dplyr::left_join(players, by = base::c("duelPlayerId" = "playerId")) %>%
-    dplyr::rename(duelPlayerName = commonname) %>%
+    dplyr::rename(duelPlayerName = .data$commonname) %>%
     dplyr::left_join(players, by = base::c("pressingPlayerId" = "playerId")) %>%
-    dplyr::rename(pressingPlayerName = commonname) %>%
+    dplyr::rename(pressingPlayerName = .data$commonname) %>%
     dplyr::left_join(players, by = base::c("fouledPlayerId" = "playerId")) %>%
-    dplyr::rename(fouledPlayerName = commonname) %>%
+    dplyr::rename(fouledPlayerName = .data$commonname) %>%
     dplyr::left_join(players, by = base::c("passReceiverPlayerId" = "playerId")) %>%
-    dplyr::rename(passReceiverPlayerName = commonname)
+    dplyr::rename(passReceiverPlayerName = .data$commonname)
 
   # add the values from the match_info list as new columns in the events dataframe
   for (name in base::names(match_info)) {
@@ -117,13 +121,13 @@ getEventData <- function (match, token) {
   # add squadName and currentAttackingSquadName
   events <- events %>%
     dplyr::mutate(
-      squadName = base::ifelse(squadHomeSquadId == squadId,
-                               squadHomeName,
-                               squadAwayName),
+      squadName = base::ifelse(.data$squadHomeSquadId == .data$squadId,
+                               .data$squadHomeName,
+                               .data$squadAwayName),
       currentAttackingSquadName = base::ifelse(
-        squadHomeSquadId == currentAttackingSquadId,
-        squadHomeName,
-        squadAwayName
+        .data$squadHomeSquadId == .data$currentAttackingSquadId,
+        .data$squadHomeName,
+        .data$squadAwayName
       )
     )
 
@@ -143,26 +147,26 @@ getEventData <- function (match, token) {
 
   # unnest scorings and full join with kpi list to ensure all kpis are present
   events <- events %>%
-    tidyr::unnest(scorings, keep_empty = TRUE) %>%
+    tidyr::unnest(.data$scorings, keep_empty = TRUE) %>%
     dplyr::full_join(kpis, by = "kpiId") %>%
-    dplyr::arrange(kpiId) %>%
-    dplyr::select(-kpiId) %>%
+    dplyr::arrange(.data$kpiId) %>%
+    dplyr::select(-.data$kpiId) %>%
     tidyr::pivot_wider(
       names_from = "kpiName",
       values_from = "value",
       values_fn = sum,
       values_fill = 0
     ) %>%
-    dplyr::filter(base::is.na(eventNumber) == FALSE)
+    dplyr::filter(base::is.na(.data$eventNumber) == FALSE)
 
   # rename some columns
   events <- events %>%
     dplyr::rename(
-      attackingSquadId = currentAttackingSquadId,
-      attackingSquadName = currentAttackingSquadName,
-      playerPosition = playerPositionPosition,
-      playerDetailedPosition = playerPositionDetailedPosition,
-      duelType = duelDuelType
+      attackingSquadId = .data$currentAttackingSquadId,
+      attackingSquadName = .data$currentAttackingSquadName,
+      playerPosition = .data$playerPositionPosition,
+      playerDetailedPosition = .data$playerPositionDetailedPosition,
+      duelType = .data$duelDuelType
     )
 
   # reorder columns
@@ -255,7 +259,7 @@ getEventData <- function (match, token) {
 
   # reorder rows
   events <- events %>%
-    dplyr::arrange(matchId, eventNumber)
+    dplyr::arrange(.data$matchId, .data$eventNumber)
 
   return(events)
 }
