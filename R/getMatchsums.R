@@ -1,16 +1,20 @@
-######
-#
-# This function returns a dataframe that contains all player matchsums for a
-# given match ID
-#
-######
-
+#' Return a dataframe that contains all player matchsums for a given match ID
+#'
+#' @param match Impect match ID
+#' @param token bearer token
+#'
+#' @return a dataframe containing the matchsums aggregated per player and position for the given match ID
+#' @export
+#' @importFrom dplyr %>%
+#' @importFrom rlang .data
+#'
+#' @examples
+#' \donttest{
+#' try({ # prevent cran errors
+#'   matchsums <- getMatchsums(84248, token)
+#' })
+#' }
 getMatchsums <- function (match, token) {
-  # require packages
-  require(httr)
-  require(jsonlite)
-  require(tidyverse)
-
   # get match info
   response <-
     httr::GET(
@@ -83,7 +87,7 @@ getMatchsums <- function (match, token) {
 
   # unnest playTime column
   players <- players %>%
-    tidyr::unnest(playTime)
+    tidyr::unnest(.data$playTime)
 
   # get match sums
   response <-
@@ -97,7 +101,7 @@ getMatchsums <- function (match, token) {
     )
 
   # check response status
-  stop_for_status(response)
+  httr::stop_for_status(response)
 
   # get data from response
   match_sums <-
@@ -138,22 +142,22 @@ getMatchsums <- function (match, token) {
 
     # unnest scorings
     temp <- temp %>%
-      tidyr::unnest(scorings) %>%
-      dplyr::select(playerId, detailedPosition, kpiId, totalValue) %>%
+      tidyr::unnest(.data$scorings) %>%
+      dplyr::select(.data$playerId, .data$detailedPosition, .data$kpiId, .data$totalValue) %>%
       # join with kpis to ensure all kpiIds are present and order by kpiId
       dplyr::full_join(kpis, by = "kpiId") %>%
-      dplyr::arrange(kpiId, playerId) %>%
+      dplyr::arrange(.data$kpiId, .data$playerId) %>%
       # drop kpiId column
-      dplyr::select(-kpiId) %>%
+      dplyr::select(-.data$kpiId) %>%
       # pivot data
       tidyr::pivot_wider(
-        names_from = kpiName,
-        values_from = totalValue,
+        names_from = .data$kpiName,
+        values_from = .data$totalValue,
         values_fill = 0,
         values_fn = base::sum
       ) %>%
       # filter for non NA columns that were created by full join
-      dplyr::filter(base::is.na(playerId) == FALSE)
+      dplyr::filter(base::is.na(.data$playerId) == FALSE)
 
     return(temp)
   }
