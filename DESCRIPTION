@@ -1,12 +1,18 @@
 Package: impectR
-Title: What the Package Does (One Line, Title Case)
+Title: Access data from the Impect API
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Florian", "Schmitt", , "florian.schmitt94@gmail.com", role = c("aut", "cre"))
+Description: This package is used to pulls data from the Impect Customer API. It can retrieve data such as events or match sums. It supports MAC and Windows computers.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+Imports: 
+    dplyr,
+    httr,
+    jsonlite,
+    purrr,
+    rlang,
+    tidyr,
+    utils
