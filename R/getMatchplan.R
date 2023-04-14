@@ -1,15 +1,19 @@
-######
-#
-# This function returns a dataframe with basic information
-# for all matches for a given competitionIteration
-#
-######
-
+#' Return a dataframe with basic information for all matches for a given competitionIteration
+#'
+#' @param competitionIterationId Impect competition iteration ID
+#' @param token bearer token
+#'
+#' @return a dataframe containing all matches for a given competition iteration ID
+#' @export
+#' @importFrom dplyr %>%
+#'
+#' @examples
+#' \donttest{
+#' try({ # prevent cran errors
+#'   matchplan <- getMatchplan(518, token)
+#' })
+#' }
 getMatchplan <- function(competitionIterationId, token) {
-  # require packages
-  require(httr)
-  require(jsonlite)
-
   # get competition iteration data
   response <-
     httr::GET(
