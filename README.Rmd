@@ -20,6 +20,7 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 A package provided by: Impect GmbH
+
 Updated: April 17th 2023
 
 The goal of the impectR package is to provide an easy way for Impect Customers
