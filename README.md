@@ -123,5 +123,5 @@ shouldn’t be any issues but it might be a potential issue.
 
 ## Final Notes
 
-Further documentation on the data explanation of variables can be found
-in our [glossary](https://glossary.impect.com/).
+Further documentation on the data and explanations of variables can be
+found in our [glossary](https://glossary.impect.com/).
