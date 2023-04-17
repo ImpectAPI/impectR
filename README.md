@@ -103,11 +103,13 @@ matches <- c(84344, 84350)
 
 # apply getEventData function to a set of matchIds
 events <-
-  purrr::map_df(purrr::map(match_ids, ~ getEventData(., token)), as.data.frame)
+  purrr::map_df(purrr::map(match_ids, ~ getEventData(match = ., token = token)),
+                as.data.frame)
 
 # apply getMatchsums function to a set of matchIds
 matchsums <-
-  purrr::map_df(purrr::map(match_ids, ~ getMatchsums(., token)), as.data.frame)
+  purrr::map_df(purrr::map(match_ids, ~ getMatchsums(match = ., token = token)),
+                as.data.frame)
 ```
 
 Please keep in mind that Impect enforces a rate limit of 8 requests per
