@@ -23,7 +23,7 @@ jobs:
     - name: Install R and R packages
       uses: r-lib/actions/setup-r@v1
       with:
-        r-version: '4.1'
+        r-version: '4.1.1'
         packages: rmarkdown
 
     - name: Render README.Rmd
