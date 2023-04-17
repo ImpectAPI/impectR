@@ -4,14 +4,19 @@
 # impectR
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/Flosch1006/impectR/actions/workflows/check-release.yaml/badge.svg)](https://github.com/Flosch1006/impectR/actions/workflows/check-release.yaml)
 <!-- badges: end -->
 
-A package provided by: Impect GmbH Updated: April 17th 2023
+A package provided by: Impect GmbH
 
-The goal of impectR is to provide an easy way for Impect Customers to
-access data from the customer API. This API includes basic information
-about competitions, competition iterations, and matches as well as event
-data and aggregated scorings per player and position on match level.
+Updated: April 17th 2023
+
+The goal of the impectR package is to provide an easy way for Impect
+Customers to access data from the customer API. This API includes basic
+information about competitions, competition iterations, and matches as
+well as event data and aggregated scorings per player and position on
+match level.
 
 ## Installation
 
@@ -25,7 +30,7 @@ devtools::install_github("Flosch1006/impectR")
 
 ## Getting started
 
-Before accessing any data via the API, you will need to request a bearer
+Before accessing any data via our API, you will need to request a bearer
 token for authorization. You can get this authorization token using the
 following code snippet:
 

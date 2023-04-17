@@ -40,7 +40,7 @@ devtools::install_github("Flosch1006/impectR")
 
 ## Getting started
 
-Before accessing any data via the API, you will need to request a bearer token
+Before accessing any data via our API, you will need to request a bearer token
 for authorization. You can get this authorization token using the following code
 snippet:
 
