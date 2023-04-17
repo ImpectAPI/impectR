@@ -35,7 +35,7 @@ getEventData <- function (match, token) {
 
   # convert to dataframe and add column with matchId
   events <- jsonlite::flatten(base::as.data.frame(data)) %>%
-    dplyr::mutate(matchId = .data$match)
+    dplyr::mutate(matchId = match)
 
   # fix column names using regex
   base::names(events) <-
