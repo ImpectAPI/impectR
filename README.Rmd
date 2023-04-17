@@ -33,7 +33,7 @@ devtools::install_github("Flosch1006/impectR")
 
 Before accessing any data via the API, you will need to request a bearer token for authorization. You can get this authorization token using the following code snippet:
 
-```{r accessToken, eval=FALSE, include=FALSE}
+```{r accessToken, eval=FALSE}
 library(impectR)
 # define login credentials
 username <- "yourUsername"
@@ -45,7 +45,7 @@ token <- getAccessToken(username = username, password = password)
 
 This access token is a requirement to use any of the functions that requests data from the API. We recommend to first get a list of competition iterations that are enabled for your account.
 
-```{r competition iterations, eval=FALSE, include=FALSE}
+```{r competition iterations, eval=FALSE}
 # get list of competition iterations
 competitions <- getCompetitions(token = token)
 
@@ -55,7 +55,7 @@ competitions
 
 If any competition iteration you were expected to see is not listed, please contact your sales representative. Now let's assume you are interested in data for 2022/23 season of the 1. Bundesliga (competitionIteration = 518). The following snippet gets you a list of matches for this competition and season:
 
-``` {r match plan, eval=FALSE, include=FALSE}
+``` {r match plan, eval=FALSE}
 # get match plan for competition iteration
 matchplan <- getMatchplan(competitionIterationId = 518, token = token)
 
@@ -64,7 +64,7 @@ matchplan <- getMatchplan(competitionIterationId = 518, token = token)
 
 The column `available` denotes whether a given match has been tagged by Impect and the data is available to you. Let's assume you are interested in the FC Bayern München vs Borussia Dortmund game from April 1st 2023 (matchId = 84344). To request the event data for this game, run the following code snippet:
 
-```{r events, eval=FALSE, include=FALSE}
+```{r events, eval=FALSE}
 # define match ID
 matchId <- 84344
 
@@ -77,7 +77,7 @@ head(events)
 
 You can access the aggregated scores per player and position for this match in a similar way:
 
-```{r matchsums, eval=FALSE, include=FALSE}
+```{r matchsums, eval=FALSE}
 # define match ID
 matchId <- 84344
 
@@ -90,7 +90,7 @@ head(matchsums)
 
 In case you wish to retrieve data for multiple matches, we suggest using the following method to do so. Let's also get the event data for the RB Leipzig vs FSV Mainz 05 game (matchId = 84350) from the same day:
 
-```{r multiple matches, eval=FALSE, include=FALSE}
+```{r multiple matches, eval=FALSE}
 # define list of matches
 matches <- c(84344, 84350)
 
