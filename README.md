@@ -6,6 +6,8 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
+A package provided by: Impect GmbH Updated: April 17th 2023
+
 The goal of impectR is to provide an easy way for Impect Customers to
 access data from the customer API. This API includes basic information
 about competitions, competition iterations, and matches as well as event
@@ -13,7 +15,7 @@ data and aggregated scorings per player and position on match level.
 
 ## Installation
 
-You can install the development version of impectR from
+You can install the developmental version of impectR from
 [GitHub](https://github.com/) with:
 
 ``` r
@@ -29,6 +31,7 @@ following code snippet:
 
 ``` r
 library(impectR)
+
 # define login credentials
 username <- "yourUsername"
 password <- "yourPassword"
@@ -57,9 +60,11 @@ matches for this competition and season:
 
 ``` r
 # get match plan for competition iteration
-matchplan <- getMatchplan(competitionIterationId = 518, token = token)
+matchplan <-
+  getMatchplan(competitionIterationId = 518, token = token)
 
 # print match to console
+matchplan
 ```
 
 The column `available` denotes whether a given match has been tagged by
@@ -115,3 +120,8 @@ matchsums <-
 Please keep in mind that Impect enforces a rate limit of 8 requests per
 second per user. As the function usually runs for about 2 seconds, there
 shouldn’t be any issues but it might be a potential issue.
+
+## Final Notes
+
+Further documentation on the data explanation of variables can be found
+in our [glossary](https://glossary.impect.com/).
