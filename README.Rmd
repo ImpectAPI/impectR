@@ -35,7 +35,7 @@ You can install the developmental version of impectR from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("Flosch1006/impectR")
+devtools::install_github("ImpectAPI/impectR")
 ```
 
 ## Getting started
