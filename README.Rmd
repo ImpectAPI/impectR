@@ -16,13 +16,14 @@ knitr::opts_chunk$set(
 # impectR
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/Flosch1006/impectR/actions/workflows/check-release.yaml/badge.svg)](https://github.com/Flosch1006/impectR/actions/workflows/check-release.yaml)
 <!-- badges: end -->
 
 A package provided by: Impect GmbH
 Updated: April 17th 2023
 
-The goal of impectR is to provide an easy way for Impect Customers to access
-data from the customer API. This API includes basic information about
+The goal of the impectR package is to provide an easy way for Impect Customers
+to access data from the customer API. This API includes basic information about
 competitions, competition iterations, and matches as well as event data and
 aggregated scorings per player and position on match level.
 
