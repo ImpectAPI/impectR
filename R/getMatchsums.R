@@ -52,10 +52,12 @@ getMatchsums <- function (match, token) {
         competitionIterationId = data$competition$competitionIterationId,
         competitionIterationName = data$competition$competitionIterationName,
         competitionIterationStepId = data$competition$competitionIterationStepId,
-        competitionIterationStepName = data$competition$competitionIterationStepName
+        competitionIterationStepName = data$competition$competitionIterationStepName,
+        squadId = data[side][[1]]$squadId,
+        squadName = data[side][[1]]$name
       )
 
-    # filter for only players with registered playTime
+    # reorder columns
     temp <-
       dplyr::select(
         temp,
@@ -69,6 +71,8 @@ getMatchsums <- function (match, token) {
         "competitionIterationName",
         "competitionIterationStepId",
         "competitionIterationStepName",
+        "squadId",
+        "squadName",
         "playerId",
         "commonname",
         "playTime"
