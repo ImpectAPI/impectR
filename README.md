@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# impectR
+# impectR <img src="https://github.com/ImpectAPI/logos/blob/main/impectR.png" align="right" height="139" />
 
 <!-- badges: start -->
 
