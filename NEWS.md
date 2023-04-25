@@ -1,3 +1,8 @@
+# impectR 1.0.0.0000
+
+## Major changes
+* Release package
+
 # impectR 0.0.0.9001
 
 ## Minor improvements and bug fixes
