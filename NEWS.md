@@ -1,3 +1,8 @@
+# impectR 0.0.0.9001
+
+## Minor improvements and bug fixes
+* Replace `httr::GET()` and `httr::POST()` with `httr::RETRY()` to account for HTTP errors that might occur 
+
 # impectR 0.0.0.9000
 
 ## Major changes
