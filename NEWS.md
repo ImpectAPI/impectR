@@ -3,6 +3,9 @@
 ## Major changes
 * Release package
 
+## Minor improvements and bug fixes
+* remove stop on error to enable `purrr::map` for functions that take an ID as argument
+
 # impectR 0.0.0.9001
 
 ## Minor improvements and bug fixes
