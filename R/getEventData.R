@@ -17,8 +17,9 @@
 getEventData <- function (match, token) {
   # get match events
   response <-
-    httr::GET(
-      base::paste0(
+    httr::RETRY(
+      "GET",
+      url = base::paste0(
         "https://api.impect.com/v4/customerapi/matches/",
         match,
         "/events"
@@ -45,7 +46,8 @@ getEventData <- function (match, token) {
 
   # get match data
   response <-
-    httr::GET(
+    httr::RETRY(
+      "GET",
       base::paste0("https://api.impect.com/v4/customerapi/matches/", match),
       httr::add_headers(Authorization = base::paste("Bearer", token, sep = " "))
     )
@@ -133,7 +135,8 @@ getEventData <- function (match, token) {
 
   # get kpi list
   response <-
-    httr::GET(
+    httr::RETRY(
+      "GET",
       "https://api.impect.com/v4/customerapi/kpis",
       httr::add_headers(Authorization = base::paste("Bearer", token, sep = " "))
     )

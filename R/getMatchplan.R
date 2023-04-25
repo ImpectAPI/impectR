@@ -16,13 +16,14 @@
 getMatchplan <- function(competitionIterationId, token) {
   # get competition iteration data
   response <-
-    httr::GET(
+    httr::RETRY(
+      "GET",
       url = base::paste0(
         "https://api.impect.com/v4/customerapi/scouting/competitionIterations/",
         competitionIterationId
       ),
-      httr::add_headers(Authorization = base::paste("Bearer", token, sep =
-                                                      " "))
+      httr::add_headers(
+        Authorization = base::paste("Bearer", token, sep =" "))
     )
 
   # check response status

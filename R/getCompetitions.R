@@ -15,8 +15,9 @@
 getCompetitions <- function(token) {
   # request competition iteration information from API
   response <-
-    httr::GET(url = "https://api.impect.com/v4/customerapi/scouting/competitionIterations/",
-              httr::add_headers(Authorization = base::paste("Bearer", token, sep = " ")))
+    httr::RETRY("GET",
+                url = "https://api.impect.com/v4/customerapi/scouting/competitionIterations/",
+                httr::add_headers(Authorization = base::paste("Bearer", token, sep = " ")))
 
   # check response status
   httr::stop_for_status(response)

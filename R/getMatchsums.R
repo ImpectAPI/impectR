@@ -17,7 +17,8 @@
 getMatchsums <- function (match, token) {
   # get match info
   response <-
-    httr::GET(
+    httr::RETRY(
+      "GET",
       base::paste0("https://api.impect.com/v4/customerapi/matches/", match),
       httr::add_headers(Authorization = base::paste("Bearer", token, sep = " "))
     )
@@ -95,7 +96,8 @@ getMatchsums <- function (match, token) {
 
   # get match sums
   response <-
-    httr::GET(
+    httr::RETRY(
+      "GET",
       base::paste0(
         "https://api.impect.com/v4/customerapi/matches/",
         match,
@@ -113,7 +115,8 @@ getMatchsums <- function (match, token) {
 
   # get match sums
   response <-
-    httr::GET(
+    httr::RETRY(
+      "GET",
       base::paste0("https://api.impect.com/v4/customerapi/kpis"),
       httr::add_headers(Authorization = base::paste("Bearer", token, sep = " "))
     )

@@ -34,9 +34,10 @@ getAccessToken <- function(username, password) {
 
   # request access token
   response <-
-    httr::POST(url = token_url,
-               body = login,
-               httr::add_headers(.headers = headers))
+    httr::RETRY("POST",
+                url = token_url,
+                body = login,
+                httr::add_headers(.headers = headers))
 
   # check response status
   httr::stop_for_status(response)
