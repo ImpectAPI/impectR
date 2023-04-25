@@ -10,7 +10,7 @@
 
 A package provided by: Impect GmbH
 
-Updated: April 17th 2023
+Updated: April 25th 2023
 
 The goal of the impectR package is to provide an easy way for Impect
 Customers to access data from the customer API. This API includes basic
@@ -109,7 +109,7 @@ Leipzig vs FSV Mainz 05 game (matchId = 84350) from the same day:
 
 ``` r
 # define list of matches
-matches <- c(84344, 84350)
+match_ids <- c(84344, 84350)
 
 # apply getEventData function to a set of matchIds
 events <-
