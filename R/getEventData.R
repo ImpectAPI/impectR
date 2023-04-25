@@ -27,8 +27,23 @@ getEventData <- function (match, token) {
       httr::add_headers(Authorization = base::paste("Bearer", token, sep = " "))
     )
 
-  # check response status
-  httr::stop_for_status(response)
+  # break if status code != 200
+  if (httr::http_error(response)) {
+    base::warning(
+      base::paste0(
+        "Error for matchId ",
+        match,
+        ": HTTP ",
+        httr::content(response)$status,
+        ": ",
+        dplyr::coalesce(
+          httr::content(response)$message,
+          "No specific error message."
+        )
+      )
+    )
+    return(data.frame())
+  }
 
   # get data from response
   data <-
@@ -52,8 +67,23 @@ getEventData <- function (match, token) {
       httr::add_headers(Authorization = base::paste("Bearer", token, sep = " "))
     )
 
-  # check response status
-  httr::stop_for_status(response)
+  # break if status code != 200
+  if (httr::http_error(response)) {
+    base::warning(
+      base::paste0(
+        "Error for matchId ",
+        match,
+        ": HTTP ",
+        httr::content(response)$status,
+        ": ",
+        dplyr::coalesce(
+          httr::content(response)$message,
+          "No specific error message."
+        )
+      )
+    )
+    return(data.frame())
+  }
 
   # get data from response
   data <-
@@ -141,8 +171,23 @@ getEventData <- function (match, token) {
       httr::add_headers(Authorization = base::paste("Bearer", token, sep = " "))
     )
 
-  # check response status
-  httr::stop_for_status(response)
+  # break if status code != 200
+  if (httr::http_error(response)) {
+    base::warning(
+      base::paste0(
+        "Error for matchId ",
+        match,
+        ": HTTP ",
+        httr::content(response)$status,
+        ": ",
+        dplyr::coalesce(
+          httr::content(response)$message,
+          "No specific error message."
+        )
+      )
+    )
+    return(data.frame())
+  }
 
   # get data from response
   kpis <-

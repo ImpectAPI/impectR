@@ -26,8 +26,17 @@ getMatchplan <- function(competitionIterationId, token) {
         Authorization = base::paste("Bearer", token, sep =" "))
     )
 
-  # check response status
-  httr::stop_for_status(response)
+  # break if status code != 200
+  if (httr::http_error(response)) {
+    stop(
+      base::paste0(
+        "HTTP ",
+        httr::content(response)$status,
+        ": ",
+        httr::content(response)$message
+      )
+    )
+  }
 
   # get data from response
   data <-
