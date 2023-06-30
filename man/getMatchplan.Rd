@@ -2,20 +2,20 @@
 % Please edit documentation in R/getMatchplan.R
 \name{getMatchplan}
 \alias{getMatchplan}
-\title{Return a dataframe with basic information for all matches for a given competitionIteration}
+\title{Return a dataframe with basic information for all matches for a given iteration ID}
 \usage{
-getMatchplan(competitionIterationId, token)
+getMatchplan(iteration, token)
 }
 \arguments{
-\item{competitionIterationId}{Impect competition iteration ID}
+\item{iteration}{IMPECT iteration ID}
 
 \item{token}{bearer token}
 }
 \value{
-a dataframe containing all matches for a given competition iteration ID
+a dataframe containing all matches for a given iteration ID
 }
 \description{
-Return a dataframe with basic information for all matches for a given competitionIteration
+Return a dataframe with basic information for all matches for a given iteration ID
 }
 \examples{
 \donttest{

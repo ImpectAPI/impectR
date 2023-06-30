@@ -7,9 +7,9 @@
 getAccessToken(username, password)
 }
 \arguments{
-\item{username}{your impect username}
+\item{username}{your IMPECT username}
 
-\item{password}{your impect password}
+\item{password}{your IMPECT password}
 }
 \value{
 a string containing a bearer token
@@ -22,7 +22,7 @@ Get an access token from the Impect Customer API
 try({ # prevent cran errors
   username <- "yourUsername"
   password <- "youPassword"
-  token <- getAccessToken(username, password)
+  token <- getAccessToken(username = username, password = password)
 })
 }
 }
