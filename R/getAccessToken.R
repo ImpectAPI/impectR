@@ -1,21 +1,25 @@
 #' Get an access token from the Impect Customer API
 #'
-#' @param username your impect username
-#' @param password your impect password
+#' @param username your IMPECT username
+#' @param password your IMPECT password
 #'
 #' @return a string containing a bearer token
 #' @export
-#' @importFrom dplyr %>%
 #'
 #' @examples
 #' \donttest{
 #' try({ # prevent cran errors
 #'   username <- "yourUsername"
 #'   password <- "youPassword"
-#'   token <- getAccessToken(username, password)
+#'   token <- getAccessToken(username = username, password = password)
 #' })
 #' }
 getAccessToken <- function(username, password) {
+  # validate input parameters
+  if (missing(username) || missing(password) || username == "" || password == "") {
+    stop("Username and password are required.")
+  }
+
   # create tokenURL
   token_url <-
     "https://login.impect.com/auth/realms/production/protocol/openid-connect/token"
@@ -39,8 +43,11 @@ getAccessToken <- function(username, password) {
                 body = login,
                 httr::add_headers(.headers = headers))
 
-  # check response status
-  httr::stop_for_status(response)
+  # Check response status
+  if (httr::http_type(response) != "application/json" ||
+      httr::status_code(response) != 200) {
+    stop("Failed to retrieve access token.")
+  }
 
   # get access token from response
   token <- httr::content(response)$access_token
