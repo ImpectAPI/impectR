@@ -12,19 +12,21 @@ A package provided by: Impect GmbH
 
 Updated: June 28th 2023
 
-**Supported API Version: V5** For older versions, please see list
-below: - API V4: <https://github.com/ImpectAPI/impectR/tree/v1.0.0> -
-API V3: not supported by this package
+**Supported API Version: V5** For older versions, please see list below:
+
+- API V4: [impectR
+  v1.0.0](https://github.com/ImpectAPI/impectR/tree/v1.0.0)
+- API V3: not supported by this package
 
 The goal of the impectR package is to provide an easy way for Impect
-Customers to access data from the customer API V5. This API includes
-basic information about competitions, iterations, and matches as well as
-event data and aggregated scorings per player and position on match and
-season level.
+Customers to access data from the customer API. This API includes basic
+information about competitions, competition iterations, and matches as
+well as event data and aggregated scorings per player and position on
+match and season level.
 
 ## Installation
 
-You can install the developmental version of impectR from
+You can install the latest version of impectR from
 [GitHub](https://github.com/) with:
 
 ``` r
@@ -54,21 +56,21 @@ requests data from the API. We recommend to first get a list of
 competition iterations that are enabled for your account.
 
 ``` r
-# get list of competition iterations
+# get list of iterations
 iterations <- getIterations(token = token)
 
-# print competition iterations to console
+# print iterations to console
 iterations
 ```
 
-If any iteration you were expecting to see is not listed, please contact
+If any iteration you were expected to see is not listed, please contact
 your sales representative. Now let’s assume you are interested in data
 for 2022/23 season of the 1. Bundesliga (iteration = 518). The following
-snippet gets you a list of matches for this competition and season:
+snippet gets you a list of matches for this iteration:
 
 ``` r
-# get match plan for competition iteration
-matchplan <- getMatchplan(iteration = 518, token = token)
+# get matches for iteration
+matchplan <- getMatches(iteration = 518, token = token)
 
 # print match to console
 matchplan
@@ -82,7 +84,7 @@ requested at once, we need to wrap the matchId into a list. Hence, to
 request the event data for this game, run the following code snippet:
 
 ``` r
-# define match ID
+# define matches to get event data for
 matches <- c(84344)
 
 # get event data for match
@@ -96,7 +98,7 @@ You can access the aggregated scores per player and position or per
 squad for this match in a similar way:
 
 ``` r
-# define match ID
+# define matches to get matchsums for
 matches <- c(84344)
 
 # get matchsums for match per player and position
@@ -154,12 +156,9 @@ squadIterationAverages <-
 
 Please keep in mind that Impect enforces a rate limit of 10 requests per
 second per user. A token bucket logic has been implemented to restrict
-the amount of API calls made on the client side already. Thas’s why you
-will notice a variable called `bucket` in your global environment
-variable list after you made your first API call other than the
-AccessToken request. The rate limit is read from the first limit sent
-back by the API, so if this limit increases over time, this package will
-act accordingly.
+the amount of API calls made on the client side already. The rate limit
+is read from the first limit policy sent back by the API, so if this
+limit increases over time, this package will act accordingly.
 
 ## Final Notes
 
