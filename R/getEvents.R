@@ -57,7 +57,7 @@ getEvents <- function (matches, token) {
   # get matchplan data
   matchplan <-
     purrr::map_df(iterations,
-                  ~ getMatchplan(iteration = ., token = token))
+                  ~ getMatches(iteration = ., token = token))
 
   # get iterations
   iterations <- getIterations(token = token)
@@ -102,7 +102,7 @@ getEvents <- function (matches, token) {
 
   # merge with matchplan info
   events <- events %>%
-    dplyr::left_join(matchplan, by = base::c("matchId" = "matchId"))
+    dplyr::left_join(matchplan, by = base::c("matchId" = "id"))
 
   # merge with competition info
   events <- events %>%
@@ -118,7 +118,7 @@ getEvents <- function (matches, token) {
       names_from = "name",
       values_from = "value",
       values_fn = sum,
-      values_fill = 0
+      values_fill = NA
     ) %>%
     dplyr::filter(!base::is.na("eventId"))
 
@@ -162,12 +162,12 @@ getEvents <- function (matches, token) {
     "homeSquadName",
     "homeSquadCountryId",
     "homeSquadCountryName",
-    "homeType",
+    "homeSquadType",
     "awaySquadId",
     "awaySquadName",
     "awaySquadCountryId",
     "awaySquadCountryName",
-    "awayType",
+    "awaySquadType",
     "eventId",
     "eventNumber",
     "periodId",
