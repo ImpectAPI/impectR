@@ -12,10 +12,10 @@
 #' @examples
 #' \donttest{
 #' try({ # prevent cran errors
-#'   matchplan <- getMatchplan(518, token)
+#'   matches <- getMatches(518, token)
 #' })
 #' }
-getMatchplan <- function(iteration, token) {
+getMatches <- function(iteration, token) {
   # get matches
   matches <- .matches(iteration = iteration, token = token)
 
@@ -28,14 +28,14 @@ getMatchplan <- function(iteration, token) {
   # clean data
   squads <- .cleanData(squads)
 
-  # merge matchplan with squads
+  # merge matches with squads
   matches <- matches %>%
     dplyr::left_join(squads,
                      by = c("homeSquadId" = "id"),
                      suffix = c("", "_home")) %>%
     dplyr::rename(
       homeSquadName = name,
-      homeType = type,
+      homeSquadType = type,
       homeSquadSkillCornerId = skillCornerId_home,
       homeSquadHeimSpielId = heimSpielId_home,
       homeSquadCountryId = countryId
@@ -45,7 +45,7 @@ getMatchplan <- function(iteration, token) {
                      suffix = c("", "_away")) %>%
     dplyr::rename(
       awaySquadName = name,
-      awayType = type,
+      awaySquadType = type,
       awaySquadSkillCornerId = skillCornerId_away,
       awaySquadHeimSpielId = heimSpielId_away,
       awaySquadCountryId = countryId
@@ -54,7 +54,7 @@ getMatchplan <- function(iteration, token) {
   # get countries data
   countries <- .countryNames(token)
 
-  # merge matchplan with countries
+  # merge matches with countries
   matches <- matches %>%
     dplyr::left_join(countries, by = c("homeSquadCountryId" = "id")) %>%
     dplyr::rename(homeSquadCountryName = name) %>%
@@ -64,22 +64,22 @@ getMatchplan <- function(iteration, token) {
   # reorder columns
   matches <- matches %>%
     dplyr::select(
-      iterationId,
-      matchId = id,
+      id,
       skillCornerId,
       heimSpielId,
+      iterationId,
       matchDayIndex,
       matchDayName,
       homeSquadId,
       homeSquadName,
-      homeType,
+      homeSquadType,
       homeSquadCountryId,
       homeSquadCountryName,
       homeSquadSkillCornerId,
       homeSquadHeimSpielId,
       awaySquadId,
       awaySquadName,
-      awayType,
+      awaySquadType,
       awaySquadCountryId,
       awaySquadCountryName,
       awaySquadSkillCornerId,
