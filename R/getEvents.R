@@ -139,7 +139,7 @@ getEvents <- function (matches, token) {
       attackingSquadId = "currentAttackingSquadId",
       attackingSquadName = "currentAttackingSquadName",
       duelType = "duelDuelType",
-      date = "scheduledDate",
+      dateTime = "scheduledDate",
       gameTime = "gameTimeGameTime",
       gameTimeInSec = "gameTimeGameTimeInSec",
       eventId = "id",
@@ -150,7 +150,7 @@ getEvents <- function (matches, token) {
   # define desired column order
   attribute_cols <- base::c(
     "matchId",
-    "date",
+    "dateTime",
     "competitionId",
     "competitionName",
     "competitionType",
