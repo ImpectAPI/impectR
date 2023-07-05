@@ -3,7 +3,7 @@
 export(getAccessToken)
 export(getEvents)
 export(getIterations)
-export(getMatchplan)
+export(getMatches)
 export(getPlayerIterationAverages)
 export(getPlayerMatchsums)
 export(getSquadIterationAverages)
