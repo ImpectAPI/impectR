@@ -46,7 +46,7 @@ getPlayerMatchsums <- function (matches, token) {
 
   # get matchplan data
   matchplan <-
-    purrr::map_df(iterations, ~ getMatchplan(iteration = ., token = token))
+    purrr::map_df(iterations, ~ getMatches(iteration = ., token = token))
 
   # get competitions
   iterations <- getIterations(token = token)
@@ -121,7 +121,7 @@ getPlayerMatchsums <- function (matches, token) {
   matchsums <- matchsums %>%
     dplyr::left_join(
       matchplan,
-      by = c("matchId" = "matchId")
+      by = c("matchId" = "id")
     ) %>%
     dplyr::left_join(
       iterations,
