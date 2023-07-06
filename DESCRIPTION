@@ -1,13 +1,13 @@
 Package: impectR
 Title: Access data from the Impect API
-Version: 1.0.0.0000
+Version: 2.0.0.0000
 Authors@R: c(
   person("Impect", "GmbH", , "info.impect@impect.com", role = c("cph")),
   person("Florian", "Schmitt", , "florian.schmitt@impect.com", role = c("aut", "cre")),
   person("Thomas", "Walentin", , "thomas.walentin@impect.com", role = c("ctb"))
   )
 Maintainer: Florian schmitt <florian.schmitt@impect.com>
-Description: This package is used to pull data from the Impect Customer API. It can retrieve data such as events or match sums. It supports MAC and Windows computers.
+Description: This package is used to pull data from the Impect Customer API V5. It can retrieve data such as events or match sums. It supports MAC and Windows computers.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -17,6 +17,9 @@ Imports:
     httr,
     jsonlite,
     purrr,
-    rlang,
     tidyr,
-    utils
+    utils,
+    methods
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
