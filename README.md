@@ -10,13 +10,12 @@
 
 A package provided by: Impect GmbH
 
-Updated: June 28th 2023
+Updated: July 6th 2023
 
 **Supported API Version: V5**  
 For older versions, please see list below:
 
-- API V4: [impectR
-  v1.0.0](https://github.com/ImpectAPI/impectR/tree/v1.0.0)
+- API V4: [impectR v1.0.0](https://github.com/ImpectAPI/impectR/tree/v1.0.0)
 - API V3: not supported by this package
 
 The goal of the impectR package is to provide an easy way for Impect
