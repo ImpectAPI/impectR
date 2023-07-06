@@ -12,6 +12,11 @@ A package provided by: Impect GmbH
 
 Updated: April 25th 2023
 
+**Supported API Version: V4**  
+For older versions, please see list below:
+
+- API V3: not supported by this package
+
 The goal of the impectR package is to provide an easy way for Impect
 Customers to access data from the customer API. This API includes basic
 information about competitions, competition iterations, and matches as
@@ -25,7 +30,7 @@ You can install the developmental version of impectR from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ImpectAPI/impectR")
+devtools::install_github("ImpectAPI/impectR@v1.0.0")
 ```
 
 ## Getting started
