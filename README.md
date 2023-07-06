@@ -71,10 +71,10 @@ snippet gets you a list of matches for this iteration:
 
 ``` r
 # get matches for iteration
-matchplan <- getMatches(iteration = 518, token = token)
+matches <- getMatches(iteration = 518, token = token)
 
-# print match to console
-matchplan
+# print matches to console
+matches
 ```
 
 The column `available` denotes whether a given match has been tagged by
@@ -86,10 +86,10 @@ request the event data for this game, run the following code snippet:
 
 ``` r
 # define matches to get event data for
-matches <- c(84344)
+matchIds <- c(84344)
 
 # get event data for match
-events <- getEvents(matches = matches, token = token)
+events <- getEvents(matches = matchIds, token = token)
 
 # print first few rows from events dataframe to console
 head(events)
@@ -100,13 +100,13 @@ squad for this match in a similar way:
 
 ``` r
 # define matches to get matchsums for
-matches <- c(84344)
+matchIds <- c(84344)
 
 # get matchsums for match per player and position
-playerMatchsums <- getPlayerMatchsums(matches = matches, token = token)
+playerMatchsums <- getPlayerMatchsums(matches = matchIds, token = token)
 
 # get matchsums for match per squad
-squadMatchsums <- getSquadMatchsums(matches = matches, token = token)
+squadMatchsums <- getSquadMatchsums(matches = matchIds, token = token)
 
 # print first few rows from playerMatchsums dataframe to console
 head(playerMatchsums)
@@ -122,16 +122,16 @@ Leipzig vs FSV Mainz 05 game (matchId = 84350) from the same day:
 
 ``` r
 # define list of matches
-matches <- c(84344, 84350)
+matchIds <- c(84344, 84350)
 
 # get event data for matches
-events <- getEvents(matches = matches, token = token)
+events <- getEvents(matches = matchIds, token = token)
 
 # get matchsums for matches per player and position
-playerMatchsums <- getPlayerMatchsums(matches = matches, token = token)
+playerMatchsums <- getPlayerMatchsums(matches = matchIds, token = token)
 
 # get matchsums for matches per squad
-squadMatchsums <- getSquadMatchsums(matches = matches, token = token)
+squadMatchsums <- getSquadMatchsums(matches = matchIds, token = token)
 ```
 
 Starting from API version V5, we also offer an endpoint to get KPI
