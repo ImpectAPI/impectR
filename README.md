@@ -10,7 +10,7 @@
 
 A package provided by: Impect GmbH
 
-Version: v2.0.2
+Version: v2.0.1
 
 **Updated: July 27th 2023**
 
