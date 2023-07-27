@@ -474,7 +474,7 @@
 #'
 #' @noRd
 #'
-#' @param data a data fram
+#' @param data a data frame
 #'
 #' @importFrom dplyr %>%
 #' @return a dataframe containing clean columns names and SkillCorner/HeimSpiel
@@ -488,31 +488,27 @@
 
   # fix column names using regex
   base::names(data) <-
-    base::gsub("\\.(.)", "\\U\\1", base::names(data), perl = TRUE)
-  base::names(data) <-
-    base::gsub("\\_(.)", "\\U\\1", base::names(data), perl = TRUE)
+    base::gsub("[\\.\\_](.)", "\\U\\1", base::names(data), perl = TRUE)
 
-
-  # iterate over the skillCorner and heimSpiel column and keep first value
-  data$skillCorner <-
-    purrr::map(data$skillCorner, ~ ifelse(length(.x) > 0, .x[[1]], NA))
-  data$skillCorner <- base::sapply(data$skillCorner, function(x)
-    x[[1]])
-  data$skillCorner <-
-    base::sapply(data$skillCorner, function(x)
-      ifelse(length(x) > 0, x[[1]], NA))
-  data$heimSpiel <-
-    purrr::map(data$heimSpiel, ~ .x[!sapply(.x, is.null)])
-  data$heimSpiel <- base::sapply(data$heimSpiel, function(x)
-    x[[1]])
-  data$heimSpiel <-
-    base::sapply(data$heimSpiel, function(x)
-      ifelse(length(x) > 0, x[[1]], NA))
+  # iterate over the skillCorner, heimSpiel and wyscout columns and keep first
+  # value only
+  for (provider in c("skillCorner", "heimSpiel", "wyscout")) {
+    # drop null values in lists und keep first list entry
+    data[[provider]] <-
+      purrr::map(data[[provider]], ~ purrr::discard(.x, is.null)[[1]])
+    # replace empty lists with NAs
+    data[[provider]] <-
+      purrr::map(
+        data[[provider]],
+        ~ base::ifelse(length(.x) == 0, NA, .x)
+      )
+  }
 
   # edit column names
   data <- data %>%
     dplyr::rename(skillCornerId = "skillCorner",
-                  heimSpielId = "heimSpiel")
+                  heimSpielId = "heimSpiel",
+                  wyscoutId = "wyscout")
 
   # return squads
   return(data)
