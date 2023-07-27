@@ -1,3 +1,10 @@
+# impectR 2.0.1
+
+## Minor changes
+* fix bug in `getPlayerIterationAverages()` function caused by user access rights
+* fix bug in `getIterations()` function caused by addition of wyscoutIds
+* fix bug in `getMatches()` function caused by addition of wyscoutIds
+
 # impectR 2.0.0
 
 ## Major changes
