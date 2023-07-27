@@ -25,6 +25,7 @@ getPlayerIterationAverages <- function (iteration, token) {
   # get squads for given iterationId
   squads <- .squadNames(iteration = iteration, token = token)
   squadIds <- squads %>%
+    dplyr::filter(access == TRUE) %>%
     dplyr::pull(id) %>%
     base::unique()
 
