@@ -44,12 +44,14 @@ getEvents <- function (matches, token) {
   # apply .playerNames function to a set of iterations
   players <-
     purrr::map_df(iterations,
-                  ~ .playerNames(iteration = ., token = token))
+                  ~ .playerNames(iteration = ., token = token)) %>%
+    base::unique()
 
   # apply .squadNames function to a set of iterations
   squads <-
     purrr::map_df(iterations,
-                  ~ .squadNames(iteration = ., token = token))
+                  ~ .squadNames(iteration = ., token = token)) %>%
+    base::unique()
 
   # get kpi names
   kpis <- .kpis(token = token, scope = "event")
