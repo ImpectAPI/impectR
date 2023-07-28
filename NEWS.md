@@ -1,3 +1,8 @@
+# impectPy 2.0.2
+
+## Minor changes
+* fix bug in `getEvents()` function caused by querying data for multiple iterations of the same competition
+
 # impectR 2.0.1
 
 ## Minor changes
