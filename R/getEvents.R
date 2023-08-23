@@ -49,8 +49,10 @@ getEvents <- function (matches, token) {
     }
     else {
       base::warning(
-        paste("The following matches are not available yet and were ignored:\n\t",
-              fail_matches)
+        sprintf(
+          "The following matches are not available yet and were ignored:\n%s",
+          paste(fail_matches, collapse = ", ")
+        )
       )
     }
   }
