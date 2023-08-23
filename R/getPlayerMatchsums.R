@@ -111,7 +111,8 @@ getPlayerMatchsums <- function (matches, token) {
         "position",
         "kpiId",
         "value",
-        "matchShare") %>%
+        "matchShare",
+        "playDuration") %>%
       # join with kpis to ensure all kpiIds are present and order by kpiId
       dplyr::full_join(kpis, by = c("kpiId" = "id")) %>%
       dplyr::arrange("kpiId", "playerId") %>%
@@ -192,6 +193,7 @@ getPlayerMatchsums <- function (matches, token) {
     "playerName",
     "position",
     "matchShare",
+    "playDuration",
     kpis$name
   )
 
