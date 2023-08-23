@@ -24,13 +24,44 @@ getPlayerMatchsums <- function (matches, token) {
     }
   }
 
+  # apply .matchInfo function to a set of matches
+  matchInfo <-
+    purrr::map_df(matches, ~ .matchInfo(match = ., token = token)) %>%
+    dplyr::select(id, iterationId, lastCalculationDate) %>%
+    base::unique()
+
+  # filter for fail matches
+  fail_matches <- matchInfo %>%
+    dplyr::filter(base::is.na(lastCalculationDate) == TRUE) %>%
+    dplyr::pull(id)
+
+  # filter for avilable matches
+  matches <- matchInfo %>%
+    dplyr::filter(base::is.na(lastCalculationDate) == FALSE) %>%
+    dplyr::pull(id)
+
+  # raise warnings
+  if (base::length(fail_matches) > 0) {
+    if (base::length(matches) == 0) {
+      base::stop("All supplied matches are unavailable. Execution stopped.")
+    }
+    else {
+      base::warning(
+        sprintf(
+          "The following matches are not available yet and were ignored:\n%s",
+          paste(fail_matches, collapse = ", ")
+        )
+      )
+    }
+  }
+
   # apply .eventAttributes function to a set of matches
   matchsums_raw <-
     purrr::map(matches, ~ .playerMatchsums(match = ., token = token))
 
-  # apply .matchInfo function to a set of matches
-  iterations <-
-    purrr::map(matches, ~ .matchInfo(match = ., token = token)$iterationId) %>%
+  # get unique iterationIds
+  iterations <- matchInfo %>%
+    dplyr::pull(iterationId) %>%
     base::unique()
 
   # apply playerNames function to a set of iterations
