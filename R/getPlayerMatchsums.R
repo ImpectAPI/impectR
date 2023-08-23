@@ -35,11 +35,15 @@ getPlayerMatchsums <- function (matches, token) {
 
   # apply playerNames function to a set of iterations
   players <-
-    purrr::map_df(iterations, ~ .playerNames(iteration = ., token = token))
+    purrr::map_df(iterations, ~ .playerNames(iteration = ., token = token)) %>%
+    dplyr::select(id, commonname) %>%
+    base::unique()
 
   # apply squadNames function to a set of iterations
   squads <-
-    purrr::map_df(iterations, ~ .squadNames(iteration = ., token = token))
+    purrr::map_df(iterations, ~ .squadNames(iteration = ., token = token)) %>%
+    dplyr::select(id, name) %>%
+    base::unique()
 
   # get kpi names
   kpis <- .kpis(token = token)
