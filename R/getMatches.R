@@ -38,6 +38,7 @@ getMatches <- function(iteration, token) {
       homeSquadType = type,
       homeSquadSkillCornerId = skillCornerId_home,
       homeSquadHeimSpielId = heimSpielId_home,
+      homeSquadWyscoutId = wyscoutId_home,
       homeSquadCountryId = countryId
     ) %>%
     dplyr::left_join(squads,
@@ -48,6 +49,7 @@ getMatches <- function(iteration, token) {
       awaySquadType = type,
       awaySquadSkillCornerId = skillCornerId_away,
       awaySquadHeimSpielId = heimSpielId_away,
+      awaySquadWyscoutId = wyscoutId_away,
       awaySquadCountryId = countryId
     )
 
@@ -67,6 +69,7 @@ getMatches <- function(iteration, token) {
       id,
       skillCornerId,
       heimSpielId,
+      wyscoutId,
       iterationId,
       matchDayIndex,
       matchDayName,
@@ -77,6 +80,7 @@ getMatches <- function(iteration, token) {
       homeSquadCountryName,
       homeSquadSkillCornerId,
       homeSquadHeimSpielId,
+      homeSquadWyscoutId,
       awaySquadId,
       awaySquadName,
       awaySquadType,
@@ -84,6 +88,7 @@ getMatches <- function(iteration, token) {
       awaySquadCountryName,
       awaySquadSkillCornerId,
       awaySquadHeimSpielId,
+      awaySquadWyscoutId,
       scheduledDate,
       lastCalculationDate,
       available
