@@ -96,8 +96,8 @@ getPlayerIterationAverages <- function (iteration, token) {
     "playerId",
     "playerName",
     "position",
-    "playDuration",
     "matchShare",
+    "playDuration",
     kpis$name
   )
 
