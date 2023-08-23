@@ -10,33 +10,46 @@
 #' @param token Bearer token
 #'
 #' @return Response content of the API endpoint
-.callAPI <- function(base_url, id = "", suffix = "", token) {
-  # get API response
-  response <-
-    httr::RETRY(
-      "GET",
-      url = paste0(base_url, id, suffix),
-      httr::add_headers(
-        Authorization = base::paste("Bearer", token, sep = " "))
-      )
+.callAPI <- function(base_url, id = "", suffix = "", token,
+                     max_retries = 3, retry_delay = 1) {
 
-  # break if status code != 200
-  if (httr::http_error(response)) {
-    base::stop(
-      base::paste0(
-        "Error: HTTP ",
-        httr::content(response)$status,
-        ": ",
-        dplyr::coalesce(
-          httr::content(response)$message,
-          "No specific error message."
+  # try API call
+  for (i in 1:max_retries) {
+    # get API response
+    response <-
+      httr::GET(
+        url = paste0(base_url, id, suffix),
+        httr::add_headers(
+          Authorization = base::paste("Bearer", token, sep = " "))
         )
-      )
-    )
-  }
 
-  # return response
-  return(response)
+    # return the response if status code is 200
+    if (httr::status_code(response) == 200) {
+      return(response)
+    } else if (httr::status_code(response) == 429) {
+      # handle rate limiting (429 status code)
+      message <- httr::content(response, "parsed")$message
+      base::cat(base::paste("Received status code 429 (", message,
+                "), retrying in", retry_delay, "seconds...\n"))
+      Sys.sleep(retry_delay)
+    } else if (httr::status_code(response) %in% c(401, 403)) {
+      # handle unauthorized or forbidden (401 or 403 status codes)
+      message <- dplyr::coalesce(
+        httr::content(response, "parsed")$message,
+        "Unauthorized"
+      )
+      stop(base::paste("Received status code", httr::status_code(response),
+                 "(", message, ")"))
+    } else {
+      # handle other errors
+      message <- dplyr::coalesce(
+        httr::content(response, "parsed")$message,
+        "Unknown error"
+      )
+      stop(base::paste("Received status code", httr::status_code(response),
+                 "(", message, ")"))
+    }
+  }
 }
 
 #' Applies the rate limit policy to the .callAPI function
