@@ -475,7 +475,8 @@
   # convert to dataframe
   temp <-
     jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$data %>%
-    jsonlite::flatten()
+    jsonlite::flatten() %>%
+    dplyr::select(id, name)
 
   # return squads
   return(temp)
