@@ -51,7 +51,7 @@ getPlayerIterationAverages <- function (iteration, token) {
 
   # unnest scorings
   averages <- averages_raw %>%
-    tidyr::unnest("kpis") %>%
+    tidyr::unnest("kpis", keep_empty = TRUE) %>%
     dplyr::select(
       iterationId,
       squadId,
@@ -75,7 +75,9 @@ getPlayerIterationAverages <- function (iteration, token) {
       values_fn = base::sum
     ) %>%
     # filter for non NA columns that were created by full join
-    dplyr::filter(base::is.na(playerId) == FALSE)
+    dplyr::filter(base::is.na(playerId) == FALSE) %>%
+    # remove the "NA" column if it exists
+    dplyr::select(-dplyr::matches("^NA$"))
 
   # merge with other data
   averages <- averages %>%
