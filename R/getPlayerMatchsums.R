@@ -97,15 +97,9 @@ getPlayerMatchsums <- function (matches, token) {
       ),
       recursive = FALSE)
 
-    # detect non-empty scorings column
-    list <- base::sapply(temp$kpis, length) > 0
-
-    # filter and add context data
-    temp <- temp[list,]
-
     # unnest scorings
     temp <- temp %>%
-      tidyr::unnest("kpis") %>%
+      tidyr::unnest("kpis", keep_empty = TRUE) %>%
       dplyr::select(
         "playerId" = "id",
         "position",
@@ -127,6 +121,8 @@ getPlayerMatchsums <- function (matches, token) {
       ) %>%
       # filter for non NA columns that were created by full join
       dplyr::filter(base::is.na(playerId) == FALSE) %>%
+      # remove the "NA" column if it exists
+      dplyr::select(-dplyr::matches("^NA$")) %>%
       dplyr::mutate(
         # add matchId
         matchId = dict$matchId,
