@@ -83,7 +83,7 @@ getPlayerIterationAverages <- function (iteration, token) {
   averages <- averages %>%
     dplyr::left_join(dplyr::select(squads, id, squadName = name),
                      by = c("squadId" = "id")) %>%
-    dplyr::left_join(dplyr::select(players, id, firstname, lastname, birthdate, birthplace, leg),
+    dplyr::left_join(dplyr::select(players, id, playerName = commonname, firstname, lastname, birthdate, birthplace, leg),
                      by = c("playerId" = "id")) %>%
     dplyr::left_join(dplyr::select(iterations, id, competitionName, season),
                      by = c("iterationId" = "id"))
@@ -96,6 +96,7 @@ getPlayerIterationAverages <- function (iteration, token) {
     "squadId",
     "squadName",
     "playerId",
+    "playerName",
     "firstname",
     "lastname",
     "birthdate",
