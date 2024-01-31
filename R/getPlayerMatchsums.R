@@ -67,7 +67,7 @@ getPlayerMatchsums <- function (matches, token) {
   # apply playerNames function to a set of iterations
   players <-
     purrr::map_df(iterations, ~ .playerNames(iteration = ., token = token)) %>%
-    dplyr::select(id, firstname, lastname, birthdate, birthplace, leg) %>%
+    dplyr::select(id, playerName = commonname, firstname, lastname, birthdate, birthplace, leg) %>%
     base::unique()
 
   # apply squadNames function to a set of iterations
@@ -164,7 +164,7 @@ getPlayerMatchsums <- function (matches, token) {
       by = c("squadId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(players, id, firstname, lastname, birthdate, birthplace, leg),
+      dplyr::select(players, id, playerName, firstname, lastname, birthdate, birthplace, leg),
       by = c("playerId" = "id")
     ) %>%
     # fix some column names
@@ -186,6 +186,7 @@ getPlayerMatchsums <- function (matches, token) {
     "squadId",
     "squadName",
     "playerId",
+    "playerName",
     "firstname",
     "lastname",
     "birthdate",
