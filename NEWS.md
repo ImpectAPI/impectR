@@ -1,3 +1,9 @@
+# impectR 2.0.4
+
+## Minor changes
+* add more player master data to `getPlayerMatchsums()` and `getPlayerIterationAverages()`
+
+
 # impectR 2.0.3
 
 ## Minor changes

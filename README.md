@@ -4,15 +4,13 @@
 # impectR <img src="https://github.com/ImpectAPI/logos/blob/main/impectR.png" align="right" height="139" />
 
 <!-- badges: start -->
-
-[![R-CMD-check](https://github.com/Flosch1006/impectR/actions/workflows/check-release.yaml/badge.svg)](https://github.com/Flosch1006/impectR/actions/workflows/check-release.yaml)
 <!-- badges: end -->
 
 A package provided by: Impect GmbH
 
-Version: v2.0.3
+Version: v2.0.4
 
-**Updated: August 24th 2023**
+**Updated: February 7th 2024**
 
 ------------------------------------------------------------------------
 
@@ -40,7 +38,7 @@ You can install the latest version of impectR from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ImpectAPI/impectR@v2.0.3")
+devtools::install_github("ImpectAPI/impectR@v2.0.4")
 ```
 
 ## Getting started
