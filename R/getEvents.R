@@ -221,6 +221,8 @@ getEvents <- function (matches, token) {
     "actionType",
     "action",
     "bodyPart",
+    "bodyPartExtended",
+    "previousPassHeight",
     "result",
     "startCoordinatesX",
     "startCoordinatesY",
@@ -244,6 +246,10 @@ getEvents <- function (matches, token) {
     "pressingPlayerId",
     "pressingPlayerName",
     "distanceToOpponent",
+    "opponentCoordinatesX",
+    "opponentCoordinatesY",
+    "opponentAdjCoordinatesX",
+    "opponentAdjCoordinatesY",
     "passReceiverType",
     "passReceiverPlayerId",
     "passReceiverPlayerName",
@@ -253,12 +259,28 @@ getEvents <- function (matches, token) {
     "shotAngle",
     "shotTargetPointY",
     "shotTargetPointZ",
+    "shotWoodwork",
+    "shotGkCoordinatesX",
+    "shotGkCoordinatesY",
+    "shotGkAdjCoordinatesX",
+    "shotGkAdjCoordinatesY",
+    "shotGkDivePointY",
+    "shotGkDivePointZ",
     "duelType",
     "duelPlayerId",
     "duelPlayerName",
     "fouledPlayerId",
-    "fouledPlayerName"
+    "fouledPlayerName",
+    "formationTeam",
+    "formationOpponent"
   )
+
+  # add columns that might not exist in previous data versions
+  for (col in attribute_cols) {
+    if (!(col %in% colnames(events))) {
+      events[[col]] <- NA
+    }
+  }
 
   # create order
   order <- base::c(attribute_cols, kpis$name)
