@@ -1,6 +1,6 @@
 Package: impectR
 Title: Access data from the Impect API
-Version: 2.0.4
+Version: 2.1.0
 Authors@R: c(
   person("Impect", "GmbH", , "info.impect@impect.com", role = c("cph")),
   person("Florian", "Schmitt", , "florian.schmitt@impect.com", role = c("aut", "cre")),

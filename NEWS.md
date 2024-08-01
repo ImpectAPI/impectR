@@ -1,3 +1,8 @@
+# impectPy 2.1.0
+
+## Major changes
+* add new attributes from dataVersion V4 to `getEvents()`
+
 # impectR 2.0.4
 
 ## Minor changes

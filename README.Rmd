@@ -21,9 +21,9 @@ knitr::opts_chunk$set(
 
 A package provided by: Impect GmbH
 
-Version: v2.0.4
+Version: v2.1.0
 
-**Updated: February 7th 2024**
+**Updated: August 1st 2024**
 
 ---
 
@@ -50,7 +50,7 @@ You can install the latest version of impectR from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ImpectAPI/impectR@v2.0.4")
+devtools::install_github("ImpectAPI/impectR@v2.1.0")
 ```
 
 ## Getting started
