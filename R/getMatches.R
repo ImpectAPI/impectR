@@ -59,9 +59,9 @@ getMatches <- function(iteration, token) {
   # merge matches with countries
   matches <- matches %>%
     dplyr::left_join(countries, by = c("homeSquadCountryId" = "id")) %>%
-    dplyr::rename(homeSquadCountryName = name) %>%
+    dplyr::rename(homeSquadCountryName = fifaName) %>%
     dplyr::left_join(countries, by = c("awaySquadCountryId" = "id")) %>%
-    dplyr::rename(awaySquadCountryName = name)
+    dplyr::rename(awaySquadCountryName = fifaName)
 
   # reorder columns
   matches <- matches %>%
