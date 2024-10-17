@@ -175,6 +175,39 @@
 }
 
 
+#' Return a dataframe that contains all player scores for a given match ID and
+#' list of positions
+#'
+#' @noRd
+#'
+#' @param match Impect match ID
+#' @param positions list of position names
+#' @param token bearer token
+#'
+#' @return a dataframe containing all player match scores for the given match ID
+#' and list of positions
+.playerMatchScores <- function(match, positions, token) {
+  # get player matchsums
+  response <- .callAPIlimited(
+    base_url = paste0(
+      "https://api.impect.com/v5/customerapi/matches/",
+      match,
+      "/positions/",
+      positions,
+      "/player-scores"
+    ),
+    token = token
+  )
+
+  # convert to dataframe
+  temp <-
+    jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$data
+
+  # return player match scores
+  return(temp)
+}
+
+
 #' Return a dataframe that contains all squad matchsums for a given match ID
 #'
 #' @noRd
@@ -371,7 +404,7 @@
 #' @noRd
 #'
 #' @param iteration Impect iteration ID
-#' @param match Impect match ID
+#' @param squad Impect squad ID
 #' @param token bearer token
 #'
 #' @importFrom dplyr %>%
@@ -401,6 +434,84 @@
 }
 
 
+#' Return a dataframe that contains all player iteration scores for a given
+#' iteration ID and squad ID
+#'
+#' @noRd
+#'
+#' @param iteration Impect iteration ID
+#' @param squad Impect squad ID
+#' @param positions list of position names
+#' @param token bearer token
+#'
+#' @importFrom dplyr %>%
+#' @return a dataframe containing all player iteration scores for a given
+#' iteration ID and squad ID
+.playerIterationScores <- function(iteration, squad, positions, token) {
+  # get .player iteration averages
+  response <- .callAPIlimited(
+    base_url = paste0(
+      "https://api.impect.com/v5/customerapi/iterations/",
+      iteration,
+      "/squads/",
+      squad,
+      "/positions/",
+      positions,
+      "/player-scores"
+    ),
+    token = token
+  )
+
+  # convert to dataframe and add columns with matchId and iterationId
+  temp <-
+    jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$data %>%
+    dplyr::mutate(squadId = squad,
+                  iterationId = iteration)
+
+  # return scores
+  return(temp)
+}
+
+
+#' Return a dataframe that contains all player profile scores for a given
+#' iteration ID and squad ID
+#'
+#' @noRd
+#'
+#' @param iteration Impect iteration ID
+#' @param squad Impect squad ID
+#' @param positions list of position names
+#' @param token bearer token
+#'
+#' @importFrom dplyr %>%
+#' @return a dataframe containing all player profile scores for a given
+#' iteration ID and squad ID
+.playerProfileScores <- function(iteration, squad, positions, token) {
+  # get .player profile scores
+  response <- .callAPIlimited(
+    base_url = paste0(
+      "https://api.impect.com/v5/customerapi/iterations/",
+      iteration,
+      "/squads/",
+      squad,
+      "/positions/",
+      positions,
+      "/player-profile-scores"
+    ),
+    token = token
+  )
+
+  # convert to dataframe and add columns with matchId and iterationId
+  temp <-
+    jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$data %>%
+    dplyr::mutate(squadId = squad,
+                  iterationId = iteration)
+
+  # return profile scores
+  return(temp)
+}
+
+
 #' Return a dataframe that contains all iteration averages for a given iteration
 #'  ID for all squads
 #'
@@ -417,6 +528,35 @@
     base_url = "https://api.impect.com/v5/customerapi/iterations/",
     id = iteration,
     suffix = "/squad-kpis",
+    token = token
+  )
+
+  # convert to dataframe and add column with iterationId
+  temp <-
+    jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$data %>%
+    dplyr::mutate(iterationId = iteration)
+
+  # return averages data
+  return(temp)
+}
+
+
+#' Return a dataframe that contains all iteration averages for a given iteration
+#'  ID for all squads
+#'
+#' @noRd
+#'
+#' @param iteration Impect iteration ID
+#' @param token bearer token
+#'
+#' @importFrom dplyr %>%
+#' @return a dataframe containing all events for the given match ID
+.squadIterationScores <- function(iteration, token) {
+  # get squad iteration averages
+  response <- .callAPIlimited(
+    base_url = "https://api.impect.com/v5/customerapi/iterations/",
+    id = iteration,
+    suffix = "/squad-scores",
     token = token
   )
 
@@ -602,3 +742,105 @@ TokenBucket <- setRefClass(
     }
   )
 )
+
+#' Return a dataframe that contains all squad matchsums for a given match ID
+#'
+#' @noRd
+#'
+#' @param match Impect match ID
+#' @param token bearer token
+#'
+#' @return a dataframe containing all squad matchsums for the given match ID
+.squadMatchScores <- function(match, token) {
+  # get squad matchsums
+  response <- .callAPIlimited(
+    base_url = "https://api.impect.com/v5/customerapi/matches/",
+    id = match,
+    suffix = "/squad-scores",
+    token = token
+  )
+
+  # convert to dataframe
+  temp <-
+    jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$data
+
+  # return squad matchsums
+  return(temp)
+}
+
+#' Return a dataframe that contains squad score IDs and names
+#'
+#' @noRd
+#'
+#' @param token bearer token
+#'
+#' @importFrom dplyr %>%
+#' @return a dataframe containing squad score IDs and names
+.squadScores <- function (token) {
+  # get squad scores
+  response <- .callAPIlimited(
+    base_url = "https://api.impect.com/v5/customerapi/squad-scores",
+    token = token
+  )
+
+  # convert to dataframe
+  temp <-
+    jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$data %>%
+    jsonlite::flatten() %>%
+    dplyr::select(id, name)
+
+  # return squad scores
+  return(temp)
+}
+
+
+#' Return a dataframe that contains player score IDs and names
+#'
+#' @noRd
+#'
+#' @param token bearer token
+#'
+#' @importFrom dplyr %>%
+#' @return a dataframe containing player score IDs and names
+.playerScores <- function (token) {
+  # get player scores
+  response <- .callAPIlimited(
+    base_url = "https://api.impect.com/v5/customerapi/player-scores",
+    token = token
+  )
+
+  # convert to dataframe
+  temp <-
+    jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$data %>%
+    jsonlite::flatten() %>%
+    dplyr::select(id, name)
+
+  # return player scores
+  return(temp)
+}
+
+
+#' Return a dataframe that contains player profile names
+#'
+#' @noRd
+#'
+#' @param token bearer token
+#'
+#' @importFrom dplyr %>%
+#' @return a dataframe containing player profile names
+.playerProfiles <- function (token) {
+  # get player scores
+  response <- .callAPIlimited(
+    base_url = "https://api.impect.com/v5/customerapi/player-profiles",
+    token = token
+  )
+
+  # convert to dataframe
+  temp <-
+    jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$data %>%
+    jsonlite::flatten() %>%
+    dplyr::select(name)
+
+  # return player profile names
+  return(temp)
+}
