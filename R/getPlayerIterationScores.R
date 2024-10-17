@@ -1,7 +1,25 @@
+# Define the allowed positions
+allowed_positions <- c(
+  "GOALKEEPER",
+  "LEFT_WINGBACK_DEFENDER",
+  "RIGHT_WINGBACK_DEFENDER",
+  "CENTRAL_DEFENDER",
+  "DEFENSE_MIDFIELD",
+  "CENTRAL_MIDFIELD",
+  "ATTACKING_MIDFIELD",
+  "LEFT_WINGER",
+  "RIGHT_WINGER",
+  "CENTER_FORWARD"
+)
+
+
 #' Return a dataframe that contains all player scores for a given iteration ID
 #'
 #' @param iteration Impect iteration ID
-#' @param positions list of position names
+#' @param positions list of position names. Must be one of:   "GOALKEEPER",
+#' "LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER", "CENTRAL_DEFENDER",
+#' "DEFENSE_MIDFIELD", "CENTRAL_MIDFIELD", "ATTACKING_MIDFIELD", "LEFT_WINGER",
+#' "RIGHT_WINGER", "CENTER_FORWARD"
 #' @param token bearer token
 #'
 #' @export
@@ -21,6 +39,13 @@ getPlayerIterationScores <- function (iteration, positions, token) {
   if (!(base::is.numeric(iteration) ||
         base::is.character(iteration))) {
     stop("Unprocessable type for 'iteration' variable")
+  }
+
+  # check if the input positions are valid
+  invalid_positions <- positions[!positions %in% allowed_positions]
+  if (length(invalid_positions) > 0) {
+    stop("Invalid position(s): ", paste(invalid_positions, collapse = ", "),
+         ".\nChoose one or more of: ", paste(allowed_positions, collapse = ", "))
   }
 
   # compile position string

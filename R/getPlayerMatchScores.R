@@ -1,8 +1,26 @@
+# Define the allowed positions
+allowed_positions <- c(
+  "GOALKEEPER",
+  "LEFT_WINGBACK_DEFENDER",
+  "RIGHT_WINGBACK_DEFENDER",
+  "CENTRAL_DEFENDER",
+  "DEFENSE_MIDFIELD",
+  "CENTRAL_MIDFIELD",
+  "ATTACKING_MIDFIELD",
+  "LEFT_WINGER",
+  "RIGHT_WINGER",
+  "CENTER_FORWARD"
+)
+
+
 #' Return a dataframe that contains all player scores for a given match ID
 #' and list of positions
 #'
 #' @param matches Impect match IDs
-#' @param positions list of position names
+#' @param positions list of position names. Must be one of:   "GOALKEEPER",
+#' "LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER", "CENTRAL_DEFENDER",
+#' "DEFENSE_MIDFIELD", "CENTRAL_MIDFIELD", "ATTACKING_MIDFIELD", "LEFT_WINGER",
+#' "RIGHT_WINGER", "CENTER_FORWARD"
 #' @param token bearer token
 #'
 #' @export
@@ -25,6 +43,13 @@ getPlayerMatchScores <- function (matches, positions, token) {
     } else {
       stop("Unprocessable type for 'matches' variable")
     }
+  }
+
+  # check if the input positions are valid
+  invalid_positions <- positions[!positions %in% allowed_positions]
+  if (length(invalid_positions) > 0) {
+    stop("Invalid position(s): ", paste(invalid_positions, collapse = ", "),
+         ".\nChoose one or more of: ", paste(allowed_positions, collapse = ", "))
   }
 
   # apply .matchInfo function to a set of matches

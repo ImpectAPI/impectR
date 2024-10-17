@@ -9,7 +9,10 @@ getPlayerIterationScores(iteration, positions, token)
 \arguments{
 \item{iteration}{Impect iteration ID}
 
-\item{positions}{list of position names}
+\item{positions}{list of position names. Must be one of:   "GOALKEEPER",
+"LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER", "CENTRAL_DEFENDER",
+"DEFENSE_MIDFIELD", "CENTRAL_MIDFIELD", "ATTACKING_MIDFIELD", "LEFT_WINGER",
+"RIGHT_WINGER", "CENTER_FORWARD"}
 
 \item{token}{bearer token}
 }
