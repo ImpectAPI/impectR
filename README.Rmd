@@ -142,10 +142,11 @@ squadMatchsums <- getSquadMatchsums(matches = matchIds, token = token)
 positions <- c("LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER")
 
 # get player scores and ratios for match and positions per player
-playerMatchScores <- getPlayerMatchScores(matches, positions, token)
+playerMatchScores <- 
+  getPlayerMatchScores(matches = matchIds, positions = positions, token = token)
 
 # get squad scores and ratios for match per squad
-squadMatchScores <- getSquadMatchScores(matches, token)
+squadMatchScores <- getSquadMatchScores(matches = matchIds, token = token)
 ```
 
 In case you wish to retrieve data for multiple matches, we suggest using
@@ -170,10 +171,11 @@ squadMatchsums <- getSquadMatchsums(matches = matchIds, token = token)
 positions <- c("LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER")
 
 # get player scores and ratios for match and positions per player
-playerMatchScores <- getPlayerMatchScores(matches, positions, token)
+playerMatchScores <- 
+  getPlayerMatchScores(matches = matchIds, positions = positions, token = token)
 
 # get squad scores and ratios for match per squad
-squadMatchScores <- getSquadMatchScores(matches, token)
+squadMatchScores <- getSquadMatchScores(matches = matchIds, token = token)
 
 ```
 
@@ -207,10 +209,12 @@ squadIterationAverages <-
   getSquadIterationAverages(iteration = iteration, token = token)
 
 # get player scores and ratios for iteration and positions
-playerIterationScores <- getPlayerIterationScores(iteration, positions, token)
+playerIterationScores <- 
+  getPlayerIterationScores(iteration = iteration, positions = positions, token = token)
 
 # get squad scores and ratios for iteration
-squadIterationScores <- getSquadIterationScores(iteration, token)
+squadIterationScores <- 
+  getSquadIterationScores(iteration = iteration, token = token)
 
 ```
 
