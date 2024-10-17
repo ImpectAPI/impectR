@@ -8,9 +8,9 @@
 
 A package provided by: Impect GmbH
 
-Version: v2.1.0
+Version: v2.2.0
 
-**Updated: August 1st 2024**
+**Updated: Ocotber 17th 2024**
 
 ------------------------------------------------------------------------
 
@@ -38,10 +38,12 @@ You can install the latest version of impectR from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ImpectAPI/impectR@v2.1.0")
+devtools::install_github("ImpectAPI/impectR@v2.2.0")
 ```
 
-## Getting started
+## Usage
+
+### Getting started
 
 Before accessing any data via our API, you will need to request a bearer
 token for authorization. You can get this authorization token using the
@@ -61,6 +63,8 @@ token <- getAccessToken(username = username, password = password)
 This access token is a requirement to use any of the functions that
 requests data from the API. We recommend to first get a list of
 competition iterations that are enabled for your account.
+
+### Retrieve Basic Information
 
 ``` r
 # get list of iterations
@@ -84,11 +88,15 @@ matches
 ```
 
 The column `available` denotes whether a given match has been tagged by
-Impect and the data is available to you. Let’s assume you are interested
-in the FC Bayern München vs Borussia Dortmund game from April 1st 2023
-(matchId = 84344). As the function allow for multiple games to be
-requested at once, we need to wrap the matchId into a list. Hence, to
-request the event data for this game, run the following code snippet:
+Impect and the data is available to you.
+
+### Retrieve Match Level Data
+
+Let’s assume you are interested in the FC Bayern München vs Borussia
+Dortmund game from April 1st 2023 (matchId = 84344). As the function
+allow for multiple games to be requested at once, we need to wrap the
+matchId into a list. Hence, to request the event data for this game, run
+the following code snippet:
 
 ``` r
 # define matches to get event data for
@@ -101,24 +109,31 @@ events <- getEvents(matches = matchIds, token = token)
 head(events)
 ```
 
-You can access the aggregated scores per player and position or per
-squad for this match in a similar way:
+You can access the aggregated KPIs, scores and ratios per player and
+position or per squad for this match in a similar way. Also, we provide
+you with IMPECT scores and ratios that you might know from our Scouting
+and Analysis portals. On player level, these are calculated across
+positions which is why you have to supply the function with a list of
+positions your want to retrieve data for:
 
 ``` r
 # define matches to get matchsums for
 matchIds <- c(84344)
 
-# get matchsums for match per player and position
+# get kpi matchsums for match per player and position
 playerMatchsums <- getPlayerMatchsums(matches = matchIds, token = token)
 
-# get matchsums for match per squad
+# get kpi matchsums for match per squad
 squadMatchsums <- getSquadMatchsums(matches = matchIds, token = token)
 
-# print first few rows from playerMatchsums dataframe to console
-head(playerMatchsums)
+# define positions to get scores aggregated by
+positions <- c("LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER")
 
-# print first few rows from squadMatchsums dataframe to console
-head(squadMatchsums)
+# get player scores and ratios for match and positions per player
+playerMatchScores <- getPlayerMatchScores(matches, positions, token)
+
+# get squad scores and ratios for match per squad
+squadMatchScores <- getSquadMatchScores(matches, token)
 ```
 
 In case you wish to retrieve data for multiple matches, we suggest using
@@ -138,27 +153,51 @@ playerMatchsums <- getPlayerMatchsums(matches = matchIds, token = token)
 
 # get matchsums for matches per squad
 squadMatchsums <- getSquadMatchsums(matches = matchIds, token = token)
+
+# define positions to get scores aggregated by
+positions <- c("LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER")
+
+# get player scores and ratios for match and positions per player
+playerMatchScores <- getPlayerMatchScores(matches, positions, token)
+
+# get squad scores and ratios for match per squad
+squadMatchScores <- getSquadMatchScores(matches, token)
 ```
+
+### Retrieve Iteration Level Data
 
 Starting from API version V5, we also offer an endpoint to get KPI
 average values per iteration on player as well as squad level. These
 averages are calculated by dividing the kpi sum of all individual
 matches by the sum of matchShares the player accumulated at a given
 position. On a team level we divide the score by the amount of matches
-played by the team. Let’s assume you were interested in the 2022/2023
+played by the team. Also, we provide you with IMPECT scores and ratios
+that you might know from our Scouting and Analysis portals. On player
+level, these are calculated across positions which is why you have to
+supply the function with a list of positions your want to retrieve data
+for. Let’s assume you were interested in wingbacks in the 2022/2023
 Bundesliga season, then you could use this code snippet:
 
 ``` r
 # define iteration ID
 iteration <- 518
 
-# get player averages for iteration
+# define positions to get scores aggregated by
+positions <- c("LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER")
+
+# get player kpi averages for iteration
 playerIterationAverages <-
   getPlayerIterationAverages(iteration = iteration, token = token)
 
-# get squad averages for iteration
+# get squad kpi averages for iteration
 squadIterationAverages <-
   getSquadIterationAverages(iteration = iteration, token = token)
+
+# get player scores and ratios for iteration and positions
+playerIterationScores <- getPlayerIterationScores(iteration, positions, token)
+
+# get squad scores and ratios for iteration
+squadIterationScores <- getSquadIterationScores(iteration, token)
 ```
 
 Please keep in mind that Impect enforces a rate limit of 10 requests per
