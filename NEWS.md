@@ -1,3 +1,12 @@
+# impectPy 2.2.0
+
+## Major changes
+* add new functions to query the new customer API endpoints that provide ratios & scores
+
+## Minor changes
+* switch from German country name to FIFA country name
+* Update to readme structure
+
 # impectPy 2.1.0
 
 ## Major changes
@@ -7,7 +16,6 @@
 
 ## Minor changes
 * add more player master data to `getPlayerMatchsums()` and `getPlayerIterationAverages()`
-
 
 # impectR 2.0.3
 
