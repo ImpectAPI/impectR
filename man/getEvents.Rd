@@ -5,12 +5,16 @@
 \title{Return a dataframe that contains all events and kpi values for a set of given
 match IDs}
 \usage{
-getEvents(matches, token)
+getEvents(matches, token, include_kpis = TRUE, include_set_pieces = FALSE)
 }
 \arguments{
 \item{matches}{IMPECT match ID or a list of match IDs}
 
 \item{token}{bearer token}
+
+\item{include_kpis}{include KPIs in event data}
+
+\item{include_set_pieces}{include additional set piece data in event data}
 }
 \value{
 a dataframe containing all events and kpi values for a set of given
