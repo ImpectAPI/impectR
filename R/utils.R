@@ -844,3 +844,37 @@ TokenBucket <- setRefClass(
   # return player profile names
   return(temp)
 }
+
+
+#' Return a dataframe that contains additional set piece data
+#'
+#' @noRd
+#'
+#' @param token bearer token
+#'
+#' @importFrom dplyr %>%
+#' @return a dataframe containing additional set piece data
+.setPieces <- function(match, token) {
+  # get match events
+  response <- .callAPIlimited(
+    base_url = "https://api.impect.com/v5/customerapi/matches/",
+    id = match,
+    suffix = "/set-pieces",
+    token = token
+  )
+
+  # convert to dataframe and add column with matchId
+  temp <-
+    jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$data %>%
+    dplyr::mutate(matchId = match)
+
+  # convert to dataframe
+  temp <- jsonlite::flatten(temp)
+
+  # fix column names using regex
+  base::names(temp) <-
+    gsub("\\.(.)", "\\U\\1", base::names(temp), perl = TRUE)
+
+  # return event data
+  return(temp)
+}

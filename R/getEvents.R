@@ -3,6 +3,8 @@
 #'
 #' @param matches IMPECT match ID or a list of match IDs
 #' @param token bearer token
+#' @param include_kpis include KPIs in event data
+#' @param include_set_pieces include additional set piece data in event data
 #'
 #' @export
 #'
@@ -16,7 +18,12 @@
 #'   events <- getEvents(matches = c(84248), token = token)
 #' })
 #' }
-getEvents <- function (matches, token) {
+getEvents <- function (
+    matches,
+    token,
+    include_kpis = TRUE,
+    include_set_pieces = FALSE
+    ) {
   # check if match input is not a list and convert to list if required
   if (!base::is.list(matches)) {
     if (base::is.numeric(matches) || base::is.character(matches)) {
@@ -62,10 +69,42 @@ getEvents <- function (matches, token) {
     purrr::map_df(matches,
                   ~ .eventAttributes(match = ., token = token))
 
-  # apply .eventScorings function to a set of matches
-  scorings <-
-    purrr::map_df(matches,
-                  ~ .eventScorings(match = ., token = token))
+  if (include_kpis) {
+    # apply .eventScorings function to a set of matches
+    scorings <-
+      purrr::map_df(matches,
+                    ~ .eventScorings(match = ., token = token))
+
+    # get kpi names
+    kpis <- .kpis(token = token, scope = "event")
+  }
+
+  if (include_set_pieces) {
+    # apply setPieces function to a set of matches
+    set_pieces <-
+      purrr::map_df(
+        matches,
+        ~ .setPieces(match = ., token = token)
+        ) %>%
+      tidyr::unnest_longer(setPieceSubPhase) %>%
+      tidyr::unnest(setPieceSubPhase, names_sep = ".")
+
+    # fix column names using regex
+    base::names(set_pieces) <-
+      gsub("\\.(.)", "\\U\\1", base::names(set_pieces), perl = TRUE)
+
+    # merge events and set pieces
+    events <- events %>%
+      dplyr::left_join(
+        set_pieces,
+        by = c(
+          "setPieceId" = "id",
+          "setPieceSubPhaseId" = "setPieceSubPhaseId",
+          "matchId" = "matchId",
+          "squadId" = "squadId"
+        )
+      )
+  }
 
   # get unique iterationIds
   iterations <- matchInfo %>%
@@ -86,9 +125,6 @@ getEvents <- function (matches, token) {
                   ~ .squadNames(iteration = ., token = token)) %>%
     dplyr::select(id, name) %>%
     base::unique()
-
-  # get kpi names
-  kpis <- .kpis(token = token, scope = "event")
 
   # get matchplan data
   matchplan <-
@@ -134,7 +170,39 @@ getEvents <- function (matches, token) {
     dplyr::left_join(
       dplyr::select(players, id, passReceiverPlayerName = commonname),
       by = base::c("passReceiverPlayerId" = "id")
+    ) %>%
+    dplyr::left_join(
+      dplyr::select(players, id, dribbleOpponentPlayerName = commonname),
+      by = base::c("dribblePlayerId" = "id")
     )
+
+  if (include_set_pieces) {
+    events <- events %>%
+      dplyr::left_join(
+        dplyr::select(
+          players, id, setPieceSubPhaseMainEventPlayerName = commonname
+          ),
+        by = base::c("setPieceSubPhaseMainEventPlayerId" = "id")
+      ) %>%
+      dplyr::left_join(
+        dplyr::select(
+          players, id, setPieceSubPhasePassReceiverName = commonname
+        ),
+        by = base::c("setPieceSubPhasePassReceiverId" = "id")
+      ) %>%
+      dplyr::left_join(
+        dplyr::select(
+          players, id, setPieceSubPhaseFirstTouchPlayerName = commonname
+        ),
+        by = base::c("setPieceSubPhaseFirstTouchPlayerId" = "id")
+      ) %>%
+      dplyr::left_join(
+        dplyr::select(
+          players, id, setPieceSubPhaseSecondTouchPlayerName = commonname
+        ),
+        by = base::c("setPieceSubPhaseSecondTouchPlayerId" = "id")
+      )
+  }
 
   # merge with matchplan info
   events <- events %>%
@@ -145,29 +213,31 @@ getEvents <- function (matches, token) {
     dplyr::left_join(iterations,
                      by = base::c("iterationId" = "id"))
 
-  # unnest scorings and full join with kpi list to ensure all kpis are present
-  scorings <- scorings %>%
-    dplyr::full_join(kpis, by = base::c("kpiId" = "id")) %>%
-    dplyr::arrange("kpiId") %>%
-    dplyr::select(-"kpiId") %>%
-    tidyr::pivot_wider(
-      names_from = "name",
-      values_from = "value",
-      values_fn = sum,
-      values_fill = NA
-    ) %>%
-    dplyr::filter(!base::is.na("eventId"))
+  if (include_kpis) {
+    # unnest scorings and full join with kpi list to ensure all kpis are present
+    scorings <- scorings %>%
+      dplyr::full_join(kpis, by = base::c("kpiId" = "id")) %>%
+      dplyr::arrange("kpiId") %>%
+      dplyr::select(-"kpiId") %>%
+      tidyr::pivot_wider(
+        names_from = "name",
+        values_from = "value",
+        values_fn = sum,
+        values_fill = NA
+      ) %>%
+      dplyr::filter(!base::is.na("eventId"))
 
-  # merge events and scorings
-  events <- events %>%
-    dplyr::left_join(
-      scorings,
-      by = c(
-        "playerPosition" = "position",
-        "playerId" = "playerId",
-        "id" = "eventId"
+    # merge events and scorings
+    events <- events %>%
+      dplyr::left_join(
+        scorings,
+        by = c(
+          "playerPosition" = "position",
+          "playerId" = "playerId",
+          "id" = "eventId"
+        )
       )
-    )
+  }
 
   # rename some columns
   events <- events %>%
@@ -179,12 +249,15 @@ getEvents <- function (matches, token) {
       gameTime = "gameTimeGameTime",
       gameTimeInSec = "gameTimeGameTimeInSec",
       eventId = "id",
-      eventNumber = "index"
+      eventNumber = "index",
+      dribbleOpponentPlayerId = "dribblePlayerId",
+      setPiecePhaseIndex = "phaseIndex",
+      setPieceSubPhaseMainEvent = "setPieceMainEvent"
     )
 
   # reorder columns
   # define desired column order
-  attribute_cols <- base::c(
+  event_cols <- base::c(
     "matchId",
     "dateTime",
     "competitionId",
@@ -206,6 +279,7 @@ getEvents <- function (matches, token) {
     "awaySquadType",
     "eventId",
     "eventNumber",
+    "sequenceIndex",
     "periodId",
     "gameTime",
     "gameTimeInSec",
@@ -218,6 +292,7 @@ getEvents <- function (matches, token) {
     "playerId",
     "playerName",
     "playerPosition",
+    "playerPositionSide",
     "actionType",
     "action",
     "bodyPart",
@@ -255,6 +330,11 @@ getEvents <- function (matches, token) {
     "passReceiverPlayerName",
     "passDistance",
     "passAngle",
+    "dribbleDistance",
+    "dribbleType",
+    "dribbleResult",
+    "dribbleOpponentPlayerId",
+    "dribbleOpponentPlayerName",
     "shotDistance",
     "shotAngle",
     "shotTargetPointY",
@@ -275,15 +355,53 @@ getEvents <- function (matches, token) {
     "formationOpponent"
   )
 
+  set_piece_cols = base::c(
+    "setPieceId",
+    "setPiecePhaseIndex",
+    "setPieceCategory",
+    "adjSetPieceCategory",
+    "setPieceExecutionType",
+    "setPieceSubPhaseId",
+    "setPieceSubPhaseIndex",
+    "setPieceSubPhaseStartZone",
+    "setPieceSubPhaseCornerEndZone",
+    "setPieceSubPhaseCornerType",
+    "setPieceSubPhaseFreeKickEndZone",
+    "setPieceSubPhaseFreeKickType",
+    "setPieceSubPhaseMainEvent",
+    "setPieceSubPhaseMainEventPlayerId",
+    "setPieceSubPhaseMainEventPlayerName",
+    "setPieceSubPhaseMainEventOutcome",
+    "setPieceSubPhasePassReceiverId",
+    "setPieceSubPhasePassReceiverName",
+    "setPieceSubPhaseFirstTouchPlayerId",
+    "setPieceSubPhaseFirstTouchPlayerName",
+    "setPieceSubPhaseFirstTouchWon",
+    "setPieceSubPhaseIndirectHeader",
+    "setPieceSubPhaseSecondTouchPlayerId",
+    "setPieceSubPhaseSecondTouchPlayerName",
+    "setPieceSubPhaseSecondTouchWon"
+  )
+
   # add columns that might not exist in previous data versions
-  for (col in attribute_cols) {
+  for (col in event_cols) {
     if (!(col %in% colnames(events))) {
       events[[col]] <- NA
     }
   }
 
   # create order
-  order <- base::c(attribute_cols, kpis$name)
+  order <- event_cols
+
+  # add set piece cols if necessary
+  if (include_set_pieces) {
+    order <- base::c(order, set_piece_cols)
+  }
+
+  # add kpis if necessary
+  if (include_kpis) {
+    order <- base::c(order, kpis$name)
+  }
 
   # reorder data
   events <- events %>%
