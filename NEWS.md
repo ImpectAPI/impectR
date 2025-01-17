@@ -1,3 +1,13 @@
+# impectPy 2.3.0
+
+## Major changes
+* Add new `getSetPieces()` function
+* Add set piece data to `getEvents()`
+* Add arguments to `getEvents()` function that control the addition of KPIs and set piece data to the events dataframe
+
+## Minor changes
+* Fix error in `getEvents()` for matches without any tagged duels
+
 # impectPy 2.2.0
 
 ## Major changes

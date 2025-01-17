@@ -8,7 +8,7 @@
 
 A package provided by: Impect GmbH
 
-Version: v2.2.0
+Version: v2.3.0
 
 **Updated: Ocotber 17th 2024**
 
@@ -38,7 +38,7 @@ You can install the latest version of impectR from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ImpectAPI/impectR@v2.2.0")
+devtools::install_github("ImpectAPI/impectR@v2.3.0")
 ```
 
 ## Usage
@@ -103,22 +103,32 @@ the following code snippet:
 matchIds <- c(84344)
 
 # get event data for match
-events <- getEvents(matches = matchIds, token = token)
+events <- getEvents(
+  matches = matchIds,
+  token = token,
+  include_kpis = TRUE,
+  include_set_pieces = TRUE
+  )
 
 # print first few rows from events dataframe to console
 head(events)
 ```
 
 You can access the aggregated KPIs, scores and ratios per player and
-position or per squad for this match in a similar way. Also, we provide
-you with IMPECT scores and ratios that you might know from our Scouting
-and Analysis portals. On player level, these are calculated across
-positions which is why you have to supply the function with a list of
-positions your want to retrieve data for:
+position or per squad for this match in a similar way. You can also find
+more detailed data around set piece situations within our API. Also, we
+provide you with IMPECT scores and ratios that you might know from our
+Scouting and Analysis portals. On player level, these are calculated
+across positions which is why you have to supply the function with a
+list of positions your want to retrieve data for:
 
 ``` r
-# define matches to get matchsums for
+# define matches to get further data for
 matchIds <- c(84344)
+
+# get set piece data including KPI aggregates
+setPieces <- getSetPieces(matches = matches, token = token)
+
 
 # get kpi matchsums for match per player and position
 playerMatchsums <- getPlayerMatchsums(matches = matchIds, token = token)
@@ -147,8 +157,16 @@ Leipzig vs FSV Mainz 05 game (matchId = 84350) from the same day:
 matchIds <- c(84344, 84350)
 
 # get event data for matches
-events <- getEvents(matches = matchIds, token = token)
+events <- getEvents(
+    matches=matches, 
+    token=token,
+    include_kpis=True,
+    include_set_pieces=True
+)
 
+# get set piece data including KPI aggregates
+setPieces <- getSetPieces(ip.getSetPieces(matches = matches, token = token)
+                            
 # get matchsums for matches per player and position
 playerMatchsums <- getPlayerMatchsums(matches = matchIds, token = token)
 
