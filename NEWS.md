@@ -8,7 +8,6 @@
 ## Minor changes
 * Fix error in `getEvents()` for matches without any tagged duels
 
-
 # impectPy 2.2.0
 
 ## Major changes
