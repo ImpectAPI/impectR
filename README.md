@@ -106,7 +106,7 @@ matchIds <- c(84344)
 events <- getEvents(
   matches = matchIds,
   token = token,
-  inlcude_kpis = TRUE,
+  include_kpis = TRUE,
   include_set_pieces = TRUE
   )
 
