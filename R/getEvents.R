@@ -87,7 +87,10 @@ getEvents <- function (
         ~ .setPieces(match = ., token = token)
         ) %>%
       tidyr::unnest_longer(setPieceSubPhase) %>%
-      tidyr::unnest(setPieceSubPhase, names_sep = ".")
+      tidyr::unnest(setPieceSubPhase, names_sep = ".") %>%
+      dplyr::rename(
+        setPiecePhaseIndex = "phaseIndex"
+      )
 
     # fix column names using regex
     base::names(set_pieces) <-
@@ -251,7 +254,6 @@ getEvents <- function (
       eventId = "id",
       eventNumber = "index",
       dribbleOpponentPlayerId = "dribblePlayerId",
-      setPiecePhaseIndex = "phaseIndex",
       setPieceSubPhaseMainEvent = "setPieceMainEvent"
     )
 
