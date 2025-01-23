@@ -1,3 +1,8 @@
+# impectPy 2.3.1
+
+## Minor changes
+* Fix error in `getEvents()` for matches without any dribble objects (data version V2 or V3)
+
 # impectPy 2.3.0
 
 ## Major changes
