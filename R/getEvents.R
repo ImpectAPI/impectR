@@ -137,6 +137,28 @@ getEvents <- function (
   # get iterations
   iterations <- getIterations(token = token)
 
+  # account for matches without dribbles, duels, or opponents tagged
+  attributes <- c(
+    "dribbleDistance",
+    "dribbleType",
+    "dribbleResult",
+    "dribblePlayerId",
+    "duelDuelType",
+    "duelPlayerId",
+    "duelPlayerName",
+    "opponentCoordinatesX",
+    "opponentCoordinatesY",
+    "opponentAdjCoordinatesX",
+    "opponentAdjCoordinatesY"
+  )
+
+  # add attribute if it doesn't exist in df
+  for (attribute in attributes) {
+    if (!(attribute %in% colnames(events))) {
+      events[[attribute]] <- NA
+    }
+  }
+
   # start merging dfs
 
   # merge events with squads
