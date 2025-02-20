@@ -376,7 +376,8 @@ getEvents <- function (
     "fouledPlayerId",
     "fouledPlayerName",
     "formationTeam",
-    "formationOpponent"
+    "formationOpponent",
+    "inferredSetPiece"
   )
 
   set_piece_cols = base::c(
