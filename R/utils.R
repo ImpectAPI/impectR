@@ -878,3 +878,40 @@ TokenBucket <- setRefClass(
   # return event data
   return(temp)
 }
+
+
+#' Return a dataframe that contains squad ratings
+#'
+#' @noRd
+#'
+#' @param token bearer token
+#'
+#' @importFrom dplyr %>%
+#' @return a dataframe containing squad ratings
+.squadRatings <- function(iteration, token) {
+  # get squad ratings
+  response <- .callAPIlimited(
+    base_url = "https://api.impect.com/v5/customerapi/iterations/",
+    id = iteration,
+    suffix = "/squads/ratings",
+    token = token
+  )
+
+  # convert to dataframe and add column with iterationId
+  temp <-
+    jsonlite::fromJSON(
+      httr::content(response, "text", encoding = "UTF-8")
+    )$data$squadRatingsEntries %>%
+    dplyr::mutate(iterationId = iteration)
+
+
+  # convert to dataframe
+  temp <- jsonlite::flatten(temp)
+
+  # fix column names using regex
+  base::names(temp) <-
+    gsub("\\.(.)", "\\U\\1", base::names(temp), perl = TRUE)
+
+  # return event data
+  return(temp)
+}
