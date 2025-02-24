@@ -36,7 +36,7 @@ getSquadRatings <- function (iteration, token) {
 
   # merge with other data
   ratings <- ratings %>%
-    unnest(squadRatings) %>%
+    tidyr::unnest(squadRatings) %>%
     dplyr::left_join(
       dplyr::select(
         squads, id, wyscoutId, heimSpielId, skillCornerId, squadName = name
