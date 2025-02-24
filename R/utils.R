@@ -464,9 +464,12 @@
 
   # convert to dataframe and add columns with matchId and iterationId
   temp <-
-    jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$data %>%
-    dplyr::mutate(squadId = squad,
-                  iterationId = iteration)
+    jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$data
+
+  if (base::length(temp) > 0) {
+    temp <- temp %>%
+      dplyr::mutate(squadId = squad, iterationId = iteration)
+  }
 
   # return scores
   return(temp)
@@ -503,12 +506,17 @@
 
   # convert to dataframe and add columns with matchId and iterationId
   temp <-
-    jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$data %>%
-    dplyr::mutate(squadId = squad,
-                  iterationId = iteration)
+    jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$data
 
-  # return profile scores
-  return(temp)
+  # mutate if players found for position
+  if (base::length(temp) > 0) {
+    temp <- temp %>%
+      dplyr::mutate(squadId = squad,
+                    iterationId = iteration)
+
+    # return profile scores
+    return(temp)
+  }
 }
 
 
