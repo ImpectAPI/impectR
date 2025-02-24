@@ -22,8 +22,11 @@ getSquadRatings <- function (iteration, token) {
 
   # apply squadNames function to an iteration
   squads <- .squadNames(iteration = iteration, token = token) %>%
-    dplyr::select(id, name) %>%
+    dplyr::select(id, name, idMappings) %>%
     base::unique()
+
+  # clean data
+  squads <- .cleanData(squads)
 
   # apply squadRatings function to an iteration
   ratings <- .squadRatings(iteration = iteration, token = token)
@@ -31,26 +34,19 @@ getSquadRatings <- function (iteration, token) {
   # get competitions
   iterations <- getIterations(token = token)
 
-  # manipulate ratings
-
-
-
   # merge with other data
   ratings <- ratings %>%
     unnest(squadRatings) %>%
     dplyr::left_join(
-      dplyr::select(squads, id, squadName = name),
+      dplyr::select(
+        squads, id, wyscoutId, heimSpielId, skillCornerId, squadName = name
+      ),
       by = c("squadId" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
-        iterations,
-        id,
-        competitionId,
-        competitionName,
-        competitionType,
-        season,
-        competitionGender
+        iterations, id, competitionId, competitionName,
+        competitionType, season, competitionGender
       ),
       by = c("iterationId" = "id")
     )
@@ -65,6 +61,9 @@ getSquadRatings <- function (iteration, token) {
     "competitionGender",
     "date",
     "squadId",
+    "wyscoutId",
+    "heimSpielId",
+    "skillCornerId",
     "squadName",
     "value"
   )

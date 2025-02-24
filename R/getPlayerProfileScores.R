@@ -72,6 +72,9 @@ getPlayerProfileScores <- function (iteration, positions, token) {
   # apply .playerNames function to a set of iterations
   players <- .playerNames(iteration = iteration, token = token)
 
+  # clean data
+  players <- .cleanData(players)
+
   # get profile names
   profile_list <- .playerProfiles(token = token)
 
@@ -113,10 +116,18 @@ getPlayerProfileScores <- function (iteration, positions, token) {
   scores <- scores %>%
     dplyr::left_join(dplyr::select(squads, id, squadName = name),
                      by = c("squadId" = "id")) %>%
-    dplyr::left_join(dplyr::select(players, id, playerName = commonname, firstname, lastname, birthdate, birthplace, leg),
-                     by = c("playerId" = "id")) %>%
-    dplyr::left_join(dplyr::select(iterations, id, competitionName, season),
-                     by = c("iterationId" = "id"))
+    dplyr::left_join(
+      dplyr::select(
+        players, id, wyscoutId, heimSpielId, skillCornerId,
+        playerName = commonname, firstname, lastname, birthdate, birthplace, leg
+      ),
+      by = c("playerId" = "id")) %>%
+    dplyr::left_join(
+      dplyr::select(
+        iterations, id, competitionId, competitionName, competitionType, season
+        ),
+        by = c("iterationId" = "id")
+      )
 
   # define column order
   order <- c(
@@ -126,6 +137,9 @@ getPlayerProfileScores <- function (iteration, positions, token) {
     "squadId",
     "squadName",
     "playerId",
+    "wyscoutId",
+    "heimSpielId",
+    "skillCornerId",
     "playerName",
     "firstname",
     "lastname",

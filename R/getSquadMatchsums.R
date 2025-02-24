@@ -67,8 +67,11 @@ getSquadMatchsums <- function (matches, token) {
   # apply squadNames function to a set of iterations
   squads <-
     purrr::map_df(iterations, ~ .squadNames(iteration = ., token = token)) %>%
-    dplyr::select(id, name) %>%
+    dplyr::select(id, name, idMappings) %>%
     base::unique()
+
+  # clean data
+  squads <- .cleanData(squads)
 
   # get kpi names
   kpis <- .kpis(token = token)
@@ -87,14 +90,17 @@ getSquadMatchsums <- function (matches, token) {
     # convert side data to df
     temp <-
       base::data.frame(dict[[side]]) %>%
-      dplyr::rename(kpiId = kpis.kpiId,
-                    value = kpis.value)
+      dplyr::rename(
+        squadId = id,
+        kpiId = kpis.kpiId,
+        value = kpis.value
+      )
 
     # unnest scorings
     temp <- temp %>%
       # join with kpis to ensure all kpiIds are present and order by kpiId
       dplyr::full_join(kpis, by = c("kpiId" = "id")) %>%
-      dplyr::arrange(kpiId, id) %>%
+      dplyr::arrange(kpiId, squadId) %>%
       # drop kpiId column
       dplyr::select(-kpiId) %>%
       # pivot data
@@ -105,7 +111,7 @@ getSquadMatchsums <- function (matches, token) {
         values_fn = base::sum
       ) %>%
       # filter for non NA columns that were created by full join
-      dplyr::filter(base::is.na(id) == FALSE) %>%
+      dplyr::filter(base::is.na(squadId) == FALSE) %>%
       dplyr::mutate(
         # add matchId
         matchId = dict$matchId)
@@ -131,21 +137,26 @@ getSquadMatchsums <- function (matches, token) {
   # merge with other data
   matchsums <- matchsums %>%
     dplyr::left_join(
-      matchplan,
+      dplyr::select(
+        matchplan, id, scheduledDate, matchDayIndex, matchDayName, iterationId
+      ),
       by = c("matchId" = "id")
     ) %>%
     dplyr::left_join(
-      iterations,
+      dplyr::select(
+        iterations, id, competitionId, competitionName, competitionType, season
+      ),
       by = c("iterationId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(squads, id, squadName = name),
-      by = c("id" = "id")
+      dplyr::select(
+        squads, squadId = id, wyscoutId, heimSpielId, skillCornerId, squadName = name
+      ),
+      by = c("squadId" = "squadId")
     ) %>%
     # fix some column names
     dplyr::rename(
       dateTime = scheduledDate,
-      squadId = id
     )
 
   # define column order
@@ -160,6 +171,9 @@ getSquadMatchsums <- function (matches, token) {
     "matchDayIndex",
     "matchDayName",
     "squadId",
+    "wyscoutId",
+    "heimSpielId",
+    "skillCornerId",
     "squadName",
     kpis$name
   )

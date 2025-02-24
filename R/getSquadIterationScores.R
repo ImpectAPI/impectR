@@ -27,6 +27,9 @@ getSquadIterationScores <- function (iteration, token) {
   squadIds <- squads %>%
     dplyr::pull(id)
 
+  # clean data
+  squads <- .cleanData(squads)
+
   # apply .playerIterationScores function to all squads
   scores_raw <- .squadIterationScores(iteration = iteration, token = token)
 
@@ -65,11 +68,15 @@ getSquadIterationScores <- function (iteration, token) {
   # merge with other data
   scores <- scores %>%
     dplyr::left_join(
-      dplyr::select(squads, id, squadName = name),
+      dplyr::select(
+        squads, id, wyscoutId, heimSpielId, skillCornerId, squadName = name
+      ),
       by = c("squadId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(iterations, id, competitionName, season),
+      dplyr::select(
+        iterations, id, competitionId, competitionName, competitionType, season
+      ),
       by = c("iterationId" = "id")
     )
 
@@ -79,6 +86,9 @@ getSquadIterationScores <- function (iteration, token) {
     "competitionName",
     "season",
     "squadId",
+    "wyscoutId",
+    "heimSpielId",
+    "skillCornerId",
     "squadName",
     "matches",
     score_list$name

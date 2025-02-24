@@ -67,8 +67,11 @@ getSquadMatchScores <- function (matches, token) {
   # apply squadNames function to a set of iterations
   squads <-
     purrr::map_df(iterations, ~ .squadNames(iteration = ., token = token)) %>%
-    dplyr::select(id, name) %>%
+    dplyr::select(id, name, idMappings) %>%
     base::unique()
+
+  # clean data
+  squads <- .cleanData(squads)
 
   # get score names
   scores_list <- .squadScores(token = token)
@@ -87,14 +90,17 @@ getSquadMatchScores <- function (matches, token) {
     # convert side data to df
     temp <-
       base::data.frame(dict[[side]]) %>%
-      dplyr::rename(squadScoreId = squadScores.squadScoreId,
-                    value = squadScores.value)
+      dplyr::rename(
+        squadId = id,
+        squadScoreId = squadScores.squadScoreId,
+        value = squadScores.value
+        )
 
     # unnest scores
     temp <- temp %>%
       # join with scores to ensure all squadScoreId are present and order by squadScoreId
       dplyr::full_join(scores_list, by = c("squadScoreId" = "id")) %>%
-      dplyr::arrange(squadScoreId, id) %>%
+      dplyr::arrange(squadScoreId, squadId) %>%
       # drop squadScoreId column
       dplyr::select(-squadScoreId) %>%
       # pivot data
@@ -105,7 +111,7 @@ getSquadMatchScores <- function (matches, token) {
         values_fn = base::sum
       ) %>%
       # filter for non NA columns that were created by full join
-      dplyr::filter(base::is.na(id) == FALSE) %>%
+      dplyr::filter(base::is.na(squadId) == FALSE) %>%
       dplyr::mutate(
         # add matchId
         matchId = dict$matchId)
@@ -131,21 +137,26 @@ getSquadMatchScores <- function (matches, token) {
   # merge with other data
   scores <- scores %>%
     dplyr::left_join(
-      matchplan,
+      dplyr::select(
+        matchplan, id, scheduledDate, matchDayIndex, matchDayName, iterationId
+      ),
       by = c("matchId" = "id")
     ) %>%
     dplyr::left_join(
-      iterations,
+      dplyr::select(
+        iterations, id, competitionId, competitionName, competitionType, season
+      ),
       by = c("iterationId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(squads, id, squadName = name),
-      by = c("id" = "id")
+      dplyr::select(
+        squads, id, wyscoutId, heimSpielId, skillCornerId, squadName = name
+      ),
+      by = c("squadId" = "id")
     ) %>%
     # fix some column names
     dplyr::rename(
-      dateTime = scheduledDate,
-      squadId = id
+      dateTime = scheduledDate
     )
 
   # define column order
@@ -160,6 +171,9 @@ getSquadMatchScores <- function (matches, token) {
     "matchDayIndex",
     "matchDayName",
     "squadId",
+    "wyscoutId",
+    "heimSpielId",
+    "skillCornerId",
     "squadName",
     scores_list$name
   )
