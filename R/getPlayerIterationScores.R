@@ -68,6 +68,32 @@ getPlayerIterationScores <- function (iteration, positions, token) {
                     token = token
                   ))
 
+  # raise exception if no player played at given positions in matches
+  if (base::length(scores_raw) == 0) {
+    base::stop(
+      base::paste0(
+        "No players played at position(s) ",
+        position_string,
+        " in iteration ",
+        iteration,
+        "."
+      )
+    )
+  }
+
+  # print matches without players at given position
+  error_list <- base::as.character(
+    squadIds[!squadIds %in% scores_raw$squadId]
+  )
+  if (base::length(error_list) > 0) {
+    base::cat(
+      base::sprintf(
+        "No players played at position(s) %s for following squads:\n\t%s",
+        positions, paste(error_list, collapse = ", ")
+      )
+    )
+  }
+
   # apply .playerNames function to a set of iterations
   players <- .playerNames(iteration = iteration, token = token)
 

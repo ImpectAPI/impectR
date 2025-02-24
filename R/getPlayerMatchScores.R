@@ -77,7 +77,7 @@ getPlayerMatchScores <- function (matches, positions, token) {
       base::warning(
         sprintf(
           "The following matches are not available yet and were ignored:\n\t%s",
-          paste(fail_matches, collapse = ", ")
+          base::paste(fail_matches, collapse = ", ")
         )
       )
     }
@@ -130,48 +130,52 @@ getPlayerMatchScores <- function (matches, positions, token) {
   # manipulate scores
 
   extract_scores <- function(dict, side) {
-    # convert side data to df
-    temp <-
-      jsonlite::flatten(jsonlite::fromJSON(
-        jsonlite::toJSON(dict[side][[1]]$players),
-        simplifyDataFrame = TRUE
-      ),
-      recursive = FALSE)
+    # check if side has players listed
+    if (base::length(dict[side][[1]]$players) > 0) {
 
-    # unnest scores
-    temp <- temp %>%
-      tidyr::unnest("playerScores", keep_empty = TRUE) %>%
-      dplyr::select(
-        "playerId" = "id",
-        "playerScoreId",
-        "value",
-        "matchShare",
-        "playDuration") %>%
-      # join with kpis to ensure all kpiIds are present and order by kpiId
-      dplyr::full_join(score_list, by = c("playerScoreId" = "id")) %>%
-      dplyr::arrange("playerScoreId", "playerId") %>%
-      # drop kpiId column
-      dplyr::select(-"playerScoreId") %>%
-      # pivot data
-      tidyr::pivot_wider(
-        names_from = "name",
-        values_from = "value",
-        values_fill = 0,
-        values_fn = base::sum
-      ) %>%
-      # filter for non NA columns that were created by full join
-      dplyr::filter(base::is.na(playerId) == FALSE) %>%
-      # remove the "NA" column if it exists
-      dplyr::select(-dplyr::matches("^NA$")) %>%
-      dplyr::mutate(
-        # add matchId
-        matchId = dict$matchId,
-        # add squadId
-        squadId = dict[[side]]$id,
-        # add positions
-        positions = position_string)
+      # convert side data to df
+      temp <-
+        jsonlite::flatten(jsonlite::fromJSON(
+          jsonlite::toJSON(dict[side][[1]]$players),
+          simplifyDataFrame = TRUE
+        ),
+        recursive = FALSE)
 
-    return(temp)
+      # unnest scores
+      temp <- temp %>%
+        tidyr::unnest("playerScores", keep_empty = TRUE) %>%
+        dplyr::select(
+          "playerId" = "id",
+          "playerScoreId",
+          "value",
+          "matchShare",
+          "playDuration") %>%
+        # join with kpis to ensure all kpiIds are present and order by kpiId
+        dplyr::full_join(score_list, by = c("playerScoreId" = "id")) %>%
+        dplyr::arrange("playerScoreId", "playerId") %>%
+        # drop kpiId column
+        dplyr::select(-"playerScoreId") %>%
+        # pivot data
+        tidyr::pivot_wider(
+          names_from = "name",
+          values_from = "value",
+          values_fill = 0,
+          values_fn = base::sum
+        ) %>%
+        # filter for non NA columns that were created by full join
+        dplyr::filter(base::is.na(playerId) == FALSE) %>%
+        # remove the "NA" column if it exists
+        dplyr::select(-dplyr::matches("^NA$")) %>%
+        dplyr::mutate(
+          # add matchId
+          matchId = dict$matchId,
+          # add squadId
+          squadId = dict[[side]]$id,
+          # add positions
+          positions = position_string)
+
+      return(temp)
+    }
   }
 
   #create emtpty df to store match scores
@@ -189,6 +193,32 @@ getPlayerMatchScores <- function (matches, positions, token) {
 
     # appénd to target df
     scores <- base::rbind(scores, temp)
+  }
+
+  # raise exception if no player played at given positions in matches
+  if (base::length(scores) == 0) {
+    base::stop(
+      base::paste0(
+        "No players played at position(s) ",
+        position_string,
+        " in match(es) ",
+        base::paste(matches, collapse = ", "),
+        "."
+      )
+    )
+  }
+
+  # print matches without players at given position
+  error_list <- base::as.character(
+    matches[!matches %in% scores$matchId]
+  )
+  if (base::length(error_list) > 0) {
+    base::cat(
+      base::sprintf(
+        "No players played at position(s) %s for following matches:\n\t%s",
+        positions, paste(error_list, collapse = ", ")
+      )
+    )
   }
 
   # merge with other data
