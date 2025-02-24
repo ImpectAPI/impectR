@@ -664,6 +664,14 @@
                   heimSpielId = "heimSpiel",
                   wyscoutId = "wyscout")
 
+  # edit column types
+  data <- data %>%
+    mutate(
+      skillCornerId = as.integer(skillCornerId),
+      heimSpielId = as.integer(heimSpielId),
+      wyscoutId = as.integer(wyscoutId)
+    )
+
   # return squads
   return(data)
 }

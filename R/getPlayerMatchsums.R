@@ -67,8 +67,14 @@ getPlayerMatchsums <- function (matches, token) {
   # apply playerNames function to a set of iterations
   players <-
     purrr::map_df(iterations, ~ .playerNames(iteration = ., token = token)) %>%
-    dplyr::select(id, playerName = commonname, firstname, lastname, birthdate, birthplace, leg) %>%
+    dplyr::select(
+      id, playerName = commonname, firstname, lastname,
+      birthdate, birthplace, leg, idMappings
+    ) %>%
     base::unique()
+
+  # clean data
+  players <- .cleanData(players)
 
   # apply squadNames function to a set of iterations
   squads <-
@@ -152,11 +158,15 @@ getPlayerMatchsums <- function (matches, token) {
   # merge with other data
   matchsums <- matchsums %>%
     dplyr::left_join(
-      matchplan,
+      dplyr::select(
+        matchplan, id, scheduledDate, matchDayIndex, matchDayName, iterationId
+      ),
       by = c("matchId" = "id")
     ) %>%
     dplyr::left_join(
-      iterations,
+      dplyr::select(
+        iterations, id, competitionId, competitionName, competitionType, season
+      ),
       by = c("iterationId" = "id")
     ) %>%
     dplyr::left_join(
@@ -164,9 +174,11 @@ getPlayerMatchsums <- function (matches, token) {
       by = c("squadId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(players, id, playerName, firstname, lastname, birthdate, birthplace, leg),
-      by = c("playerId" = "id")
-    ) %>%
+      dplyr::select(
+        players, id, wyscoutId, heimSpielId, skillCornerId,
+        playerName, firstname, lastname, birthdate, birthplace, leg
+      ),
+      by = c("playerId" = "id")) %>%
     # fix some column names
     dplyr::rename(
       dateTime = scheduledDate
@@ -186,6 +198,9 @@ getPlayerMatchsums <- function (matches, token) {
     "squadId",
     "squadName",
     "playerId",
+    "wyscoutId",
+    "heimSpielId",
+    "skillCornerId",
     "playerName",
     "firstname",
     "lastname",
