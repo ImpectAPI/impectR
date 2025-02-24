@@ -1,3 +1,14 @@
+# impectPy 2.3.2
+
+## Major Changes
+* Add function `getSquadRatings()` to retrieve squad ratings
+
+## Minor changes
+* Add attribute `inferredSetPiece`to `getEvents()` function
+* Add ID mappings to other providers (HeimSpiel, SkillCorner, Wyscout) to several functions
+* Fix bug in `getPlayerProfileScores()`that occurred if no player played at given positions for any squad in the given iteration.
+* Improved error handling for all functions including a `positions` argument
+
 # impectPy 2.3.1
 
 ## Minor changes
