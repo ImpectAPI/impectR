@@ -23,7 +23,21 @@ getPlayerIterationAverages <- function (iteration, token) {
   }
 
   # get squads for given iterationId
-  squads <- .squadNames(iteration = iteration, token = token)
+  squads <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        id = iteration,
+        suffix = "/squads",
+        token = token
+        ),
+      "text",
+      encoding = "UTF-8"
+      )
+    )$data %>%
+      jsonlite::flatten()
+
+  # get squadIds
   squadIds <- squads %>%
     dplyr::filter(access == TRUE) %>%
     dplyr::pull(id) %>%
@@ -31,21 +45,58 @@ getPlayerIterationAverages <- function (iteration, token) {
 
   # apply .playerIterationAverages function to all squads
   averages_raw <-
-    purrr::map_df(squadIds,
-                  ~ .playerIterationAverages(
-                    iteration = iteration,
-                    squad = .,
-                    token = token
-                  ))
+    purrr::map_df(
+      squadIds,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = paste0(
+              "https://api.impect.com/v5/customerapi/iterations/",
+              iteration,
+              "/squads/",
+              .,
+              "/player-kpis"
+              ),
+            token = token
+            ),
+          "text",
+          encoding = "UTF-8"
+          )
+        )$data %>%
+        dplyr::mutate(squadId = ..1, iterationId = iteration)
+      )
 
   # apply .playerNames function to a set of iterations
-  players <- .playerNames(iteration = iteration, token = token)
+  players <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        id = iteration,
+        suffix = "/players",
+        token = token
+        ),
+      "text",
+      encoding = "UTF-8"
+      )
+    )$data %>%
+    base::unique()
 
   # clean data
   players <- .cleanData(players)
 
   # get kpi names
-  kpis <- .kpis(token = token)
+  kpis <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/kpis",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten() %>%
+    dplyr::select(id, name)
 
   # get competitions
   iterations <- getIterations(token = token)

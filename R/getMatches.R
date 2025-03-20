@@ -17,13 +17,37 @@
 #' }
 getMatches <- function(iteration, token) {
   # get matches
-  matches <- .matches(iteration = iteration, token = token)
+  matches <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        id = iteration,
+        suffix = "/matches",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+      )
+    )$data %>%
+    jsonlite::flatten()
 
   # clean data
   matches <- .cleanData(matches)
 
   # get squads
-  squads <- .squadNames(iteration = iteration, token = token)
+  squads <-jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        id = iteration,
+        suffix = "/squads",
+        token = token
+        ),
+      "text",
+      encoding = "UTF-8"
+      )
+    )$data %>%
+    jsonlite::flatten()
 
   # clean data
   squads <- .cleanData(squads)
@@ -54,7 +78,17 @@ getMatches <- function(iteration, token) {
     )
 
   # get countries data
-  countries <- .countryNames(token)
+  countries <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/countries/",
+        token = token
+        ),
+      "text",
+      encoding = "UTF-8"
+      )
+    )$data %>%
+    jsonlite::flatten()
 
   # merge matches with countries
   matches <- matches %>%

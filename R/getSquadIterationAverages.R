@@ -23,7 +23,21 @@ getSquadIterationAverages <- function (iteration, token) {
   }
 
   # get squads for given iterationId
-  squads <- .squadNames(iteration = iteration, token = token)
+  squads <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        id = iteration,
+        suffix = "/squads",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten()
+
+  # get squadIds
   squadIds <- squads %>%
     dplyr::pull(id)
 
@@ -31,10 +45,33 @@ getSquadIterationAverages <- function (iteration, token) {
   squads <- .cleanData(squads)
 
   # apply .playerIterationAverages function to all squads
-  averages_raw <- .squadIterationAverages(iteration = iteration, token = token)
+  averages_raw <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        id = iteration,
+        suffix = "/squad-kpis",
+        token = token
+        ),
+      "text",
+      encoding = "UTF-8"
+      )
+    )$data %>%
+    dplyr::mutate(iterationId = iteration)
 
   # get kpi names
-  kpis <- .kpis(token = token)
+  kpis <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/kpis",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten() %>%
+    dplyr::select(id, name)
 
   # get competitions
   iterations <- getIterations(token = token)

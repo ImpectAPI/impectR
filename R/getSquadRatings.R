@@ -21,7 +21,19 @@ getSquadRatings <- function (iteration, token) {
   }
 
   # apply squadNames function to an iteration
-  squads <- .squadNames(iteration = iteration, token = token) %>%
+  squads <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        id = iteration,
+        suffix = "/squads",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten() %>%
     dplyr::select(id, name, idMappings) %>%
     base::unique()
 
@@ -29,7 +41,25 @@ getSquadRatings <- function (iteration, token) {
   squads <- .cleanData(squads)
 
   # apply squadRatings function to an iteration
-  ratings <- .squadRatings(iteration = iteration, token = token)
+  ratings <- jsonlite::flatten(
+    jsonlite::fromJSON(
+      httr::content(
+        .callAPIlimited(
+          base_url = "https://api.impect.com/v5/customerapi/iterations/",
+          id = iteration,
+          suffix = "/squads/ratings",
+          token = token
+        ),
+        "text",
+        encoding = "UTF-8"
+        )
+    )$data$squadRatingsEntries %>%
+      dplyr::mutate(iterationId = iteration)
+  )
+
+  # fix column names using regex
+  base::names(ratings) <-
+    gsub("\\.(.)", "\\U\\1", base::names(ratings), perl = TRUE)
 
   # get competitions
   iterations <- getIterations(token = token)

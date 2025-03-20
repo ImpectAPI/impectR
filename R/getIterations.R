@@ -15,7 +15,17 @@
 #' }
 getIterations <- function(token) {
   # get iteration data
-  iterations <- .iterations(token = token)
+  iterations <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations",
+        token = token
+        ),
+      "text",
+      encoding = "UTF-8"
+      )
+    )$data
+
 
   # clean data
   iterations <- .cleanData(iterations)

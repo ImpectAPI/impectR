@@ -26,9 +26,23 @@ getPlayerMatchsums <- function (matches, token) {
 
   # apply .matchInfo function to a set of matches
   matchInfo <-
-    purrr::map_df(matches, ~ .matchInfo(match = ., token = token)) %>%
+    purrr::map_df(
+      matches,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            id = .,
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data
+    ) %>%
     dplyr::select(id, iterationId, lastCalculationDate) %>%
     base::unique()
+
 
   # filter for fail matches
   fail_matches <- matchInfo %>%
@@ -57,7 +71,21 @@ getPlayerMatchsums <- function (matches, token) {
 
   # apply .eventAttributes function to a set of matches
   matchsums_raw <-
-    purrr::map(matches, ~ .playerMatchsums(match = ., token = token))
+    purrr::map(
+      matches,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            id = .,
+            suffix = "/player-kpis",
+            token = token
+            ),
+          "text",
+          encoding = "UTF-8"
+          )
+        )$data
+      )
 
   # get unique iterationIds
   iterations <- matchInfo %>%
@@ -66,24 +94,67 @@ getPlayerMatchsums <- function (matches, token) {
 
   # apply playerNames function to a set of iterations
   players <-
-    purrr::map_df(iterations, ~ .playerNames(iteration = ., token = token)) %>%
+    purrr::map_df(
+      iterations,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            id = .,
+            suffix = "/players",
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data
+    ) %>%
     dplyr::select(
-      id, playerName = commonname, firstname, lastname,
-      birthdate, birthplace, leg, idMappings
+      id, playerName = commonname, firstname,
+      lastname, birthdate, birthplace, leg, idMappings
     ) %>%
     base::unique()
 
   # clean data
   players <- .cleanData(players)
 
+
   # apply squadNames function to a set of iterations
   squads <-
-    purrr::map_df(iterations, ~ .squadNames(iteration = ., token = token)) %>%
+    purrr::map_df(
+      iterations,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            id = .,
+            suffix = "/squads",
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data %>%
+        jsonlite::flatten()
+    ) %>%
     dplyr::select(id, name) %>%
     base::unique()
 
+
   # get kpi names
-  kpis <- .kpis(token = token)
+  kpis <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/kpis",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten() %>%
+    dplyr::select(id, name)
+
 
   # get matchplan data
   matchplan <-
@@ -158,15 +229,11 @@ getPlayerMatchsums <- function (matches, token) {
   # merge with other data
   matchsums <- matchsums %>%
     dplyr::left_join(
-      dplyr::select(
-        matchplan, id, scheduledDate, matchDayIndex, matchDayName, iterationId
-      ),
+      matchplan,
       by = c("matchId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(
-        iterations, id, competitionId, competitionName, competitionType, season
-      ),
+      iterations,
       by = c("iterationId" = "id")
     ) %>%
     dplyr::left_join(
@@ -174,11 +241,10 @@ getPlayerMatchsums <- function (matches, token) {
       by = c("squadId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(
-        players, id, wyscoutId, heimSpielId, skillCornerId,
-        playerName, firstname, lastname, birthdate, birthplace, leg
-      ),
-      by = c("playerId" = "id")) %>%
+      dplyr::select(players, id, playerName, firstname, lastname, birthdate,
+                    birthplace, leg, wyscoutId, heimSpielId, skillCornerId),
+      by = c("playerId" = "id")
+    ) %>%
     # fix some column names
     dplyr::rename(
       dateTime = scheduledDate

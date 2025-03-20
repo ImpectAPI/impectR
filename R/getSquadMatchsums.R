@@ -26,7 +26,20 @@ getSquadMatchsums <- function (matches, token) {
 
   # apply .matchInfo function to a set of matches
   matchInfo <-
-    purrr::map_df(matches, ~ .matchInfo(match = ., token = token)) %>%
+    purrr::map_df(
+      matches,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            id = .,
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data
+    ) %>%
     dplyr::select(id, iterationId, lastCalculationDate) %>%
     base::unique()
 
@@ -57,7 +70,21 @@ getSquadMatchsums <- function (matches, token) {
 
   # apply _eventAttributes function to a set of matches
   matchsums_raw <-
-    purrr::map(matches, ~ .squadMatchsums(match = ., token = token))
+    purrr::map(
+      matches,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            id = .,
+            suffix = "/squad-kpis",
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data
+    )
 
   # get unique iterationIds
   iterations <- matchInfo %>%
@@ -66,7 +93,22 @@ getSquadMatchsums <- function (matches, token) {
 
   # apply squadNames function to a set of iterations
   squads <-
-    purrr::map_df(iterations, ~ .squadNames(iteration = ., token = token)) %>%
+    purrr::map_df(
+      iterations,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            id = .,
+            suffix = "/squads",
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data %>%
+        jsonlite::flatten()
+    ) %>%
     dplyr::select(id, name, idMappings) %>%
     base::unique()
 
@@ -74,7 +116,18 @@ getSquadMatchsums <- function (matches, token) {
   squads <- .cleanData(squads)
 
   # get kpi names
-  kpis <- .kpis(token = token)
+  kpis <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/kpis",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten() %>%
+    dplyr::select(id, name)
 
   # get matchplan data
   matchplan <-

@@ -31,7 +31,20 @@ getSetPieces <- function (
 
   # apply .matchInfo function to a set of matches
   matchInfo <-
-    purrr::map_df(matches, ~ .matchInfo(match = ., token = token)) %>%
+    purrr::map_df(
+      matches,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            id = .,
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data
+    ) %>%
     dplyr::select(id, iterationId, lastCalculationDate) %>%
     base::unique()
 
@@ -64,7 +77,21 @@ getSetPieces <- function (
   set_pieces <-
     purrr::map_df(
       matches,
-      ~ .setPieces(match = ., token = token)
+      ~ jsonlite::flatten(
+        jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              base_url = "https://api.impect.com/v5/customerapi/matches/",
+              id = .,
+              suffix = "/set-pieces",
+              token = token
+              ),
+            "text",
+            encoding = "UTF-8"
+            )
+          )$data %>%
+          dplyr::mutate(matchId = ..1)
+      )
     ) %>%
     tidyr::unnest_longer(setPieceSubPhase) %>%
     tidyr::unnest(setPieceSubPhase, names_sep = ".") %>%
@@ -82,15 +109,42 @@ getSetPieces <- function (
 
   # apply .playerNames function to a set of iterations
   players <-
-    purrr::map_df(iterations,
-                  ~ .playerNames(iteration = ., token = token)) %>%
+    purrr::map_df(
+      iterations,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            id = .,
+            suffix = "/players",
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data
+    ) %>%
     dplyr::select(id, commonname) %>%
     base::unique()
 
   # apply .squadNames function to a set of iterations
   squads <-
-    purrr::map_df(iterations,
-                  ~ .squadNames(iteration = ., token = token)) %>%
+    purrr::map_df(
+      iterations,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            id = .,
+            suffix = "/squads",
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data %>%
+        jsonlite::flatten()
+    ) %>%
     dplyr::select(id, name) %>%
     base::unique()
 
