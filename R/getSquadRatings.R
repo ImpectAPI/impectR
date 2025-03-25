@@ -15,21 +15,52 @@
 #' })
 #' }
 getSquadRatings <- function (iteration, token) {
+
   # check if iteration input is a int
   if (!base::is.numeric(matches)) {
     stop("Unprocessable type for 'iteration' variable")
   }
 
-  # apply squadNames function to an iteration
-  squads <- .squadNames(iteration = iteration, token = token) %>%
+  # get squad amster data from API
+  squads <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        id = iteration,
+        suffix = "/squads",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten() %>%
     dplyr::select(id, name, idMappings) %>%
     base::unique()
 
   # clean data
   squads <- .cleanData(squads)
 
-  # apply squadRatings function to an iteration
-  ratings <- .squadRatings(iteration = iteration, token = token)
+  # get squad ratings from API
+  ratings <- jsonlite::flatten(
+    jsonlite::fromJSON(
+      httr::content(
+        .callAPIlimited(
+          base_url = "https://api.impect.com/v5/customerapi/iterations/",
+          id = iteration,
+          suffix = "/squads/ratings",
+          token = token
+        ),
+        "text",
+        encoding = "UTF-8"
+        )
+    )$data$squadRatingsEntries %>%
+      dplyr::mutate(iterationId = iteration)
+  )
+
+  # fix column names using regex
+  base::names(ratings) <-
+    gsub("\\.(.)", "\\U\\1", base::names(ratings), perl = TRUE)
 
   # get competitions
   iterations <- getIterations(token = token)

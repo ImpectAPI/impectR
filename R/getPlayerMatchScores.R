@@ -36,6 +36,7 @@ allowed_positions <- c(
 #' })
 #' }
 getPlayerMatchScores <- function (matches, positions, token) {
+
   # check if match input is a list and convert to list if required
   if (!base::is.list(matches)) {
     if (base::is.numeric(matches) || base::is.character(matches)) {
@@ -52,9 +53,22 @@ getPlayerMatchScores <- function (matches, positions, token) {
          ".\nChoose one or more of: ", paste(allowed_positions, collapse = ", "))
   }
 
-  # apply .matchInfo function to a set of matches
+  # get match info from API
   matchInfo <-
-    purrr::map_df(matches, ~ .matchInfo(match = ., token = token)) %>%
+    purrr::map_df(
+      matches,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            id = .,
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data
+    ) %>%
     dplyr::select(id, iterationId, lastCalculationDate) %>%
     base::unique()
 
@@ -86,39 +100,93 @@ getPlayerMatchScores <- function (matches, positions, token) {
   # compile position string
   position_string <- paste(positions, collapse = ",")
 
-  # apply .playerMatchScores function to a set of matches
+  # get player match scores from API
   scores_raw <-
-    purrr::map(matches, ~ .playerMatchScores(
-      match = .,
-      positions = position_string,
-      token = token
-      ))
+    purrr::map(
+      matches,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = base::paste0(
+              "https://api.impect.com/v5/customerapi/matches/",
+              .,
+              "/positions/",
+              position_string,
+              "/player-scores"
+            ),
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data
+    )
 
   # get unique iterationIds
   iterations <- matchInfo %>%
     dplyr::pull(iterationId) %>%
     base::unique()
 
-  # apply playerNames function to a set of iterations
+  # get player master data from API
   players <-
-    purrr::map_df(iterations, ~ .playerNames(iteration = ., token = token)) %>%
+    purrr::map_df(
+      iterations,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            id = .,
+            suffix = "/players",
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data
+    ) %>%
     dplyr::select(
-      id, playerName = commonname, firstname, lastname,
-      birthdate, birthplace, leg, idMappings
+      id, playerName = commonname, firstname,
+      lastname, birthdate, birthplace, leg, idMappings
     ) %>%
     base::unique()
 
   # clean data
   players <- .cleanData(players)
 
-  # apply squadNames function to a set of iterations
+  # get squad master data from API
   squads <-
-    purrr::map_df(iterations, ~ .squadNames(iteration = ., token = token)) %>%
+    purrr::map_df(
+      iterations,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            id = .,
+            suffix = "/squads",
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data %>%
+        jsonlite::flatten()
+    ) %>%
     dplyr::select(id, name) %>%
     base::unique()
 
-  # get kpi names
-  score_list <- .playerScores(token = token)
+  # get kpi names from API
+  score_list <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/player-scores",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten() %>%
+    dplyr::select(id, name)
 
   # get matchplan data
   matchplan <-
