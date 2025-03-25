@@ -1,3 +1,19 @@
+# impectPy 2.4.0
+
+## Major Changes
+* Add new function `getSquadRatings()` to retrieve squad ratings
+* Add new function `getFormations()` to retrieve squad formations on match level
+* Add new function `getStartingPositions()` to retrieve starting positions on match level
+* Add new function `getSubstitutions()` to retrieve substitutions on match level
+
+## Minor changes
+* Add attribute `inferredSetPiece` to `getEvents()` function
+* Add ID Mappings for HeimSpiel, Wyscout and Skillcorner to several functions
+* Add proper error handling for iterations/matches with squads without players at given positions
+* Remove excessive usage of helper functions
+* Clean Up Comments in Code
+* Fix join from events to set pieces in `getEvents()` function
+
 # impectPy 2.3.2
 
 ## Major Changes
