@@ -104,11 +104,12 @@ and the data is available to you.
 
 ### Retrieve Match Level Data
 
-Let's assume you are interested in the FC
-Bayern München vs Borussia Dortmund game from April 1st 2023 (matchId = 84344).
-As the function allow for multiple games to be requested at once, we need to wrap
-the matchId into a list. Hence, to request the event data for this game, run the
-following code snippet:
+Let's assume you are interested in the FC Bayern München vs Borussia Dortmund 
+game from April 1st 2023 (matchId = 84344) and want to retrieve event level data
+as well as team formation, starting position and substitution data. As the 
+functions allows for multiple games to be requested at once, we need to wrap the
+matchId into a list. Hence, to request data for this game, run the following 
+code snippet:
 
 ```{r events, eval=FALSE}
 # define matches to get event data for
@@ -121,6 +122,11 @@ events <- getEvents(
   include_kpis = TRUE,
   include_set_pieces = TRUE
   )
+
+# get match info
+formations = getFormations(matches, token)
+substitutions = getSubstitutions(matches, token)
+starting_positions = getStartingPositions(matches, token)
 
 # print first few rows from events dataframe to console
 head(events)
@@ -233,6 +239,9 @@ playerIterationScores <-
 # get squad scores and ratios for iteration
 squadIterationScores <- 
   getSquadIterationScores(iteration = iteration, token = token)
+
+# get squad ratings for iteration
+squadRatings <- getSquadRatings(iteration = iteration, token = token)
 
 ```
 
