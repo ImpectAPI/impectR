@@ -170,14 +170,14 @@ matchIds <- c(84344, 84350)
 
 # get event data for matches
 events <- getEvents(
-    matches=matches, 
-    token=token,
-    include_kpis=True,
-    include_set_pieces=True
+    matches = matchIds, 
+    token = token,
+    include_kpis = True,
+    include_set_pieces = True
 )
 
 # get set piece data including KPI aggregates
-setPieces <- getSetPieces(ip.getSetPieces(matches = matches, token = token)
+setPieces <- getSetPieces(ip.getSetPieces(matches = matchIds, token = token)
                             
 # get matchsums for matches per player and position
 playerMatchsums <- getPlayerMatchsums(matches = matchIds, token = token)
