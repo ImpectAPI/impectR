@@ -16,7 +16,8 @@
 #' })
 #' }
 getMatches <- function(iteration, token) {
-  # get matches
+
+  # get matches from API
   matches <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
@@ -34,7 +35,7 @@ getMatches <- function(iteration, token) {
   # clean data
   matches <- .cleanData(matches)
 
-  # get squads
+  # get squads from API
   squads <-jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
@@ -77,7 +78,7 @@ getMatches <- function(iteration, token) {
       awaySquadCountryId = countryId
     )
 
-  # get countries data
+  # get countries data from API
   countries <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(

@@ -15,6 +15,7 @@
 #' })
 #' }
 getPlayerMatchsums <- function (matches, token) {
+
   # check if match input is a list and convert to list if required
   if (!base::is.list(matches)) {
     if (base::is.numeric(matches) || base::is.character(matches)) {
@@ -24,7 +25,7 @@ getPlayerMatchsums <- function (matches, token) {
     }
   }
 
-  # apply .matchInfo function to a set of matches
+  # get matchInfo from API
   matchInfo <-
     purrr::map_df(
       matches,
@@ -69,7 +70,7 @@ getPlayerMatchsums <- function (matches, token) {
     }
   }
 
-  # apply .eventAttributes function to a set of matches
+  # get player matchsums from API
   matchsums_raw <-
     purrr::map(
       matches,
@@ -92,7 +93,7 @@ getPlayerMatchsums <- function (matches, token) {
     dplyr::pull(iterationId) %>%
     base::unique()
 
-  # apply playerNames function to a set of iterations
+  # get player master data from API
   players <-
     purrr::map_df(
       iterations,
@@ -119,7 +120,7 @@ getPlayerMatchsums <- function (matches, token) {
   players <- .cleanData(players)
 
 
-  # apply squadNames function to a set of iterations
+  # get squad master data from API
   squads <-
     purrr::map_df(
       iterations,
@@ -141,7 +142,7 @@ getPlayerMatchsums <- function (matches, token) {
     base::unique()
 
 
-  # get kpi names
+  # get kpi names from API
   kpis <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(

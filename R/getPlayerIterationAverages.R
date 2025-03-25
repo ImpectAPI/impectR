@@ -12,17 +12,18 @@
 #' @examples
 #' \donttest{
 #' try({ # prevent cran errors
-#'   matchsums <- getPlayerIterationAverages(518, token)
+#'   playerIterationAverages <- getPlayerIterationAverages(518, token)
 #' })
 #' }
 getPlayerIterationAverages <- function (iteration, token) {
+
   # check if iteration input is a string or integer
   if (!(base::is.numeric(iteration) ||
         base::is.character(iteration))) {
     stop("Unprocessable type for 'iteration' variable")
   }
 
-  # get squads for given iterationId
+  # get squad master data from API
   squads <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
@@ -43,7 +44,7 @@ getPlayerIterationAverages <- function (iteration, token) {
     dplyr::pull(id) %>%
     base::unique()
 
-  # apply .playerIterationAverages function to all squads
+  # get player iteration averages for all squads from API
   averages_raw <-
     purrr::map_df(
       squadIds,
@@ -66,7 +67,7 @@ getPlayerIterationAverages <- function (iteration, token) {
         dplyr::mutate(squadId = ..1, iterationId = iteration)
       )
 
-  # apply .playerNames function to a set of iterations
+  # get player master data from API
   players <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
@@ -84,7 +85,7 @@ getPlayerIterationAverages <- function (iteration, token) {
   # clean data
   players <- .cleanData(players)
 
-  # get kpi names
+  # get kpi names from API
   kpis <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
@@ -98,7 +99,7 @@ getPlayerIterationAverages <- function (iteration, token) {
     jsonlite::flatten() %>%
     dplyr::select(id, name)
 
-  # get competitions
+  # get iterations from API
   iterations <- getIterations(token = token)
 
   # manipulate averages

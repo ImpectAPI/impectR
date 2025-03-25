@@ -15,12 +15,13 @@
 #' })
 #' }
 getSquadRatings <- function (iteration, token) {
+
   # check if iteration input is a int
   if (!base::is.numeric(matches)) {
     stop("Unprocessable type for 'iteration' variable")
   }
 
-  # apply squadNames function to an iteration
+  # get squad amster data from API
   squads <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
@@ -40,7 +41,7 @@ getSquadRatings <- function (iteration, token) {
   # clean data
   squads <- .cleanData(squads)
 
-  # apply squadRatings function to an iteration
+  # get squad ratings from API
   ratings <- jsonlite::flatten(
     jsonlite::fromJSON(
       httr::content(

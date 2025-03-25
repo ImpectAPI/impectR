@@ -36,6 +36,7 @@ allowed_positions <- c(
 #' })
 #' }
 getPlayerMatchScores <- function (matches, positions, token) {
+
   # check if match input is a list and convert to list if required
   if (!base::is.list(matches)) {
     if (base::is.numeric(matches) || base::is.character(matches)) {
@@ -52,7 +53,7 @@ getPlayerMatchScores <- function (matches, positions, token) {
          ".\nChoose one or more of: ", paste(allowed_positions, collapse = ", "))
   }
 
-  # apply .matchInfo function to a set of matches
+  # get match info from API
   matchInfo <-
     purrr::map_df(
       matches,
@@ -99,7 +100,7 @@ getPlayerMatchScores <- function (matches, positions, token) {
   # compile position string
   position_string <- paste(positions, collapse = ",")
 
-  # apply .playerMatchScores function to a set of matches
+  # get player match scores from API
   scores_raw <-
     purrr::map(
       matches,
@@ -126,7 +127,7 @@ getPlayerMatchScores <- function (matches, positions, token) {
     dplyr::pull(iterationId) %>%
     base::unique()
 
-  # apply playerNames function to a set of iterations
+  # get player master data from API
   players <-
     purrr::map_df(
       iterations,
@@ -152,7 +153,7 @@ getPlayerMatchScores <- function (matches, positions, token) {
   # clean data
   players <- .cleanData(players)
 
-  # apply squadNames function to a set of iterations
+  # get squad master data from API
   squads <-
     purrr::map_df(
       iterations,
@@ -173,7 +174,7 @@ getPlayerMatchScores <- function (matches, positions, token) {
     dplyr::select(id, name) %>%
     base::unique()
 
-  # get kpi names
+  # get kpi names from API
   score_list <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(

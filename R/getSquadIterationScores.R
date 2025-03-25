@@ -16,13 +16,14 @@
 #' })
 #' }
 getSquadIterationScores <- function (iteration, token) {
+
   # check if iteration input is a string or integer
   if (!(base::is.numeric(iteration) ||
         base::is.character(iteration))) {
     stop("Unprocessable type for 'iteration' variable")
   }
 
-  # get squads for given iterationId
+  # get squads master data from API
   squads <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
@@ -46,7 +47,7 @@ getSquadIterationScores <- function (iteration, token) {
   # clean data
   squads <- .cleanData(squads)
 
-  # apply .playerIterationScores function to all squads
+  # squad iteration scores from API
   scores_raw <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
@@ -61,7 +62,7 @@ getSquadIterationScores <- function (iteration, token) {
   )$data %>%
     dplyr::mutate(iterationId = iteration)
 
-  # get score names
+  # get score names from API
   score_list <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(

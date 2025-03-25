@@ -24,6 +24,7 @@ getEvents <- function (
     include_kpis = TRUE,
     include_set_pieces = FALSE
     ) {
+
   # check if match input is not a list and convert to list if required
   if (!base::is.list(matches)) {
     if (base::is.numeric(matches) || base::is.character(matches)) {
@@ -33,7 +34,7 @@ getEvents <- function (
     }
   }
 
-  # apply .matchInfo function to a set of matches
+  # get matchInfo from API
   matchInfo <-
     purrr::map_df(
       matches,
@@ -77,7 +78,7 @@ getEvents <- function (
     }
   }
 
-  # apply .eventAttributes function to list of matches
+  # get events from API
   events <-
     purrr::map_df(
       matches,
@@ -102,7 +103,7 @@ getEvents <- function (
     gsub("\\.(.)", "\\U\\1", base::names(events), perl = TRUE)
 
   if (include_kpis) {
-    # apply .eventScorings function to a set of matches
+    # get event kpis from API
     scorings <-
       purrr::map_df(
         matches,
@@ -120,7 +121,7 @@ getEvents <- function (
         )$data
       )
 
-    # get kpi names
+    # get kpi names from API
     kpis <- jsonlite::fromJSON(
       httr::content(
         .callAPIlimited(
@@ -136,7 +137,7 @@ getEvents <- function (
   }
 
   if (include_set_pieces) {
-    # apply setPieces function to a set of matches
+    # get set piece data from API
     set_pieces <-
       purrr::map_df(
         matches,
@@ -182,7 +183,7 @@ getEvents <- function (
     base::unique()
 
 
-  # apply .playerNames function to a set of iterations
+  # get player master data from API
   players <-
     purrr::map_df(
       iterations,
@@ -202,7 +203,7 @@ getEvents <- function (
     dplyr::select(id, commonname) %>%
     base::unique()
 
-  # apply .squadNames function to a set of iterations
+  # get squad master data from API
   squads <-
     purrr::map_df(
       iterations,

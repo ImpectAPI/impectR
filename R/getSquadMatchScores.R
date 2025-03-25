@@ -11,10 +11,11 @@
 #' @examples
 #' \donttest{
 #' try({ # prevent cran errors
-#'   matchsums <- getSquadMatchsums(84248, token)
+#'   squadMatchScores <- getSquadMatchsums(84248, token)
 #' })
 #' }
 getSquadMatchScores <- function (matches, token) {
+
   # check if match input is a list and convert to list if required
   if (!base::is.list(matches)) {
     if (base::is.numeric(matches) || base::is.character(matches)) {
@@ -24,7 +25,7 @@ getSquadMatchScores <- function (matches, token) {
     }
   }
 
-  # apply .matchInfo function to a set of matches
+  # get match info from API
   matchInfo <-
     purrr::map_df(
       matches,
@@ -68,7 +69,7 @@ getSquadMatchScores <- function (matches, token) {
     }
   }
 
-  # apply _eventAttributes function to a set of matches
+  # get squad match scores from API
   scores_raw <-
     purrr::map(
       matches,
@@ -91,7 +92,7 @@ getSquadMatchScores <- function (matches, token) {
     dplyr::pull(iterationId) %>%
     base::unique()
 
-  # apply squadNames function to a set of iterations
+  # get squads master data from API
   squads <-
     purrr::map_df(
       iterations,
@@ -115,7 +116,7 @@ getSquadMatchScores <- function (matches, token) {
   # clean data
   squads <- .cleanData(squads)
 
-  # get score names
+  # get score names from API
   scores_list <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(

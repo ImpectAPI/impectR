@@ -14,7 +14,7 @@
 #' })
 #' }
 getIterations <- function(token) {
-  # get iteration data
+  # get iteration data from API
   iterations <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(

@@ -18,7 +18,7 @@
     # get API response
     response <-
       httr::GET(
-        url = paste0(base_url, id, suffix),
+        url = base::paste0(base_url, id, suffix),
         httr::add_headers(
           Authorization = base::paste("Bearer", token, sep = " "))
         )

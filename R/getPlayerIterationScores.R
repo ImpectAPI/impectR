@@ -35,6 +35,7 @@ allowed_positions <- c(
 #' })
 #' }
 getPlayerIterationScores <- function (iteration, positions, token) {
+
   # check if iteration input is a string or integer
   if (!(base::is.numeric(iteration) ||
         base::is.character(iteration))) {
@@ -51,7 +52,7 @@ getPlayerIterationScores <- function (iteration, positions, token) {
   # compile position string
   position_string <- paste(positions, collapse = ",")
 
-  # get squads for given iterationId
+  # get squads master data from API
   squads <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
@@ -72,7 +73,7 @@ getPlayerIterationScores <- function (iteration, positions, token) {
     dplyr::pull(id) %>%
     base::unique()
 
-  # apply .playerIterationScores function to all squads
+  # get player iteration scores from API
   scores_raw <-
     purrr::map_df(
       squadIds,
@@ -129,7 +130,7 @@ getPlayerIterationScores <- function (iteration, positions, token) {
     )
   }
 
-  # apply .playerNames function to a set of iterations
+  # get player master data from API
   players <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
@@ -147,7 +148,7 @@ getPlayerIterationScores <- function (iteration, positions, token) {
   # clean data
   players <- .cleanData(players)
 
-  # get kpi names
+  # get score names from API
   score_list <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
