@@ -167,12 +167,10 @@ getEvents <- function (
     # merge events and set pieces
     events <- events %>%
       dplyr::left_join(
-        set_pieces,
+        dplyr::select(set_pieces, -matchId, -squadId),
         by = c(
           "setPieceId" = "id",
-          "setPieceSubPhaseId" = "setPieceSubPhaseId",
-          "matchId" = "matchId",
-          "squadId" = "squadId"
+          "setPieceSubPhaseId" = "setPieceSubPhaseId"
         )
       )
   }
