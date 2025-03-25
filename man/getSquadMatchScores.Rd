@@ -20,7 +20,7 @@ Return a dataframe that contains squad level scores and ratios for a given match
 \examples{
 \donttest{
 try({ # prevent cran errors
-  matchsums <- getSquadMatchsums(84248, token)
+  squadMatchScores <- getSquadMatchsums(84248, token)
 })
 }
 }

@@ -21,7 +21,7 @@ Return a dataframe that contains all player averages for a given iteration ID
 \examples{
 \donttest{
 try({ # prevent cran errors
-  matchsums <- getPlayerIterationAverages(518, token)
+  playerIterationAverages <- getPlayerIterationAverages(518, token)
 })
 }
 }
