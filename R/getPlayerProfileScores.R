@@ -36,6 +36,7 @@ allowed_positions <- c(
 #' })
 #' }
 getPlayerProfileScores <- function (iteration, positions, token) {
+
   # check if iteration input is a string or integer
   if (!(base::is.numeric(iteration) ||
         base::is.character(iteration))) {
@@ -52,28 +53,115 @@ getPlayerProfileScores <- function (iteration, positions, token) {
   # compile position string
   position_string <- paste(positions, collapse = ",")
 
-  # get squads for given iterationId
-  squads <- .squadNames(iteration = iteration, token = token)
+  # get squads master data from API
+  squads <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        id = iteration,
+        suffix = "/squads",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten()
+
+  # get squadIds
   squadIds <- squads %>%
     dplyr::filter(access == TRUE) %>%
     dplyr::pull(id) %>%
     base::unique()
 
-  # apply .playerProfileScores function to all squads
+  # get player profile scores from API
   scores_raw <-
-    purrr::map_df(squadIds,
-                  ~ .playerProfileScores(
-                    iteration = iteration,
-                    squad = .,
-                    positions = position_string,
-                    token = token
-                  ))
+    purrr::map_df(
+      squadIds,
+      ~ {
+        response <- jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              base_url = paste0(
+                "https://api.impect.com/v5/customerapi/iterations/",
+                iteration,
+                "/squads/",
+                .,
+                "/positions/",
+                positions,
+                "/player-profile-scores"
+              ),
+              token = token
+            ),
+            "text",
+            encoding = "UTF-8"
+          )
+        )$data
 
-  # apply .playerNames function to a set of iterations
-  players <- .playerNames(iteration = iteration, token = token)
+        if (base::length(response) > 0) {
+          response <- response %>%
+            dplyr::mutate(squadId = ..1, iterationId = iteration)
+        }
+      }
+    )
 
-  # get profile names
-  profile_list <- .playerProfiles(token = token)
+  # raise exception if no player played at given positions in matches
+  if (base::length(scores_raw) == 0) {
+    base::stop(
+      base::paste0(
+        "No players played at position(s) ",
+        position_string,
+        " in iteration ",
+        iteration,
+        "."
+      )
+    )
+  }
+
+  # print matches without players at given position
+  error_list <- base::as.character(
+    squadIds[!squadIds %in% scores_raw$squadId]
+  )
+  if (base::length(error_list) > 0) {
+    base::cat(
+      base::sprintf(
+        "No players played at position(s) %s for following squads:\n\t%s",
+        positions, paste(error_list, collapse = ", ")
+      )
+    )
+  }
+
+  # get player master data from API
+  players <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        id = iteration,
+        suffix = "/players",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    base::unique()
+
+  # clean data
+  players <- .cleanData(players)
+
+  # get profile names from API
+  profile_list <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/player-profiles",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten() %>%
+    dplyr::select(name)
 
   # get competitions
   iterations <- getIterations(token = token)
@@ -113,10 +201,18 @@ getPlayerProfileScores <- function (iteration, positions, token) {
   scores <- scores %>%
     dplyr::left_join(dplyr::select(squads, id, squadName = name),
                      by = c("squadId" = "id")) %>%
-    dplyr::left_join(dplyr::select(players, id, playerName = commonname, firstname, lastname, birthdate, birthplace, leg),
-                     by = c("playerId" = "id")) %>%
-    dplyr::left_join(dplyr::select(iterations, id, competitionName, season),
-                     by = c("iterationId" = "id"))
+    dplyr::left_join(
+      dplyr::select(
+        players, id, wyscoutId, heimSpielId, skillCornerId,
+        playerName = commonname, firstname, lastname, birthdate, birthplace, leg
+      ),
+      by = c("playerId" = "id")) %>%
+    dplyr::left_join(
+      dplyr::select(
+        iterations, id, competitionId, competitionName, competitionType, season
+        ),
+        by = c("iterationId" = "id")
+      )
 
   # define column order
   order <- c(
@@ -126,6 +222,9 @@ getPlayerProfileScores <- function (iteration, positions, token) {
     "squadId",
     "squadName",
     "playerId",
+    "wyscoutId",
+    "heimSpielId",
+    "skillCornerId",
     "playerName",
     "firstname",
     "lastname",

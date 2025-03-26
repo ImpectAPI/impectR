@@ -12,28 +12,69 @@
 #' @examples
 #' \donttest{
 #' try({ # prevent cran errors
-#'   matchsums <- getSquadIterationAverages(518, token)
+#'   squadIterationAverages <- getSquadIterationAverages(518, token)
 #' })
 #' }
 getSquadIterationAverages <- function (iteration, token) {
+
   # check if iteration input is a string or integer
   if (!(base::is.numeric(iteration) ||
         base::is.character(iteration))) {
     stop("Unprocessable type for 'iteration' variable")
   }
 
-  # get squads for given iterationId
-  squads <- .squadNames(iteration = iteration, token = token)
+  # get squads master data from API
+  squads <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        id = iteration,
+        suffix = "/squads",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten()
+
+  # get squadIds
   squadIds <- squads %>%
     dplyr::pull(id)
 
-  # apply .playerIterationAverages function to all squads
-  averages_raw <- .squadIterationAverages(iteration = iteration, token = token)
+  # clean data
+  squads <- .cleanData(squads)
 
-  # get kpi names
-  kpis <- .kpis(token = token)
+  # get player iteration averages for all squads from API
+  averages_raw <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        id = iteration,
+        suffix = "/squad-kpis",
+        token = token
+        ),
+      "text",
+      encoding = "UTF-8"
+      )
+    )$data %>%
+    dplyr::mutate(iterationId = iteration)
 
-  # get competitions
+  # get kpi names from API
+  kpis <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/kpis",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten() %>%
+    dplyr::select(id, name)
+
+  # get competitions from API
   iterations <- getIterations(token = token)
 
   # manipulate averages
@@ -65,11 +106,15 @@ getSquadIterationAverages <- function (iteration, token) {
   # merge with other data
   averages <- averages %>%
     dplyr::left_join(
-      dplyr::select(squads, id, squadName = name),
+      dplyr::select(
+        squads, id, wyscoutId, heimSpielId, skillCornerId, squadName = name
+      ),
       by = c("squadId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(iterations, id, competitionName, season),
+      dplyr::select(
+        iterations, id, competitionId, competitionName, competitionType, season
+      ),
       by = c("iterationId" = "id")
     )
 
@@ -79,6 +124,9 @@ getSquadIterationAverages <- function (iteration, token) {
     "competitionName",
     "season",
     "squadId",
+    "wyscoutId",
+    "heimSpielId",
+    "skillCornerId",
     "squadName",
     "matches",
     kpis$name

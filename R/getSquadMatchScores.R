@@ -11,10 +11,11 @@
 #' @examples
 #' \donttest{
 #' try({ # prevent cran errors
-#'   matchsums <- getSquadMatchsums(84248, token)
+#'   squadMatchScores <- getSquadMatchsums(84248, token)
 #' })
 #' }
 getSquadMatchScores <- function (matches, token) {
+
   # check if match input is a list and convert to list if required
   if (!base::is.list(matches)) {
     if (base::is.numeric(matches) || base::is.character(matches)) {
@@ -24,9 +25,22 @@ getSquadMatchScores <- function (matches, token) {
     }
   }
 
-  # apply .matchInfo function to a set of matches
+  # get match info from API
   matchInfo <-
-    purrr::map_df(matches, ~ .matchInfo(match = ., token = token)) %>%
+    purrr::map_df(
+      matches,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            id = .,
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data
+    ) %>%
     dplyr::select(id, iterationId, lastCalculationDate) %>%
     base::unique()
 
@@ -55,23 +69,66 @@ getSquadMatchScores <- function (matches, token) {
     }
   }
 
-  # apply _eventAttributes function to a set of matches
+  # get squad match scores from API
   scores_raw <-
-    purrr::map(matches, ~ .squadMatchScores(match = ., token = token))
+    purrr::map(
+      matches,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            id = .,
+            suffix = "/squad-scores",
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data
+    )
 
   # get unique iterationIds
   iterations <- matchInfo %>%
     dplyr::pull(iterationId) %>%
     base::unique()
 
-  # apply squadNames function to a set of iterations
+  # get squads master data from API
   squads <-
-    purrr::map_df(iterations, ~ .squadNames(iteration = ., token = token)) %>%
-    dplyr::select(id, name) %>%
+    purrr::map_df(
+      iterations,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            id = .,
+            suffix = "/squads",
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data %>%
+        jsonlite::flatten()
+    ) %>%
+    dplyr::select(id, name, idMappings) %>%
     base::unique()
 
-  # get score names
-  scores_list <- .squadScores(token = token)
+  # clean data
+  squads <- .cleanData(squads)
+
+  # get score names from API
+  scores_list <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/squad-scores",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten() %>%
+    dplyr::select(id, name)
 
   # get matchplan data
   matchplan <-
@@ -87,14 +144,17 @@ getSquadMatchScores <- function (matches, token) {
     # convert side data to df
     temp <-
       base::data.frame(dict[[side]]) %>%
-      dplyr::rename(squadScoreId = squadScores.squadScoreId,
-                    value = squadScores.value)
+      dplyr::rename(
+        squadId = id,
+        squadScoreId = squadScores.squadScoreId,
+        value = squadScores.value
+        )
 
     # unnest scores
     temp <- temp %>%
       # join with scores to ensure all squadScoreId are present and order by squadScoreId
       dplyr::full_join(scores_list, by = c("squadScoreId" = "id")) %>%
-      dplyr::arrange(squadScoreId, id) %>%
+      dplyr::arrange(squadScoreId, squadId) %>%
       # drop squadScoreId column
       dplyr::select(-squadScoreId) %>%
       # pivot data
@@ -105,7 +165,7 @@ getSquadMatchScores <- function (matches, token) {
         values_fn = base::sum
       ) %>%
       # filter for non NA columns that were created by full join
-      dplyr::filter(base::is.na(id) == FALSE) %>%
+      dplyr::filter(base::is.na(squadId) == FALSE) %>%
       dplyr::mutate(
         # add matchId
         matchId = dict$matchId)
@@ -131,21 +191,26 @@ getSquadMatchScores <- function (matches, token) {
   # merge with other data
   scores <- scores %>%
     dplyr::left_join(
-      matchplan,
+      dplyr::select(
+        matchplan, id, scheduledDate, matchDayIndex, matchDayName, iterationId
+      ),
       by = c("matchId" = "id")
     ) %>%
     dplyr::left_join(
-      iterations,
+      dplyr::select(
+        iterations, id, competitionId, competitionName, competitionType, season
+      ),
       by = c("iterationId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(squads, id, squadName = name),
-      by = c("id" = "id")
+      dplyr::select(
+        squads, id, wyscoutId, heimSpielId, skillCornerId, squadName = name
+      ),
+      by = c("squadId" = "id")
     ) %>%
     # fix some column names
     dplyr::rename(
-      dateTime = scheduledDate,
-      squadId = id
+      dateTime = scheduledDate
     )
 
   # define column order
@@ -160,6 +225,9 @@ getSquadMatchScores <- function (matches, token) {
     "matchDayIndex",
     "matchDayName",
     "squadId",
+    "wyscoutId",
+    "heimSpielId",
+    "skillCornerId",
     "squadName",
     scores_list$name
   )

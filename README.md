@@ -8,9 +8,9 @@
 
 A package provided by: Impect GmbH
 
-Version: v2.3.1
+Version: v2.4.2
 
-**Updated: January 23rd 2025**
+**Updated: March 25th 2025**
 
 ------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ You can install the latest version of impectR from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ImpectAPI/impectR@v2.3.1")
+devtools::install_github("ImpectAPI/impectR@v2.4.0")
 ```
 
 ## Usage
@@ -93,10 +93,11 @@ Impect and the data is available to you.
 ### Retrieve Match Level Data
 
 Let’s assume you are interested in the FC Bayern München vs Borussia
-Dortmund game from April 1st 2023 (matchId = 84344). As the function
-allow for multiple games to be requested at once, we need to wrap the
-matchId into a list. Hence, to request the event data for this game, run
-the following code snippet:
+Dortmund game from April 1st 2023 (matchId = 84344) and want to retrieve
+event level data as well as team formation, starting position and
+substitution data. As the functions allows for multiple games to be
+requested at once, we need to wrap the matchId into a list. Hence, to
+request data for this game, run the following code snippet:
 
 ``` r
 # define matches to get event data for
@@ -109,6 +110,11 @@ events <- getEvents(
   include_kpis = TRUE,
   include_set_pieces = TRUE
   )
+
+# get match info
+formations = getFormations(matches, token)
+substitutions = getSubstitutions(matches, token)
+starting_positions = getStartingPositions(matches, token)
 
 # print first few rows from events dataframe to console
 head(events)
@@ -127,7 +133,7 @@ list of positions your want to retrieve data for:
 matchIds <- c(84344)
 
 # get set piece data including KPI aggregates
-setPieces <- getSetPieces(matches = matches, token = token)
+setPieces <- getSetPieces(matches = matchIds, token = token)
 
 
 # get kpi matchsums for match per player and position
@@ -158,14 +164,14 @@ matchIds <- c(84344, 84350)
 
 # get event data for matches
 events <- getEvents(
-    matches=matches, 
-    token=token,
-    include_kpis=True,
-    include_set_pieces=True
+    matches = matchIds, 
+    token = token,
+    include_kpis = True,
+    include_set_pieces = True
 )
 
 # get set piece data including KPI aggregates
-setPieces <- getSetPieces(ip.getSetPieces(matches = matches, token = token)
+setPieces <- getSetPieces(ip.getSetPieces(matches = matchIds, token = token)
                             
 # get matchsums for matches per player and position
 playerMatchsums <- getPlayerMatchsums(matches = matchIds, token = token)
@@ -220,6 +226,9 @@ playerIterationScores <-
 # get squad scores and ratios for iteration
 squadIterationScores <- 
   getSquadIterationScores(iteration = iteration, token = token)
+
+# get squad ratings for iteration
+squadRatings <- getSquadRatings(iteration = iteration, token = token)
 ```
 
 Please keep in mind that Impect enforces a rate limit of 10 requests per

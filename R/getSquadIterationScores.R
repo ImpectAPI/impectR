@@ -16,22 +16,65 @@
 #' })
 #' }
 getSquadIterationScores <- function (iteration, token) {
+
   # check if iteration input is a string or integer
   if (!(base::is.numeric(iteration) ||
         base::is.character(iteration))) {
     stop("Unprocessable type for 'iteration' variable")
   }
 
-  # get squads for given iterationId
-  squads <- .squadNames(iteration = iteration, token = token)
+  # get squads master data from API
+  squads <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        id = iteration,
+        suffix = "/squads",
+        token = token
+        ),
+      "text",
+      encoding = "UTF-8"
+      )
+    )$data %>%
+    jsonlite::flatten() %>%
+    dplyr::select(id, name, idMappings) %>%
+    base::unique()
+
+  # get squad Ids
   squadIds <- squads %>%
     dplyr::pull(id)
 
-  # apply .playerIterationScores function to all squads
-  scores_raw <- .squadIterationScores(iteration = iteration, token = token)
+  # clean data
+  squads <- .cleanData(squads)
 
-  # get score names
-  score_list <- .squadScores(token = token)
+  # squad iteration scores from API
+  scores_raw <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        id = iteration,
+        suffix = "/squad-scores",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    dplyr::mutate(iterationId = iteration)
+
+  # get score names from API
+  score_list <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        base_url = "https://api.impect.com/v5/customerapi/squad-scores",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten() %>%
+    dplyr::select(id, name)
 
   # get competitions
   iterations <- getIterations(token = token)
@@ -65,11 +108,15 @@ getSquadIterationScores <- function (iteration, token) {
   # merge with other data
   scores <- scores %>%
     dplyr::left_join(
-      dplyr::select(squads, id, squadName = name),
+      dplyr::select(
+        squads, id, wyscoutId, heimSpielId, skillCornerId, squadName = name
+      ),
       by = c("squadId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(iterations, id, competitionName, season),
+      dplyr::select(
+        iterations, id, competitionId, competitionName, competitionType, season
+      ),
       by = c("iterationId" = "id")
     )
 
@@ -79,6 +126,9 @@ getSquadIterationScores <- function (iteration, token) {
     "competitionName",
     "season",
     "squadId",
+    "wyscoutId",
+    "heimSpielId",
+    "skillCornerId",
     "squadName",
     "matches",
     score_list$name

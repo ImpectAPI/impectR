@@ -20,6 +20,7 @@ getSetPieces <- function (
     matches,
     token
 ) {
+
   # check if match input is not a list and convert to list if required
   if (!base::is.list(matches)) {
     if (base::is.numeric(matches) || base::is.character(matches)) {
@@ -29,9 +30,22 @@ getSetPieces <- function (
     }
   }
 
-  # apply .matchInfo function to a set of matches
+  # get matchInfo from API
   matchInfo <-
-    purrr::map_df(matches, ~ .matchInfo(match = ., token = token)) %>%
+    purrr::map_df(
+      matches,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            id = .,
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data
+    ) %>%
     dplyr::select(id, iterationId, lastCalculationDate) %>%
     base::unique()
 
@@ -60,11 +74,25 @@ getSetPieces <- function (
     }
   }
 
-  # apply .SetPieces function to list of matches
+  # get set piece data from API
   set_pieces <-
     purrr::map_df(
       matches,
-      ~ .setPieces(match = ., token = token)
+      ~ jsonlite::flatten(
+        jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              base_url = "https://api.impect.com/v5/customerapi/matches/",
+              id = .,
+              suffix = "/set-pieces",
+              token = token
+              ),
+            "text",
+            encoding = "UTF-8"
+            )
+          )$data %>%
+          dplyr::mutate(matchId = ..1)
+      )
     ) %>%
     tidyr::unnest_longer(setPieceSubPhase) %>%
     tidyr::unnest(setPieceSubPhase, names_sep = ".") %>%
@@ -80,17 +108,44 @@ getSetPieces <- function (
     base::unique()
 
 
-  # apply .playerNames function to a set of iterations
+  # get player master data from API
   players <-
-    purrr::map_df(iterations,
-                  ~ .playerNames(iteration = ., token = token)) %>%
+    purrr::map_df(
+      iterations,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            id = .,
+            suffix = "/players",
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data
+    ) %>%
     dplyr::select(id, commonname) %>%
     base::unique()
 
-  # apply .squadNames function to a set of iterations
+  # get squad master data from API
   squads <-
-    purrr::map_df(iterations,
-                  ~ .squadNames(iteration = ., token = token)) %>%
+    purrr::map_df(
+      iterations,
+      ~ jsonlite::fromJSON(
+        httr::content(
+          .callAPIlimited(
+            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            id = .,
+            suffix = "/squads",
+            token = token
+          ),
+          "text",
+          encoding = "UTF-8"
+        )
+      )$data %>%
+        jsonlite::flatten()
+    ) %>%
     dplyr::select(id, name) %>%
     base::unique()
 
