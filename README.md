@@ -8,7 +8,7 @@
 
 A package provided by: Impect GmbH
 
-Version: v2.4.2
+Version: v2.4.0
 
 **Updated: March 25th 2025**
 
