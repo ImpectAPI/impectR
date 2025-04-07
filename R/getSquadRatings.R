@@ -17,10 +17,9 @@
 getSquadRatings <- function (iteration, token) {
 
   # check if iteration input is a int
-  if (!base::is.numeric(matches)) {
+  if (!base::is.numeric(iteration)) {
     stop("Unprocessable type for 'iteration' variable")
   }
-
   # get squad amster data from API
   squads <- jsonlite::fromJSON(
     httr::content(
