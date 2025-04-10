@@ -1,3 +1,8 @@
+# ImpectR 2.4.2
+
+## Minor Changes
+* Fix error in `getSubstitutions()` that occured if one team did not substitute
+
 # ImpectR 2.4.1
 
 ## Minor Changes

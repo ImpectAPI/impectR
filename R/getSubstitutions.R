@@ -193,7 +193,8 @@ getSubstitutions <- function (
     )
 
   # combine data frames
-  substitutions <- dplyr::bind_rows(substitutions_home, substitutions_away)
+  substitutions <- dplyr::bind_rows(substitutions_home, substitutions_away) %>%
+    filter(purrr::map_lgl(squadSubstitutions, ~ base::is.data.frame(.)))
 
   # unnest starting_positions column
   substitutions <- substitutions %>%
