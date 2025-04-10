@@ -1,4 +1,9 @@
-# impectPy 2.4.0
+# ImpectR 2.4.1
+
+## Minor Changes
+* Fix error in `getSquadRatings()` function
+
+# ImpectR 2.4.0
 
 ## Major Changes
 * Add new function `getSquadRatings()` to retrieve squad ratings
@@ -14,7 +19,7 @@
 * Clean Up Comments in Code
 * Fix join from events to set pieces in `getEvents()` function
 
-# impectPy 2.3.2
+# ImpectR 2.3.2
 
 ## Major Changes
 * Add function `getSquadRatings()` to retrieve squad ratings
@@ -25,12 +30,12 @@
 * Fix bug in `getPlayerProfileScores()`that occurred if no player played at given positions for any squad in the given iteration.
 * Improved error handling for all functions including a `positions` argument
 
-# impectPy 2.3.1
+# ImpectR 2.3.1
 
 ## Minor changes
 * Fix error in `getEvents()` for matches without any dribble objects (data version V2 or V3)
 
-# impectPy 2.3.0
+# ImpectR 2.3.0
 
 ## Major changes
 * Add new `getSetPieces()` function
@@ -40,7 +45,7 @@
 ## Minor changes
 * Fix error in `getEvents()` for matches without any tagged duels
 
-# impectPy 2.2.0
+# ImpectR 2.2.0
 
 ## Major changes
 * add new functions to query the new customer API endpoints that provide ratios & scores
@@ -49,7 +54,7 @@
 * switch from German country name to FIFA country name
 * Update to readme structure
 
-# impectPy 2.1.0
+# ImpectR 2.1.0
 
 ## Major changes
 * add new attributes from dataVersion V4 to `getEvents()`
