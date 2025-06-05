@@ -197,6 +197,7 @@ getSubstitutions <- function (
 
   # unnest starting_positions column
   substitutions <- substitutions %>%
+    filter(lengths(squadSubstitutions) > 0) %>%
     tidyr::unnest_longer(squadSubstitutions)
 
   # normalize the JSON structure into separate columns
