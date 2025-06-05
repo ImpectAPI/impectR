@@ -4,13 +4,14 @@
 # impectR <img src="https://github.com/ImpectAPI/logos/blob/main/impectR.png" align="right" height="139" />
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 A package provided by: Impect GmbH
 
-Version: v2.4.2
+Version: v2.4.3
 
-**Updated: April 10th 2025**
+**Updated: June 5th 2025**
 
 ------------------------------------------------------------------------
 
@@ -38,7 +39,7 @@ You can install the latest version of impectR from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ImpectAPI/impectR@v2.4.2")
+devtools::install_github("ImpectAPI/impectR@v2.4.3")
 ```
 
 ## Usage

@@ -1,3 +1,11 @@
+# impectR 2.4.3
+
+## Minor Changes
+* Fix bug in `getSubstitutions()` that occurred if one team did not substitute
+* Fix bug in `getPlayerProfileScores()` that occurred if more than one position was supplied
+* Fix bug in `getPlayerIterationScores()` that occurred if more than one position was supplied
+* Fix bug in `getEvents()` that prevented the column `duelPlayerName`from properly being populated
+
 # ImpectR 2.4.2
 
 ## Minor Changes
@@ -24,7 +32,7 @@
 * Clean Up Comments in Code
 * Fix join from events to set pieces in `getEvents()` function
 
-# ImpectR 2.3.2
+# impectR 2.3.2
 
 ## Major Changes
 * Add function `getSquadRatings()` to retrieve squad ratings
@@ -35,12 +43,12 @@
 * Fix bug in `getPlayerProfileScores()`that occurred if no player played at given positions for any squad in the given iteration.
 * Improved error handling for all functions including a `positions` argument
 
-# ImpectR 2.3.1
+# impectR 2.3.1
 
 ## Minor changes
 * Fix error in `getEvents()` for matches without any dribble objects (data version V2 or V3)
 
-# ImpectR 2.3.0
+# impectR 2.3.0
 
 ## Major changes
 * Add new `getSetPieces()` function
@@ -50,7 +58,7 @@
 ## Minor changes
 * Fix error in `getEvents()` for matches without any tagged duels
 
-# ImpectR 2.2.0
+# impectR 2.2.0
 
 ## Major changes
 * add new functions to query the new customer API endpoints that provide ratios & scores
@@ -59,7 +67,7 @@
 * switch from German country name to FIFA country name
 * Update to readme structure
 
-# ImpectR 2.1.0
+# impectR 2.1.0
 
 ## Major changes
 * add new attributes from dataVersion V4 to `getEvents()`
