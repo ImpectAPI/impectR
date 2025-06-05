@@ -1,4 +1,4 @@
-# impectR 2.4.1
+# impectR 2.4.3
 
 ## Minor Changes
 * Fix bug in `getSubstitutions()` that occurred if one team did not substitute
@@ -6,7 +6,17 @@
 * Fix bug in `getPlayerIterationScores()` that occurred if more than one position was supplied
 * Fix bug in `getEvents()` that prevented the column `duelPlayerName`from properly being populated
 
-# impectR 2.4.0
+# ImpectR 2.4.2
+
+## Minor Changes
+* Fix error in `getSubstitutions()` that occured if one team did not substitute
+
+# ImpectR 2.4.1
+
+## Minor Changes
+* Fix error in `getSquadRatings()` function
+
+# ImpectR 2.4.0
 
 ## Major Changes
 * Add new function `getSquadRatings()` to retrieve squad ratings
