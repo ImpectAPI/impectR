@@ -87,7 +87,7 @@ getPlayerIterationScores <- function (iteration, positions, token) {
               "/squads/",
               .,
               "/positions/",
-              positions,
+              position_string,
               "/player-scores"
             ),
             token = token
