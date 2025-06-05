@@ -241,7 +241,6 @@ getEvents <- function (
     "dribblePlayerId",
     "duelDuelType",
     "duelPlayerId",
-    "duelPlayerName",
     "opponentCoordinatesX",
     "opponentCoordinatesY",
     "opponentAdjCoordinatesX",
