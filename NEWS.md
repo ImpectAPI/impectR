@@ -1,3 +1,13 @@
+# impectR 2.4.4
+
+## Minor Changes
+* Fix bug in `getPlayerIterationScores()` that produced erroneous score values (0 instead of NA)
+* Fix bug in `getPlayerProfileScores()` that produced erroneous score values (0 instead of NA)
+* Fix bug in `getPlayerMatchScores()` that produced erroneous score values (0 instead of NA)
+* Fix bug in `getSquadMatchScores()` that produced erroneous score values (0 instead of NA)
+* Fix bug in `getSquadIterationScores()` that produced erroneous score values (0 instead of NA)
+
+
 # impectR 2.4.3
 
 ## Minor Changes
