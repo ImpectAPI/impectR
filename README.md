@@ -9,9 +9,9 @@
 
 A package provided by: Impect GmbH
 
-Version: v2.4.3
+Version: v2.4.4
 
-**Updated: June 5th 2025**
+**Updated: August 19th 2025**
 
 ------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ You can install the latest version of impectR from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ImpectAPI/impectR@v2.4.3")
+devtools::install_github("ImpectAPI/impectR@v2.4.4")
 ```
 
 ## Usage
