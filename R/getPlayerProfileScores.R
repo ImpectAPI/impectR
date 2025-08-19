@@ -189,7 +189,6 @@ getPlayerProfileScores <- function (iteration, positions, token) {
     tidyr::pivot_wider(
       names_from = profileName,
       values_from = value,
-      values_fill = 0,
       values_fn = base::sum
     ) %>%
     # filter for non NA columns that were created by full join
