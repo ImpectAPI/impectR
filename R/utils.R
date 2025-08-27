@@ -52,6 +52,9 @@
   }
 }
 
+# private storage for bucket
+.api_state <- new.env(parent = emptyenv())
+
 #' Applies the rate limit policy to the .callAPI function
 #'
 #' @noRd
@@ -65,7 +68,7 @@
 .callAPIlimited <- function(base_url, id = "", suffix = "", token) {
 
   # check if Token bucket exist and create it if not
-  if (!exists("bucket")) {
+  if (is.null(.api_state$bucket)) {
 
     # get response from API
     response <- .callAPI(base_url, id, suffix, token)
@@ -81,7 +84,7 @@
 
 
     # create TokenBucket
-    bucket <<- TokenBucket(
+    .api_state$bucket <- TokenBucket(
       # set default rate, capacity, available tokens and time
       capacity = capacity,
       intervall = intervall,
@@ -95,15 +98,15 @@
   }
 
   # check if a token is available
-  if (bucket$isTokenAvailable()) {
+  if (.api_state$bucket$isTokenAvailable()) {
     # get API response
     response <- .callAPI(base_url, id, suffix, token)
 
     # consume a token
-    bucket$consumeToken()
+    .api_state$bucket$consumeToken()
   } else {
     # wait for bucket intervall
-    Sys.sleep(bucket$intervall)
+    Sys.sleep(.api_state$bucket$intervall)
 
     # call function again
     response <- .callAPIlimited(base_url, id, suffix, token)
@@ -122,6 +125,7 @@
 #' @param data a data frame
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing clean columns names and SkillCorner/HeimSpiel
 #' columns
 .cleanData <- function (data) {
@@ -151,16 +155,10 @@
 
   # edit column names
   data <- data %>%
-    dplyr::rename(skillCornerId = "skillCorner",
-                  heimSpielId = "heimSpiel",
-                  wyscoutId = "wyscout")
-
-  # edit column types
-  data <- data %>%
-    mutate(
-      skillCornerId = as.integer(skillCornerId),
-      heimSpielId = as.integer(heimSpielId),
-      wyscoutId = as.integer(wyscoutId)
+    dplyr::mutate(
+      skillCornerId = as.integer(.data$skillCorner),
+      heimSpielId   = as.integer(.data$heimSpiel),
+      wyscoutId     = as.integer(.data$wyscout)
     )
 
   # return squads
@@ -174,18 +172,16 @@
 #' to control the frequency of certain actions or requests based on available tokens.
 #' Tokens are added to the bucket at a specified rate and can be consumed when needed.
 #'
-#' @name TokenBucket
+#' @field capacity The maximum number of tokens in the bucket.
+#' @field tokens The number of tokens currently available in the bucket.
+#' @field interval The duration in seconds after which the bucket gets refilled.
+#' @field last_update The timestamp of the last update to the bucket.
 #'
-#' @slot capacity the maximum amount of tokens in the bucket
-#' @slot tokens the amount of token currently available in the bucket
-#' @slot intervall the duration in seconds after which the bucket gets refilled
-#' @slot last_update the timestamp from the liast time tokens were added or consumed
-#'
-#' @importFrom methods new
-#'
-#' @export
+#' @exportClass TokenBucket
 #'
 #' @keywords classes
+#'
+#' @importFrom methods new
 #'
 #' @examples
 #' \donttest{

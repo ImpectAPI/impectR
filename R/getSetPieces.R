@@ -7,6 +7,7 @@
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing all set pieces and aggregated kpi values per
 #' set piece sub phase for a set of given list of match IDs
 #'
@@ -46,18 +47,18 @@ getSetPieces <- function (
         )
       )$data
     ) %>%
-    dplyr::select(id, iterationId, lastCalculationDate) %>%
+    dplyr::select(.data$id, .data$iterationId, .data$lastCalculationDate) %>%
     base::unique()
 
   # filter for fail matches
   fail_matches <- matchInfo %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == TRUE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == TRUE) %>%
+    dplyr::pull(.data$id)
 
   # filter for avilable matches
   matches <- matchInfo %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == FALSE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == FALSE) %>%
+    dplyr::pull(.data$id)
 
   # raise warnings
   if (base::length(fail_matches) > 0) {
@@ -94,9 +95,9 @@ getSetPieces <- function (
           dplyr::mutate(matchId = ..1)
       )
     ) %>%
-    tidyr::unnest_longer(setPieceSubPhase) %>%
-    tidyr::unnest(setPieceSubPhase, names_sep = ".") %>%
-    tidyr::unnest(setPieceSubPhase.aggregates, names_sep = ".")
+    tidyr::unnest_longer(.data$setPieceSubPhase) %>%
+    tidyr::unnest(.data$setPieceSubPhase, names_sep = ".") %>%
+    tidyr::unnest(.data$setPieceSubPhase.aggregates, names_sep = ".")
 
   # fix column names using regex
   base::names(set_pieces) <-
@@ -104,7 +105,7 @@ getSetPieces <- function (
 
   # get unique iterationIds
   iterations <- matchInfo %>%
-    dplyr::pull(iterationId) %>%
+    dplyr::pull(.data$iterationId) %>%
     base::unique()
 
 
@@ -125,7 +126,7 @@ getSetPieces <- function (
         )
       )$data
     ) %>%
-    dplyr::select(id, commonname) %>%
+    dplyr::select(.data$id, .data$commonname) %>%
     base::unique()
 
   # get squad master data from API
@@ -146,7 +147,7 @@ getSetPieces <- function (
       )$data %>%
         jsonlite::flatten()
     ) %>%
-    dplyr::select(id, name) %>%
+    dplyr::select(.data$id, .data$name) %>%
     base::unique()
 
   # get matchplan data
@@ -170,9 +171,9 @@ getSetPieces <- function (
 
   # determine defending squad
   set_pieces <- set_pieces %>%
-    mutate(
+    dplyr::mutate(
       defendingSquadId = ifelse(
-        squadId == awaySquadId, homeSquadId, awaySquadId
+        .data$squadId == .data$awaySquadId, .data$homeSquadId, .data$awaySquadId
         )
     )
 
@@ -181,16 +182,16 @@ getSetPieces <- function (
     dplyr::left_join(
       dplyr::select(
         squads,
-        attackingSquadId = id,
-        attackingSquadName = name
+        attackingSquadId = .data$id,
+        attackingSquadName = .data$name
       ),
       by = base::c("squadId" = "attackingSquadId")
     ) %>%
     dplyr::left_join(
       dplyr::select(
         squads,
-        defendingSquadId = id,
-        defendingSquadName = name
+        defendingSquadId = .data$id,
+        defendingSquadName = .data$name
       ),
       by = base::c("defendingSquadId" = "defendingSquadId")
     )
@@ -199,25 +200,33 @@ getSetPieces <- function (
   set_pieces <- set_pieces %>%
     dplyr::left_join(
       dplyr::select(
-        players, id, setPieceSubPhaseMainEventPlayerName = commonname
+        players,
+        .data$id,
+        setPieceSubPhaseMainEventPlayerName = .data$commonname
       ),
       by = base::c("setPieceSubPhaseMainEventPlayerId" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
-        players, id, setPieceSubPhasePassReceiverName = commonname
+        players,
+        .data$id,
+        setPieceSubPhasePassReceiverName = .data$commonname
       ),
       by = base::c("setPieceSubPhasePassReceiverId" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
-        players, id, setPieceSubPhaseFirstTouchPlayerName = commonname
+        players,
+        .data$id,
+        setPieceSubPhaseFirstTouchPlayerName = .data$commonname
       ),
       by = base::c("setPieceSubPhaseFirstTouchPlayerId" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
-        players, id, setPieceSubPhaseSecondTouchPlayerName = commonname
+        players,
+        .data$id,
+        setPieceSubPhaseSecondTouchPlayerName = .data$commonname
       ),
       by = base::c("setPieceSubPhaseSecondTouchPlayerId" = "id")
     )

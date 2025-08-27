@@ -6,6 +6,7 @@
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing the scores and rations aggregated per squad for the given match ID
 #'
 #' @examples
@@ -41,18 +42,18 @@ getSquadMatchScores <- function (matches, token) {
         )
       )$data
     ) %>%
-    dplyr::select(id, iterationId, lastCalculationDate) %>%
+    dplyr::select(.data$id, .data$iterationId, .data$lastCalculationDate) %>%
     base::unique()
 
   # filter for fail matches
   fail_matches <- matchInfo %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == TRUE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == TRUE) %>%
+    dplyr::pull(.data$id)
 
   # filter for avilable matches
   matches <- matchInfo %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == FALSE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == FALSE) %>%
+    dplyr::pull(.data$id)
 
   # raise warnings
   if (base::length(fail_matches) > 0) {
@@ -89,7 +90,7 @@ getSquadMatchScores <- function (matches, token) {
 
   # get unique iterationIds
   iterations <- matchInfo %>%
-    dplyr::pull(iterationId) %>%
+    dplyr::pull(.data$iterationId) %>%
     base::unique()
 
   # get squads master data from API
@@ -110,7 +111,7 @@ getSquadMatchScores <- function (matches, token) {
       )$data %>%
         jsonlite::flatten()
     ) %>%
-    dplyr::select(id, name, idMappings) %>%
+    dplyr::select(.data$id, .data$name, .data$idMappings) %>%
     base::unique()
 
   # clean data
@@ -128,7 +129,7 @@ getSquadMatchScores <- function (matches, token) {
     )
   )$data %>%
     jsonlite::flatten() %>%
-    dplyr::select(id, name)
+    dplyr::select(.data$id, .data$name)
 
   # get matchplan data
   matchplan <-
@@ -145,27 +146,27 @@ getSquadMatchScores <- function (matches, token) {
     temp <-
       base::data.frame(dict[[side]]) %>%
       dplyr::rename(
-        squadId = id,
-        squadScoreId = squadScores.squadScoreId,
-        value = squadScores.value
+        squadId = .data$id,
+        squadScoreId = .data$squadScores.squadScoreId,
+        value = .data$squadScores.value
         )
 
     # unnest scores
     temp <- temp %>%
       # join with scores to ensure all squadScoreId are present and order by squadScoreId
       dplyr::full_join(scores_list, by = c("squadScoreId" = "id")) %>%
-      dplyr::arrange(squadScoreId, squadId) %>%
+      dplyr::arrange(.data$squadScoreId, .data$squadId) %>%
       # drop squadScoreId column
-      dplyr::select(-squadScoreId) %>%
+      dplyr::select(-.data$squadScoreId) %>%
       # pivot data
       tidyr::pivot_wider(
-        names_from = name,
-        values_from = value,
+        names_from = .data$name,
+        values_from = .data$value,
         values_fill = 0,
         values_fn = base::sum
       ) %>%
       # filter for non NA columns that were created by full join
-      dplyr::filter(base::is.na(squadId) == FALSE) %>%
+      dplyr::filter(base::is.na(.data$squadId) == FALSE) %>%
       dplyr::mutate(
         # add matchId
         matchId = dict$matchId)
@@ -192,25 +193,28 @@ getSquadMatchScores <- function (matches, token) {
   scores <- scores %>%
     dplyr::left_join(
       dplyr::select(
-        matchplan, id, scheduledDate, matchDayIndex, matchDayName, iterationId
+        matchplan, .data$id, .data$scheduledDate, .data$matchDayIndex,
+        .data$matchDayName, .data$iterationId
       ),
       by = c("matchId" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
-        iterations, id, competitionId, competitionName, competitionType, season
+        iterations, .data$id, .data$competitionId, .data$competitionName,
+        .data$competitionType, .data$season
       ),
       by = c("iterationId" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
-        squads, id, wyscoutId, heimSpielId, skillCornerId, squadName = name
+        squads, .data$id, .data$wyscoutId, .data$heimSpielId,
+        .data$skillCornerId, squadName = .data$name
       ),
       by = c("squadId" = "id")
     ) %>%
     # fix some column names
     dplyr::rename(
-      dateTime = scheduledDate
+      dateTime = .data$scheduledDate
     )
 
   # define column order

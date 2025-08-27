@@ -6,6 +6,7 @@
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing the matchsums aggregated per player and position for the given match ID
 #'
 #' @examples
@@ -41,19 +42,19 @@ getPlayerMatchsums <- function (matches, token) {
         )
       )$data
     ) %>%
-    dplyr::select(id, iterationId, lastCalculationDate) %>%
+    dplyr::select(.data$id, .data$iterationId, .data$lastCalculationDate) %>%
     base::unique()
 
 
   # filter for fail matches
   fail_matches <- matchInfo %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == TRUE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == TRUE) %>%
+    dplyr::pull(.data$id)
 
   # filter for avilable matches
   matches <- matchInfo %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == FALSE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == FALSE) %>%
+    dplyr::pull(.data$id)
 
   # raise warnings
   if (base::length(fail_matches) > 0) {
@@ -90,7 +91,7 @@ getPlayerMatchsums <- function (matches, token) {
 
   # get unique iterationIds
   iterations <- matchInfo %>%
-    dplyr::pull(iterationId) %>%
+    dplyr::pull(.data$iterationId) %>%
     base::unique()
 
   # get player master data from API
@@ -111,8 +112,9 @@ getPlayerMatchsums <- function (matches, token) {
       )$data
     ) %>%
     dplyr::select(
-      id, playerName = commonname, firstname,
-      lastname, birthdate, birthplace, leg, idMappings
+      .data$id, playerName = .data$commonname, .data$firstname,
+      .data$lastname, .data$birthdate, .data$birthplace, .data$leg,
+      .data$idMappings
     ) %>%
     base::unique()
 
@@ -138,7 +140,7 @@ getPlayerMatchsums <- function (matches, token) {
       )$data %>%
         jsonlite::flatten()
     ) %>%
-    dplyr::select(id, name) %>%
+    dplyr::select(.data$id, .data$name) %>%
     base::unique()
 
 
@@ -154,7 +156,7 @@ getPlayerMatchsums <- function (matches, token) {
     )
   )$data %>%
     jsonlite::flatten() %>%
-    dplyr::select(id, name)
+    dplyr::select(.data$id, .data$name)
 
 
   # get matchplan data
@@ -198,7 +200,7 @@ getPlayerMatchsums <- function (matches, token) {
         values_fn = base::sum
       ) %>%
       # filter for non NA columns that were created by full join
-      dplyr::filter(base::is.na(playerId) == FALSE) %>%
+      dplyr::filter(base::is.na(.data$playerId) == FALSE) %>%
       # remove the "NA" column if it exists
       dplyr::select(-dplyr::matches("^NA$")) %>%
       dplyr::mutate(
@@ -238,17 +240,19 @@ getPlayerMatchsums <- function (matches, token) {
       by = c("iterationId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(squads, id, squadName = name),
+      dplyr::select(squads, .data$id, squadName = .data$name),
       by = c("squadId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(players, id, playerName, firstname, lastname, birthdate,
-                    birthplace, leg, wyscoutId, heimSpielId, skillCornerId),
+      dplyr::select(players, .data$id, .data$playerName, .data$firstname,
+                    .data$lastname, .data$birthdate, .data$birthplace,
+                    .data$leg, .data$wyscoutId, .data$heimSpielId,
+                    .data$skillCornerId),
       by = c("playerId" = "id")
     ) %>%
     # fix some column names
     dplyr::rename(
-      dateTime = scheduledDate
+      dateTime = .data$scheduledDate
     )
 
   # define column order

@@ -9,6 +9,7 @@
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing all events and kpi values for a set of given
 #' match IDs
 #'
@@ -50,18 +51,18 @@ getEvents <- function (
           )
         )$data
       ) %>%
-    dplyr::select(id, iterationId, lastCalculationDate) %>%
+    dplyr::select(.data$id, .data$iterationId, .data$lastCalculationDate) %>%
     base::unique()
 
   # filter for fail matches
   fail_matches <- matchInfo %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == TRUE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == TRUE) %>%
+    dplyr::pull(.data$id)
 
   # filter for avilable matches
   matches <- matchInfo %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == FALSE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == FALSE) %>%
+    dplyr::pull(.data$id)
 
   # raise warnings
   if (base::length(fail_matches) > 0) {
@@ -133,7 +134,7 @@ getEvents <- function (
         )
       )$data %>%
       jsonlite::flatten() %>%
-      dplyr::select(id, name)
+      dplyr::select(.data$id, .data$name)
   }
 
   if (include_set_pieces) {
@@ -156,8 +157,8 @@ getEvents <- function (
           dplyr::mutate(matchId = ..1) %>%
         jsonlite::flatten()
       ) %>%
-      tidyr::unnest_longer(setPieceSubPhase) %>%
-      tidyr::unnest(setPieceSubPhase, names_sep = ".") %>%
+      tidyr::unnest_longer(.data$setPieceSubPhase) %>%
+      tidyr::unnest(.data$setPieceSubPhase, names_sep = ".") %>%
       dplyr::rename(setPiecePhaseIndex = "phaseIndex")
 
     # fix column names using regex
@@ -167,7 +168,7 @@ getEvents <- function (
     # merge events and set pieces
     events <- events %>%
       dplyr::left_join(
-        dplyr::select(set_pieces, -matchId, -squadId),
+        dplyr::select(set_pieces, -.data$matchId, -.data$squadId),
         by = c(
           "setPieceId" = "id",
           "setPieceSubPhaseId" = "setPieceSubPhaseId"
@@ -177,7 +178,7 @@ getEvents <- function (
 
   # get unique iterationIds
   iterations <- matchInfo %>%
-    dplyr::pull(iterationId) %>%
+    dplyr::pull(.data$iterationId) %>%
     base::unique()
 
 
@@ -198,7 +199,7 @@ getEvents <- function (
         )
       )$data
     ) %>%
-    dplyr::select(id, commonname) %>%
+    dplyr::select(.data$id, .data$commonname) %>%
     base::unique()
 
   # get squad master data from API
@@ -219,7 +220,7 @@ getEvents <- function (
       )$data %>%
         jsonlite::flatten()
     ) %>%
-    dplyr::select(id, name) %>%
+    dplyr::select(.data$id, .data$name) %>%
     base::unique()
 
   # fix column names using regex
@@ -258,13 +259,15 @@ getEvents <- function (
 
   # merge events with squads
   events <- events %>%
-    dplyr::left_join(dplyr::select(squads, squadId = id, squadName = name),
-                     by = base::c("squadId" = "squadId")) %>%
+    dplyr::left_join(
+      dplyr::select(squads, squadId = .data$id, squadName = .data$name),
+      by = base::c("squadId" = "squadId")
+    ) %>%
     dplyr::left_join(
       dplyr::select(
         squads,
-        squadId = id,
-        currentAttackingSquadName = name
+        squadId = .data$id,
+        currentAttackingSquadName = .data$name
       ),
       by = base::c("currentAttackingSquadId" = "squadId")
     )
@@ -272,27 +275,27 @@ getEvents <- function (
   # merge events with players
   events <- events %>%
     dplyr::left_join(
-      dplyr::select(players, id, playerName = commonname),
+      dplyr::select(players, .data$id, playerName = .data$commonname),
       by = base::c("playerId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(players, id, pressingPlayerName = commonname),
+      dplyr::select(players, .data$id, pressingPlayerName = .data$commonname),
       by = base::c("pressingPlayerId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(players, id, fouledPlayerName = commonname),
+      dplyr::select(players, .data$id, fouledPlayerName = .data$commonname),
       by = base::c("fouledPlayerId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(players, id, duelPlayerName = commonname),
+      dplyr::select(players, .data$id, duelPlayerName = .data$commonname),
       by = base::c("duelPlayerId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(players, id, passReceiverPlayerName = commonname),
+      dplyr::select(players, .data$id, passReceiverPlayerName = .data$commonname),
       by = base::c("passReceiverPlayerId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(players, id, dribbleOpponentPlayerName = commonname),
+      dplyr::select(players, .data$id, dribbleOpponentPlayerName = .data$commonname),
       by = base::c("dribblePlayerId" = "id")
     )
 
@@ -300,25 +303,25 @@ getEvents <- function (
     events <- events %>%
       dplyr::left_join(
         dplyr::select(
-          players, id, setPieceSubPhaseMainEventPlayerName = commonname
+          players, .data$id, setPieceSubPhaseMainEventPlayerName = .data$commonname
           ),
         by = base::c("setPieceSubPhaseMainEventPlayerId" = "id")
       ) %>%
       dplyr::left_join(
         dplyr::select(
-          players, id, setPieceSubPhasePassReceiverName = commonname
+          players, .data$id, setPieceSubPhasePassReceiverName = .data$commonname
         ),
         by = base::c("setPieceSubPhasePassReceiverId" = "id")
       ) %>%
       dplyr::left_join(
         dplyr::select(
-          players, id, setPieceSubPhaseFirstTouchPlayerName = commonname
+          players, .data$id, setPieceSubPhaseFirstTouchPlayerName = .data$commonname
         ),
         by = base::c("setPieceSubPhaseFirstTouchPlayerId" = "id")
       ) %>%
       dplyr::left_join(
         dplyr::select(
-          players, id, setPieceSubPhaseSecondTouchPlayerName = commonname
+          players, .data$id, setPieceSubPhaseSecondTouchPlayerName = .data$commonname
         ),
         by = base::c("setPieceSubPhaseSecondTouchPlayerId" = "id")
       )

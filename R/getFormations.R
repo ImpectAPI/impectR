@@ -7,6 +7,7 @@
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing all starting formations for a set of given
 #' match IDs
 #'
@@ -65,17 +66,17 @@ getFormations <- function (
 
   # filter for fail matches
   fail_matches <- match_info %>%
-    dplyr::select(id, lastCalculationDate) %>%
+    dplyr::select(.data$id, .data$lastCalculationDate) %>%
     base::unique() %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == TRUE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == TRUE) %>%
+    dplyr::pull(.data$id)
 
   # filter for available matches
   matches <- match_info %>%
-    dplyr::select(id, lastCalculationDate) %>%
+    dplyr::select(.data$id, .data$lastCalculationDate) %>%
     base::unique() %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == FALSE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == FALSE) %>%
+    dplyr::pull(.data$id)
 
   # raise warnings
   if (base::length(fail_matches) > 0) {
@@ -94,7 +95,7 @@ getFormations <- function (
 
   # get unique iterationIds
   iterations <- match_info %>%
-    dplyr::pull(iterationId) %>%
+    dplyr::pull(.data$iterationId) %>%
     base::unique()
 
   # get squad master data from API
@@ -115,7 +116,7 @@ getFormations <- function (
       )$data %>%
         jsonlite::flatten()
     ) %>%
-    dplyr::select(id, name) %>%
+    dplyr::select(.data$id, .data$name) %>%
     base::unique()
 
   # fix column names using regex
@@ -132,48 +133,53 @@ getFormations <- function (
   # extract formations
   formations_home <- match_info %>%
     dplyr::select(
-      id, squadId = squadHomeId, squadFormations = squadHomeFormations
-      )
+      .data$id,
+      squadId = .data$squadHomeId,
+      squadFormations = .data$squadHomeFormations
+    )
 
   formations_away <- match_info %>%
     dplyr::select(
-      id, squadId = squadAwayId, squadFormations = squadAwayFormations
-      )
+      .data$id,
+      squadId = .data$squadAwayId,
+      squadFormations = .data$squadAwayFormations
+    )
 
   # combine data frames
   formations <- dplyr::bind_rows(formations_home, formations_away)
 
   # unnest formations column
   formations <- formations %>%
-    tidyr::unnest_longer(squadFormations)
+    tidyr::unnest_longer(.data$squadFormations)
 
   # normalize the JSON structure into separate columns
   formations <- formations %>%
-    tidyr::unnest(squadFormations)
+    tidyr::unnest(.data$squadFormations)
 
   # start merging dfs
 
   # merge formations with squads
   formations <- formations %>%
     dplyr::left_join(
-      dplyr::select(squads, squadId = id, squadName = name),
+      dplyr::select(squads, squadId = .data$id, squadName = .data$name),
       by = base::c("squadId" = "squadId")
     )
 
   # merge with matches info
   formations <- formations %>%
     dplyr::left_join(
-      dplyr::select(matchplan, id, skillCornerId, heimSpielId, wyscoutId,
-                    matchDayIndex, matchDayName, scheduledDate,
-                    lastCalculationDate, iterationId),
+      dplyr::select(matchplan, .data$id, .data$skillCornerId, .data$heimSpielId,
+                    .data$wyscoutId, .data$matchDayIndex, .data$matchDayName,
+                    .data$scheduledDate, .data$lastCalculationDate,
+                    .data$iterationId),
       by = base::c("id" = "id")
     )
 
   # merge with competition info
   formations <- formations %>%
     dplyr::left_join(
-      dplyr::select(iterations, id, competitionName, competitionId,
-                    competitionType, season),
+      dplyr::select(iterations, .data$id, .data$competitionName,
+                    .data$competitionId, .data$competitionType, .data$season),
       by = base::c("iterationId" = "id")
       )
 

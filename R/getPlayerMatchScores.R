@@ -26,6 +26,7 @@ allowed_positions <- c(
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing the scores aggregated per player and
 #' position for the given match ID and list of positions
 #'
@@ -69,18 +70,18 @@ getPlayerMatchScores <- function (matches, positions, token) {
         )
       )$data
     ) %>%
-    dplyr::select(id, iterationId, lastCalculationDate) %>%
+    dplyr::select(.data$id, .data$iterationId, .data$lastCalculationDate) %>%
     base::unique()
 
   # filter for fail matches
   fail_matches <- matchInfo %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == TRUE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == TRUE) %>%
+    dplyr::pull(.data$id)
 
   # filter for avilable matches
   matches <- matchInfo %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == FALSE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == FALSE) %>%
+    dplyr::pull(.data$id)
 
   # raise warnings
   if (base::length(fail_matches) > 0) {
@@ -124,7 +125,7 @@ getPlayerMatchScores <- function (matches, positions, token) {
 
   # get unique iterationIds
   iterations <- matchInfo %>%
-    dplyr::pull(iterationId) %>%
+    dplyr::pull(.data$iterationId) %>%
     base::unique()
 
   # get player master data from API
@@ -145,8 +146,9 @@ getPlayerMatchScores <- function (matches, positions, token) {
       )$data
     ) %>%
     dplyr::select(
-      id, playerName = commonname, firstname,
-      lastname, birthdate, birthplace, leg, idMappings
+      .data$id, playerName = .data$commonname, .data$firstname,
+      .data$lastname, .data$birthdate, .data$birthplace, .data$leg,
+      .data$idMappings
     ) %>%
     base::unique()
 
@@ -171,7 +173,7 @@ getPlayerMatchScores <- function (matches, positions, token) {
       )$data %>%
         jsonlite::flatten()
     ) %>%
-    dplyr::select(id, name) %>%
+    dplyr::select(.data$id, .data$name) %>%
     base::unique()
 
   # get kpi names from API
@@ -186,7 +188,7 @@ getPlayerMatchScores <- function (matches, positions, token) {
     )
   )$data %>%
     jsonlite::flatten() %>%
-    dplyr::select(id, name)
+    dplyr::select(.data$id, .data$name)
 
   # get matchplan data
   matchplan <-
@@ -231,7 +233,7 @@ getPlayerMatchScores <- function (matches, positions, token) {
           values_fn = base::sum
         ) %>%
         # filter for non NA columns that were created by full join
-        dplyr::filter(base::is.na(playerId) == FALSE) %>%
+        dplyr::filter(base::is.na(.data$playerId) == FALSE) %>%
         # remove the "NA" column if it exists
         dplyr::select(-dplyr::matches("^NA$")) %>%
         dplyr::mutate(
@@ -293,29 +295,32 @@ getPlayerMatchScores <- function (matches, positions, token) {
   scores <- scores %>%
     dplyr::left_join(
       dplyr::select(
-        matchplan, id, scheduledDate, matchDayIndex, matchDayName, iterationId
+        matchplan, .data$id, .data$scheduledDate, .data$matchDayIndex,
+        .data$matchDayName, .data$iterationId
       ),
       by = c("matchId" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
-        iterations, id, competitionId, competitionName, competitionType, season
+        iterations, .data$id, .data$competitionId, .data$competitionName,
+        .data$competitionType, .data$season
       ),
       by = c("iterationId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(squads, id, squadName = name),
+      dplyr::select(squads, .data$id, squadName = .data$name),
       by = c("squadId" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
-        players, id, wyscoutId, heimSpielId, skillCornerId,
-        playerName, firstname, lastname, birthdate, birthplace, leg
+        players, .data$id, .data$wyscoutId, .data$heimSpielId,
+        .data$skillCornerId, .data$playerName, .data$firstname, .data$lastname,
+        .data$birthdate, .data$birthplace, .data$leg
       ),
       by = c("playerId" = "id")) %>%
     # fix some column names
     dplyr::rename(
-      dateTime = scheduledDate
+      dateTime = .data$scheduledDate
     )
 
   # define column order

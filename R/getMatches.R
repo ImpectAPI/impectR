@@ -6,6 +6,7 @@
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing all matches for a given iteration ID
 #'
 #'
@@ -59,23 +60,23 @@ getMatches <- function(iteration, token) {
                      by = c("homeSquadId" = "id"),
                      suffix = c("", "_home")) %>%
     dplyr::rename(
-      homeSquadName = name,
-      homeSquadType = type,
-      homeSquadSkillCornerId = skillCornerId_home,
-      homeSquadHeimSpielId = heimSpielId_home,
-      homeSquadWyscoutId = wyscoutId_home,
-      homeSquadCountryId = countryId
+      homeSquadName = .data$name,
+      homeSquadType = .data$type,
+      homeSquadSkillCornerId = .data$skillCornerId_home,
+      homeSquadHeimSpielId = .data$heimSpielId_home,
+      homeSquadWyscoutId = .data$wyscoutId_home,
+      homeSquadCountryId = .data$countryId
     ) %>%
     dplyr::left_join(squads,
                      by = c("awaySquadId" = "id"),
                      suffix = c("", "_away")) %>%
     dplyr::rename(
-      awaySquadName = name,
-      awaySquadType = type,
-      awaySquadSkillCornerId = skillCornerId_away,
-      awaySquadHeimSpielId = heimSpielId_away,
-      awaySquadWyscoutId = wyscoutId_away,
-      awaySquadCountryId = countryId
+      awaySquadName = .data$name,
+      awaySquadType = .data$type,
+      awaySquadSkillCornerId = .data$skillCornerId_away,
+      awaySquadHeimSpielId = .data$heimSpielId_away,
+      awaySquadWyscoutId = .data$wyscoutId_away,
+      awaySquadCountryId = .data$countryId
     )
 
   # get countries data from API
@@ -94,39 +95,39 @@ getMatches <- function(iteration, token) {
   # merge matches with countries
   matches <- matches %>%
     dplyr::left_join(countries, by = c("homeSquadCountryId" = "id")) %>%
-    dplyr::rename(homeSquadCountryName = fifaName) %>%
+    dplyr::rename(homeSquadCountryName = .data$fifaName) %>%
     dplyr::left_join(countries, by = c("awaySquadCountryId" = "id")) %>%
-    dplyr::rename(awaySquadCountryName = fifaName)
+    dplyr::rename(awaySquadCountryName = .data$fifaName)
 
   # reorder columns
   matches <- matches %>%
     dplyr::select(
-      id,
-      skillCornerId,
-      heimSpielId,
-      wyscoutId,
-      iterationId,
-      matchDayIndex,
-      matchDayName,
-      homeSquadId,
-      homeSquadName,
-      homeSquadType,
-      homeSquadCountryId,
-      homeSquadCountryName,
-      homeSquadSkillCornerId,
-      homeSquadHeimSpielId,
-      homeSquadWyscoutId,
-      awaySquadId,
-      awaySquadName,
-      awaySquadType,
-      awaySquadCountryId,
-      awaySquadCountryName,
-      awaySquadSkillCornerId,
-      awaySquadHeimSpielId,
-      awaySquadWyscoutId,
-      scheduledDate,
-      lastCalculationDate,
-      available
+      .data$id,
+      .data$skillCornerId,
+      .data$heimSpielId,
+      .data$wyscoutId,
+      .data$iterationId,
+      .data$matchDayIndex,
+      .data$matchDayName,
+      .data$homeSquadId,
+      .data$homeSquadName,
+      .data$homeSquadType,
+      .data$homeSquadCountryId,
+      .data$homeSquadCountryName,
+      .data$homeSquadSkillCornerId,
+      .data$homeSquadHeimSpielId,
+      .data$homeSquadWyscoutId,
+      .data$awaySquadId,
+      .data$awaySquadName,
+      .data$awaySquadType,
+      .data$awaySquadCountryId,
+      .data$awaySquadCountryName,
+      .data$awaySquadSkillCornerId,
+      .data$awaySquadHeimSpielId,
+      .data$awaySquadWyscoutId,
+      .data$scheduledDate,
+      .data$lastCalculationDate,
+      .data$available
     )
 
   # return matches

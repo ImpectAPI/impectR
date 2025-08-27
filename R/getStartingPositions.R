@@ -7,6 +7,7 @@
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing all starting positions for a set of given
 #' match IDs
 #'
@@ -67,17 +68,17 @@ getStartingPositions <- function (
 
   # filter for fail matches
   fail_matches <- match_info %>%
-    dplyr::select(matchId, lastCalculationDate) %>%
+    dplyr::select(.data$matchId, .data$lastCalculationDate) %>%
     base::unique() %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == TRUE) %>%
-    dplyr::pull(matchId)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == TRUE) %>%
+    dplyr::pull(.data$matchId)
 
   # filter for available matches
   matches <- match_info %>%
-    dplyr::select(matchId, lastCalculationDate) %>%
+    dplyr::select(.data$matchId, .data$lastCalculationDate) %>%
     base::unique() %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == FALSE) %>%
-    dplyr::pull(matchId)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == FALSE) %>%
+    dplyr::pull(.data$matchId)
 
   # raise warnings
   if (base::length(fail_matches) > 0) {
@@ -96,7 +97,7 @@ getStartingPositions <- function (
 
   # get unique iterationIds
   iterations <- match_info %>%
-    dplyr::pull(iterationId) %>%
+    dplyr::pull(.data$iterationId) %>%
     base::unique()
 
 
@@ -140,7 +141,7 @@ getStartingPositions <- function (
       )$data %>%
         jsonlite::flatten()
     ) %>%
-    dplyr::select(id, name) %>%
+    dplyr::select(.data$id, .data$name) %>%
     base::unique()
 
   # fix column names using regex
@@ -157,12 +158,14 @@ getStartingPositions <- function (
   # extract shirt numbers
   shirt_numbers_home <- match_info %>%
     dplyr::select(
-      matchId, squadId = squadHomeId, squadPlayers = squadHomePlayers
+      .data$matchId, squadId = .data$squadHomeId,
+      squadPlayers = .data$squadHomePlayers
     )
 
   shirt_numbers_away <- match_info %>%
     dplyr::select(
-      matchId, squadId = squadAwayId, squadPlayers = squadAwayPlayers
+      .data$matchId, squadId = .data$squadAwayId,
+      squadPlayers = .data$squadAwayPlayers
     )
 
   # combine data frames
@@ -170,26 +173,26 @@ getStartingPositions <- function (
 
   # unnest players column
   shirt_numbers <- shirt_numbers %>%
-    tidyr::unnest_longer(squadPlayers)
+    tidyr::unnest_longer(.data$squadPlayers)
 
   # normalize the JSON structure into separate columns
   shirt_numbers <- shirt_numbers %>%
-    tidyr::unnest(squadPlayers) %>%
+    tidyr::unnest(.data$squadPlayers) %>%
     dplyr::rename("playerId" = "id")
 
   # extract starting positions
   starting_positions_home <- match_info %>%
     dplyr::select(
-      matchId,
-      squadId = squadHomeId,
-      squadStartingPositions = squadHomeStartingPositions
+      .data$matchId,
+      squadId = .data$squadHomeId,
+      squadStartingPositions = .data$squadHomeStartingPositions
     )
 
   starting_positions_away <- match_info %>%
     dplyr::select(
-      matchId,
-      squadId = squadAwayId,
-      squadStartingPositions = squadAwayStartingPositions
+      .data$matchId,
+      squadId = .data$squadAwayId,
+      squadStartingPositions = .data$squadAwayStartingPositions
     )
 
   # combine data frames
@@ -199,18 +202,18 @@ getStartingPositions <- function (
 
   # unnest starting_positions column
   starting_positions <- starting_positions %>%
-    tidyr::unnest_longer(squadStartingPositions)
+    tidyr::unnest_longer(.data$squadStartingPositions)
 
   # normalize the JSON structure into separate columns
   starting_positions <- starting_positions %>%
-    tidyr::unnest(squadStartingPositions)
+    tidyr::unnest(.data$squadStartingPositions)
 
   # start merging dfs
 
   # merge starting_positions with squads
   starting_positions <- starting_positions %>%
     dplyr::left_join(
-      dplyr::select(squads, squadId = id, squadName = name),
+      dplyr::select(squads, squadId = .data$id, squadName = .data$name),
       by = base::c("squadId" = "squadId")
     )
 
@@ -226,23 +229,24 @@ getStartingPositions <- function (
   # merge with players
   starting_positions <- starting_positions %>%
     dplyr::left_join(
-      dplyr::select(players, id, playerName = commonname),
+      dplyr::select(players, .data$id, playerName = .data$commonname),
       by = base::c("playerId" = "id")
     )
 
   # merge with matches info
   starting_positions <- starting_positions %>%
     dplyr::left_join(
-      dplyr::select(matchplan, id, matchDayIndex, matchDayName,
-                    dateTime = scheduledDate,lastCalculationDate, iterationId),
+      dplyr::select(matchplan, .data$id, .data$matchDayIndex, .data$matchDayName,
+                    dateTime = .data$scheduledDate, .data$lastCalculationDate,
+                    .data$iterationId),
       by = base::c("matchId" = "id")
     )
 
   # merge with competition info
   starting_positions <- starting_positions %>%
     dplyr::left_join(
-      dplyr::select(iterations, id, competitionName, competitionId,
-                    competitionType, season),
+      dplyr::select(iterations, .data$id, .data$competitionName,
+                    .data$competitionId, .data$competitionType, .data$season),
       by = base::c("iterationId" = "id")
     )
 

@@ -6,6 +6,7 @@
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing the squad ratings for the given iteration ID
 #'
 #' @examples
@@ -34,7 +35,7 @@ getSquadRatings <- function (iteration, token) {
     )
   )$data %>%
     jsonlite::flatten() %>%
-    dplyr::select(id, name, idMappings) %>%
+    dplyr::select(.data$id, .data$name, .data$idMappings) %>%
     base::unique()
 
   # clean data
@@ -66,17 +67,18 @@ getSquadRatings <- function (iteration, token) {
 
   # merge with other data
   ratings <- ratings %>%
-    tidyr::unnest(squadRatings) %>%
+    tidyr::unnest(.data$squadRatings) %>%
     dplyr::left_join(
       dplyr::select(
-        squads, id, wyscoutId, heimSpielId, skillCornerId, squadName = name
+        squads, .data$id, .data$wyscoutId, .data$heimSpielId,
+        .data$skillCornerId, squadName = .data$name
       ),
       by = c("squadId" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
-        iterations, id, competitionId, competitionName,
-        competitionType, season, competitionGender
+        iterations, .data$id, .data$competitionId, .data$competitionName,
+        .data$competitionType, .data$season, .data$competitionGender
       ),
       by = c("iterationId" = "id")
     )

@@ -25,6 +25,7 @@ allowed_positions <- c(
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing the player scores aggregated per player for
 #' the given iteration ID and list of positions
 #'
@@ -69,8 +70,8 @@ getPlayerIterationScores <- function (iteration, positions, token) {
 
   # get squadIds
   squadIds <- squads %>%
-    dplyr::filter(access == TRUE) %>%
-    dplyr::pull(id) %>%
+    dplyr::filter(.data$access == TRUE) %>%
+    dplyr::pull(.data$id) %>%
     base::unique()
 
   # get player iteration scores from API
@@ -160,7 +161,7 @@ getPlayerIterationScores <- function (iteration, positions, token) {
     )
   )$data %>%
     jsonlite::flatten() %>%
-    dplyr::select(id, name)
+    dplyr::select(.data$id, .data$name)
 
   # get competitions
   iterations <- getIterations(token = token)
@@ -171,45 +172,56 @@ getPlayerIterationScores <- function (iteration, positions, token) {
   scores <- scores_raw %>%
     tidyr::unnest("playerScores", keep_empty = TRUE) %>%
     dplyr::select(
-      iterationId,
-      squadId,
-      playerId,
-      playDuration,
-      matchShare,
-      playerScoreId,
-      value
+      .data$iterationId,
+      .data$squadId,
+      .data$playerId,
+      .data$playDuration,
+      .data$matchShare,
+      .data$playerScoreId,
+      .data$value
     ) %>%
     # add column to store positions string
     dplyr::mutate(positions = position_string) %>%
     # join with kpis to ensure all scores are present and order by playerScoreId
     dplyr::full_join(score_list, by = c("playerScoreId" = "id")) %>%
-    dplyr::arrange(playerScoreId, playerId) %>%
+    dplyr::arrange(.data$playerScoreId, .data$playerId) %>%
     # drop playerScoreId column
-    dplyr::select(-playerScoreId) %>%
+    dplyr::select(-.data$playerScoreId) %>%
     # pivot data
     tidyr::pivot_wider(
-      names_from = name,
-      values_from = value,
+      names_from = .data$name,
+      values_from = .data$value,
       values_fill = 0,
       values_fn = base::sum
     ) %>%
     # filter for non NA columns that were created by full join
-    dplyr::filter(base::is.na(playerId) == FALSE) %>%
+    dplyr::filter(base::is.na(.data$playerId) == FALSE) %>%
     # remove the "NA" column if it exists
     dplyr::select(-dplyr::matches("^NA$"))
 
   # merge with other data
   scores <- scores %>%
-    dplyr::left_join(dplyr::select(squads, id, squadName = name),
+    dplyr::left_join(dplyr::select(squads, .data$id, squadName = .data$name),
                      by = c("squadId" = "id")) %>%
     dplyr::left_join(
       dplyr::select(
-        players, id, wyscoutId, heimSpielId, skillCornerId,
-        playerName = commonname, firstname, lastname, birthdate, birthplace, leg
+        players,
+        .data$id,
+        .data$wyscoutId,
+        .data$heimSpielId,
+        .data$skillCornerId,
+        playerName = .data$commonname,
+        .data$firstname,
+        .data$lastname,
+        .data$birthdate,
+        .data$birthplace,
+        .data$leg
       ),
       by = c("playerId" = "id")) %>%
-    dplyr::left_join(dplyr::select(iterations, id, competitionName, season),
-                     by = c("iterationId" = "id"))
+    dplyr::left_join(dplyr::select(
+      iterations, .data$id, .data$competitionName, .data$season),
+      by = c("iterationId" = "id")
+    )
 
   # define column order
   order <- c(

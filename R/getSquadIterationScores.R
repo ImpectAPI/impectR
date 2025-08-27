@@ -6,6 +6,7 @@
 #' @export
 
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing the squad scores aggregated per squad for the
 #' given iteration ID
 #'
@@ -37,12 +38,12 @@ getSquadIterationScores <- function (iteration, token) {
       )
     )$data %>%
     jsonlite::flatten() %>%
-    dplyr::select(id, name, idMappings) %>%
+    dplyr::select(.data$id, .data$name, .data$idMappings) %>%
     base::unique()
 
   # get squad Ids
   squadIds <- squads %>%
-    dplyr::pull(id)
+    dplyr::pull(.data$id)
 
   # clean data
   squads <- .cleanData(squads)
@@ -74,7 +75,7 @@ getSquadIterationScores <- function (iteration, token) {
     )
   )$data %>%
     jsonlite::flatten() %>%
-    dplyr::select(id, name)
+    dplyr::select(.data$id, .data$name)
 
   # get competitions
   iterations <- getIterations(token = token)
@@ -83,39 +84,41 @@ getSquadIterationScores <- function (iteration, token) {
 
   # unnest scores
   scores <- scores_raw %>%
-    tidyr::unnest(squadScores) %>%
+    tidyr::unnest(.data$squadScores) %>%
     dplyr::select(
-      iterationId,
-      squadId,
-      matches,
-      squadScoreId,
-      value) %>%
+      .data$iterationId,
+      .data$squadId,
+      .data$matches,
+      .data$squadScoreId,
+      .data$value) %>%
     # join with kpis to ensure all kpiIds are present and order by kpiId
     dplyr::full_join(score_list, by = c("squadScoreId" = "id")) %>%
-    dplyr::arrange(squadScoreId, squadId) %>%
+    dplyr::arrange(.data$squadScoreId, .data$squadId) %>%
     # drop kpiId column
-    dplyr::select(-squadScoreId) %>%
+    dplyr::select(-.data$squadScoreId) %>%
     # pivot data
     tidyr::pivot_wider(
-      names_from = name,
-      values_from = value,
+      names_from = .data$name,
+      values_from = .data$value,
       values_fill = 0,
       values_fn = base::sum
     ) %>%
     # filter for non NA columns that were created by full join
-    dplyr::filter(base::is.na(squadId) == FALSE)
+    dplyr::filter(base::is.na(.data$squadId) == FALSE)
 
   # merge with other data
   scores <- scores %>%
     dplyr::left_join(
       dplyr::select(
-        squads, id, wyscoutId, heimSpielId, skillCornerId, squadName = name
+        squads, .data$id, .data$wyscoutId, .data$heimSpielId,
+        .data$skillCornerId, squadName = .data$name
       ),
       by = c("squadId" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
-        iterations, id, competitionId, competitionName, competitionType, season
+        iterations, .data$id, .data$competitionId, .data$competitionName,
+        .data$competitionType, .data$season
       ),
       by = c("iterationId" = "id")
     )

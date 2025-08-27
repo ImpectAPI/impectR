@@ -26,6 +26,7 @@ allowed_positions <- c(
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing the player profilescores aggregated per player
 #' for the given iteration ID and list of positions
 #'
@@ -70,8 +71,8 @@ getPlayerProfileScores <- function (iteration, positions, token) {
 
   # get squadIds
   squadIds <- squads %>%
-    dplyr::filter(access == TRUE) %>%
-    dplyr::pull(id) %>%
+    dplyr::filter(.data$access == TRUE) %>%
+    dplyr::pull(.data$id) %>%
     base::unique()
 
   # get player profile scores from API
@@ -161,7 +162,7 @@ getPlayerProfileScores <- function (iteration, positions, token) {
     )
   )$data %>%
     jsonlite::flatten() %>%
-    dplyr::select(name)
+    dplyr::select(.data$name)
 
   # get competitions
   iterations <- getIterations(token = token)
@@ -172,44 +173,46 @@ getPlayerProfileScores <- function (iteration, positions, token) {
   scores <- scores_raw %>%
     tidyr::unnest("profileScores", keep_empty = TRUE) %>%
     dplyr::select(
-      iterationId,
-      squadId,
-      playerId,
-      playDuration,
-      matchShare,
-      profileName,
-      value
+      .data$iterationId,
+      .data$squadId,
+      .data$playerId,
+      .data$playDuration,
+      .data$matchShare,
+      .data$profileName,
+      .data$value
     ) %>%
     # add column to store positions string
     dplyr::mutate(positions = position_string) %>%
     # join with profiles to ensure all profiles are present and order by profile
     dplyr::full_join(profile_list, by = c("profileName" = "name")) %>%
-    dplyr::arrange(profileName, playerId) %>%
+    dplyr::arrange(.data$profileName, .data$playerId) %>%
     # pivot data
     tidyr::pivot_wider(
-      names_from = profileName,
-      values_from = value,
+      names_from = .data$profileName,
+      values_from = .data$value,
       values_fill = 0,
       values_fn = base::sum
     ) %>%
     # filter for non NA columns that were created by full join
-    dplyr::filter(base::is.na(playerId) == FALSE) %>%
+    dplyr::filter(base::is.na(.data$playerId) == FALSE) %>%
     # remove the "NA" column if it exists
     dplyr::select(-dplyr::matches("^NA$"))
 
   # merge with other data
   scores <- scores %>%
-    dplyr::left_join(dplyr::select(squads, id, squadName = name),
+    dplyr::left_join(dplyr::select(squads, .data$id, squadName = .data$name),
                      by = c("squadId" = "id")) %>%
     dplyr::left_join(
       dplyr::select(
-        players, id, wyscoutId, heimSpielId, skillCornerId,
-        playerName = commonname, firstname, lastname, birthdate, birthplace, leg
+        players, .data$id, .data$wyscoutId, .data$heimSpielId,
+        .data$skillCornerId, playerName = .data$commonname, .data$firstname,
+        .data$lastname, .data$birthdate, .data$birthplace, .data$leg
       ),
       by = c("playerId" = "id")) %>%
     dplyr::left_join(
       dplyr::select(
-        iterations, id, competitionId, competitionName, competitionType, season
+        iterations, .data$id, .data$competitionId, .data$competitionName,
+        .data$competitionType, .data$season
         ),
         by = c("iterationId" = "id")
       )

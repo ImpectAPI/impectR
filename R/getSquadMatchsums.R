@@ -6,6 +6,7 @@
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing the matchsums aggregated per squad for the given match ID
 #'
 #' @examples
@@ -41,18 +42,18 @@ getSquadMatchsums <- function (matches, token) {
         )
       )$data
     ) %>%
-    dplyr::select(id, iterationId, lastCalculationDate) %>%
+    dplyr::select(.data$id, .data$iterationId, .data$lastCalculationDate) %>%
     base::unique()
 
   # filter for fail matches
   fail_matches <- matchInfo %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == TRUE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == TRUE) %>%
+    dplyr::pull(.data$id)
 
   # filter for avilable matches
   matches <- matchInfo %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == FALSE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == FALSE) %>%
+    dplyr::pull(.data$id)
 
   # raise warnings
   if (base::length(fail_matches) > 0) {
@@ -89,7 +90,7 @@ getSquadMatchsums <- function (matches, token) {
 
   # get unique iterationIds
   iterations <- matchInfo %>%
-    dplyr::pull(iterationId) %>%
+    dplyr::pull(.data$iterationId) %>%
     base::unique()
 
   # get squad master data from API
@@ -110,7 +111,7 @@ getSquadMatchsums <- function (matches, token) {
       )$data %>%
         jsonlite::flatten()
     ) %>%
-    dplyr::select(id, name, idMappings) %>%
+    dplyr::select(.data$id, .data$name, .data$idMappings) %>%
     base::unique()
 
   # clean data
@@ -128,7 +129,7 @@ getSquadMatchsums <- function (matches, token) {
     )
   )$data %>%
     jsonlite::flatten() %>%
-    dplyr::select(id, name)
+    dplyr::select(.data$id, .data$name)
 
   # get matchplan data
   matchplan <-
@@ -145,27 +146,27 @@ getSquadMatchsums <- function (matches, token) {
     temp <-
       base::data.frame(dict[[side]]) %>%
       dplyr::rename(
-        squadId = id,
-        kpiId = kpis.kpiId,
-        value = kpis.value
+        squadId = .data$id,
+        kpiId = .data$kpis.kpiId,
+        value = .data$kpis.value
       )
 
     # unnest scorings
     temp <- temp %>%
       # join with kpis to ensure all kpiIds are present and order by kpiId
       dplyr::full_join(kpis, by = c("kpiId" = "id")) %>%
-      dplyr::arrange(kpiId, squadId) %>%
+      dplyr::arrange(.data$kpiId, .data$squadId) %>%
       # drop kpiId column
-      dplyr::select(-kpiId) %>%
+      dplyr::select(-.data$kpiId) %>%
       # pivot data
       tidyr::pivot_wider(
-        names_from = name,
-        values_from = value,
+        names_from = .data$name,
+        values_from = .data$value,
         values_fill = 0,
         values_fn = base::sum
       ) %>%
       # filter for non NA columns that were created by full join
-      dplyr::filter(base::is.na(squadId) == FALSE) %>%
+      dplyr::filter(base::is.na(.data$squadId) == FALSE) %>%
       dplyr::mutate(
         # add matchId
         matchId = dict$matchId)
@@ -192,25 +193,28 @@ getSquadMatchsums <- function (matches, token) {
   matchsums <- matchsums %>%
     dplyr::left_join(
       dplyr::select(
-        matchplan, id, scheduledDate, matchDayIndex, matchDayName, iterationId
+        matchplan, .data$id, .data$scheduledDate, .data$matchDayIndex,
+        .data$matchDayName, .data$iterationId
       ),
       by = c("matchId" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
-        iterations, id, competitionId, competitionName, competitionType, season
+        iterations, .data$id, .data$competitionId, .data$competitionName,
+        .data$competitionType, .data$season
       ),
       by = c("iterationId" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
-        squads, squadId = id, wyscoutId, heimSpielId, skillCornerId, squadName = name
+        squads, squadId = .data$id, .data$wyscoutId, .data$heimSpielId,
+        .data$skillCornerId, squadName = .data$name
       ),
       by = c("squadId" = "squadId")
     ) %>%
     # fix some column names
     dplyr::rename(
-      dateTime = scheduledDate,
+      dateTime = .data$scheduledDate,
     )
 
   # define column order

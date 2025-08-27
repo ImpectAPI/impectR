@@ -6,6 +6,7 @@
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing the KPI averages aggregated per player and
 #' position for the given iteration ID
 #'
@@ -40,8 +41,8 @@ getPlayerIterationAverages <- function (iteration, token) {
 
   # get squadIds
   squadIds <- squads %>%
-    dplyr::filter(access == TRUE) %>%
-    dplyr::pull(id) %>%
+    dplyr::filter(.data$access == TRUE) %>%
+    dplyr::pull(.data$id) %>%
     base::unique()
 
   # get player iteration averages for all squads from API
@@ -97,7 +98,7 @@ getPlayerIterationAverages <- function (iteration, token) {
     )
   )$data %>%
     jsonlite::flatten() %>%
-    dplyr::select(id, name)
+    dplyr::select(.data$id, .data$name)
 
   # get iterations from API
   iterations <- getIterations(token = token)
@@ -108,44 +109,55 @@ getPlayerIterationAverages <- function (iteration, token) {
   averages <- averages_raw %>%
     tidyr::unnest("kpis", keep_empty = TRUE) %>%
     dplyr::select(
-      iterationId,
-      squadId,
-      playerId,
-      position,
-      playDuration,
-      matchShare,
-      kpiId,
-      value
+      .data$iterationId,
+      .data$squadId,
+      .data$playerId,
+      .data$position,
+      .data$playDuration,
+      .data$matchShare,
+      .data$kpiId,
+      .data$value
     ) %>%
     # join with kpis to ensure all kpiIds are present and order by kpiId
     dplyr::full_join(kpis, by = c("kpiId" = "id")) %>%
-    dplyr::arrange(kpiId, playerId) %>%
+    dplyr::arrange(.data$kpiId, .data$playerId) %>%
     # drop kpiId column
-    dplyr::select(-kpiId) %>%
+    dplyr::select(-.data$kpiId) %>%
     # pivot data
     tidyr::pivot_wider(
-      names_from = name,
-      values_from = value,
+      names_from = .data$name,
+      values_from = .data$value,
       values_fill = 0,
       values_fn = base::sum
     ) %>%
     # filter for non NA columns that were created by full join
-    dplyr::filter(base::is.na(playerId) == FALSE) %>%
+    dplyr::filter(base::is.na(.data$playerId) == FALSE) %>%
     # remove the "NA" column if it exists
     dplyr::select(-dplyr::matches("^NA$"))
 
   # merge with other data
   averages <- averages %>%
-    dplyr::left_join(dplyr::select(squads, id, squadName = name),
+    dplyr::left_join(dplyr::select(squads, .data$id, squadName = .data$name),
                      by = c("squadId" = "id")) %>%
     dplyr::left_join(
       dplyr::select(
-        players, id, wyscoutId, heimSpielId, skillCornerId,
-        playerName = commonname, firstname, lastname, birthdate, birthplace, leg
+        players,
+        .data$id,
+        .data$wyscoutId,
+        .data$heimSpielId,
+        .data$skillCornerId,
+        playerName = .data$commonname,
+        .data$firstname,
+        .data$lastname,
+        .data$birthdate,
+        .data$birthplace,
+        .data$leg
       ),
       by = c("playerId" = "id")) %>%
-    dplyr::left_join(dplyr::select(iterations, id, competitionName, season),
-                     by = c("iterationId" = "id"))
+    dplyr::left_join(dplyr::select(
+      iterations, .data$id, .data$competitionName, .data$season),
+      by = c("iterationId" = "id")
+    )
 
   # define column order
   order <- c(
