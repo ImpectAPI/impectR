@@ -1,6 +1,6 @@
 #' Return a dataframe that contains squad level scores and ratios for a given match ID
 #'
-#' @param matches Impect match IDs
+#' @param matches 'IMPECT' match IDs
 #' @param token bearer token
 #'
 #' @export
@@ -10,10 +10,18 @@
 #' @return a dataframe containing the scores and rations aggregated per squad for the given match ID
 #'
 #' @examples
-#' \donttest{
-#' try({ # prevent cran errors
-#'   squadMatchScores <- getSquadMatchsums(84248, token)
-#' })
+#' # Toy example: this will error quickly (no API token)
+#' try(squad_match_scores <- getSquadMatchScores(
+#'   matches = c(0, 1),
+#'   token = "invalid"
+#' ))
+#'
+#' # Real usage: requires valid Bearer Token from `getAccessToken()`
+#' \dontrun{
+#' squad_match_scores <- getSquadMatchScores(
+#'   matches = c(84248, 158150),
+#'   token = "yourToken"
+#' )
 #' }
 getSquadMatchScores <- function (matches, token) {
 

@@ -1,6 +1,6 @@
 #' Return a dataframe that contains all squads averages for a given iteration ID
 #'
-#' @param iteration Impect iteration ID
+#' @param iteration 'IMPECT' iteration ID
 #' @param token bearer token
 
 #' @export
@@ -11,10 +11,18 @@
 #' given iteration ID
 #'
 #' @examples
-#' \donttest{
-#' try({ # prevent cran errors
-#'   squadIterationAverages <- getSquadIterationAverages(518, token)
-#' })
+#' # Toy example: this will error quickly (no API token)
+#' try(squad_avgs <- getSquadIterationAverages(
+#'   iteration = 0,
+#'   token = "invalid"
+#' ))
+#'
+#' # Real usage: requires valid Bearer Token from `getAccessToken()`
+#' \dontrun{
+#' squad_avgs <- getSquadIterationAverages(
+#'   iteration = 1004,
+#'   token = "yourToken"
+#' )
 #' }
 getSquadIterationAverages <- function (iteration, token) {
 

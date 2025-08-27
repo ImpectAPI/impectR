@@ -2,27 +2,27 @@
 % Please edit documentation in R/getAccessToken.R
 \name{getAccessToken}
 \alias{getAccessToken}
-\title{Get an access token from the Impect Customer API}
+\title{Get an access token from the 'Impect' Customer API}
 \usage{
 getAccessToken(username, password)
 }
 \arguments{
-\item{username}{your IMPECT username}
+\item{username}{your 'IMPECT' username}
 
-\item{password}{your IMPECT password}
+\item{password}{your 'IMPECT' password}
 }
 \value{
 a string containing a bearer token
 }
 \description{
-Get an access token from the Impect Customer API
+Get an access token from the 'Impect' Customer API
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  username <- "yourUsername"
-  password <- "youPassword"
-  token <- getAccessToken(username = username, password = password)
-})
+# Toy example: this will error quickly (no credentials)
+try(getAccessToken(username = "invalidUser", password = "invalidPassword"))
+
+# Real usage: requires valid credentials
+\dontrun{
+  token <- getAccessToken(username = "yourUsername", password = "yourPassword")
 }
 }

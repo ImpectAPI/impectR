@@ -1,7 +1,7 @@
 #' Return a dataframe that contains all starting positions for a set of given
 #' match IDs
 #'
-#' @param matches IMPECT match ID or a list of match IDs
+#' @param matches 'IMPECT' match ID or a list of match IDs
 #' @param token bearer token
 #'
 #' @export
@@ -12,10 +12,18 @@
 #' match IDs
 #'
 #' @examples
-#' \donttest{
-#' try({ # prevent cran errors
-#'   startingPositions <- getStartingPositions(matches = c(84248), token = token)
-#' })
+#' # Toy example: this will error quickly (no API token)
+#' try(starting_pos <- getStartingPositions(
+#'   matches = c(0, 1),
+#'   token = "invalid"
+#' ))
+#'
+#' # Real usage: requires valid Bearer Token from `getAccessToken()`
+#' \dontrun{
+#' starting_pos <- getStartingPositions(
+#'   matches = c(84248, 158150),
+#'   token = "yourToken"
+#' )
 #' }
 getStartingPositions <- function (
     matches,

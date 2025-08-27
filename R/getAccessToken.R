@@ -1,18 +1,18 @@
-#' Get an access token from the Impect Customer API
+#' Get an access token from the 'Impect' Customer API
 #'
-#' @param username your IMPECT username
-#' @param password your IMPECT password
+#' @param username your 'IMPECT' username
+#' @param password your 'IMPECT' password
 #'
 #' @return a string containing a bearer token
 #' @export
 #'
 #' @examples
-#' \donttest{
-#' try({ # prevent cran errors
-#'   username <- "yourUsername"
-#'   password <- "youPassword"
-#'   token <- getAccessToken(username = username, password = password)
-#' })
+#' # Toy example: this will error quickly (no credentials)
+#' try(getAccessToken(username = "invalidUser", password = "invalidPassword"))
+#'
+#' # Real usage: requires valid credentials
+#' \dontrun{
+#'   token <- getAccessToken(username = "yourUsername", password = "yourPassword")
 #' }
 getAccessToken <- function(username, password) {
   # validate input parameters

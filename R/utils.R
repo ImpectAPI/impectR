@@ -29,7 +29,7 @@
     } else if (httr::status_code(response) == 429) {
       # handle rate limiting (429 status code)
       message <- httr::content(response, "parsed")$message
-      base::cat(base::paste("Received status code 429 (", message,
+      base::message(base::paste("Received status code 429 (", message,
                 "), retrying in", retry_delay, "seconds...\n"))
       Sys.sleep(retry_delay)
     } else if (httr::status_code(response) %in% c(401, 403)) {

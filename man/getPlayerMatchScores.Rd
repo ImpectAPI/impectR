@@ -8,7 +8,7 @@ and list of positions}
 getPlayerMatchScores(matches, positions, token)
 }
 \arguments{
-\item{matches}{Impect match IDs}
+\item{matches}{'IMPECT' match IDs}
 
 \item{positions}{list of position names. Must be one of:   "GOALKEEPER",
 "LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER", "CENTRAL_DEFENDER",
@@ -26,9 +26,19 @@ Return a dataframe that contains all player scores for a given match ID
 and list of positions
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  playerMatchScores <- getPlayerMatchsums(84248, token)
-})
+# Toy example: this will error quickly (no API token)
+try(player_match_scores <- getPlayerMatchScores(
+  matches = c(0, 1),
+  positions = c("INVALID_POSITION_1", "INVALID_POSITION_2"),
+  token = "invalid"
+))
+
+# Real usage: requires valid Bearer Token from `getAccessToken()`
+\dontrun{
+player_match_scores <- getPlayerMatchScores(
+  matches = c(84248, 158150),
+  positions = c("CENTRAL_DEFENDER", "DEFENSE_MIDFIELD"),
+  token = "yourToken"
+)
 }
 }

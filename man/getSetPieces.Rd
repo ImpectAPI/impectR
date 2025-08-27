@@ -8,7 +8,7 @@ set piece sub phase for a set of given list of match IDs}
 getSetPieces(matches, token)
 }
 \arguments{
-\item{matches}{list fo IMPECT match IDs}
+\item{matches}{list fo 'IMPECT' match IDs}
 
 \item{token}{bearer token}
 }
@@ -21,9 +21,17 @@ Return a dataframe that contains all set pieces and aggregated kpi values per
 set piece sub phase for a set of given list of match IDs
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  events <- getSetPieces(matches = c(84248), token = token)
-})
+# Toy example: this will error quickly (no API token)
+try(set_pieces <- getSetPieces(
+  matches = c(0, 1),
+  token = "invalid"
+))
+
+# Real usage: requires valid Bearer Token from `getAccessToken()`
+\dontrun{
+set_pieces <- getSetPieces(
+  matches = c(84248, 158150),
+  token = "yourToken"
+)
 }
 }

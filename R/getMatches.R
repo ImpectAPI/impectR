@@ -1,6 +1,6 @@
 #' Return a dataframe with basic information for all matches for a given iteration ID
 #'
-#' @param iteration IMPECT iteration ID
+#' @param iteration 'IMPECT' iteration ID
 #' @param token bearer token
 #'
 #' @export
@@ -9,12 +9,19 @@
 #' @importFrom rlang .data
 #' @return a dataframe containing all matches for a given iteration ID
 #'
-#'
 #' @examples
-#' \donttest{
-#' try({ # prevent cran errors
-#'   matches <- getMatches(518, token)
-#' })
+#' # Toy example: this will error quickly (no API token)
+#' try(matchplan <- getMatches(
+#'   iteration = 0,
+#'   token = "invalid"
+#' ))
+#'
+#' # Real usage: requires valid Bearer Token from `getAccessToken()`
+#' \dontrun{
+#' matchplan <- getMatches(
+#'   iteration = 1004,
+#'   token = "yourToken"
+#' )
 #' }
 getMatches <- function(iteration, token) {
 

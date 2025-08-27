@@ -8,7 +8,7 @@ match IDs}
 getEvents(matches, token, include_kpis = TRUE, include_set_pieces = FALSE)
 }
 \arguments{
-\item{matches}{IMPECT match ID or a list of match IDs}
+\item{matches}{'IMPECT' match ID or a list of match IDs}
 
 \item{token}{bearer token}
 
@@ -25,9 +25,21 @@ Return a dataframe that contains all events and kpi values for a set of given
 match IDs
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  events <- getEvents(matches = c(84248), token = token)
-})
+# Toy example: this will error quickly (no API token)
+try(events <- getEvents(
+  matches = c(0, 1),
+  token = "invalid",
+  include_kpis = T,
+  include_set_pieces = F
+))
+
+# Real usage: requires valid Bearer Token from `getAccessToken()`
+\dontrun{
+events <- getEvents(
+  matches = c(84248, 158150),
+  token = "yourToken",
+  include_kpis = T,
+  include_set_pieces = F
+)
 }
 }

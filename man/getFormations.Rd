@@ -8,7 +8,7 @@ match IDs}
 getFormations(matches, token)
 }
 \arguments{
-\item{matches}{IMPECT match ID or a list of match IDs}
+\item{matches}{'IMPECT' match ID or a list of match IDs}
 
 \item{token}{bearer token}
 }
@@ -21,9 +21,17 @@ Return a dataframe that contains all starting formations for a set of given
 match IDs
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  formations <- getFormations(matches = c(84248), token = token)
-})
+# Toy example: this will error quickly (no API token)
+try(events <- getFormations(
+  matches = c(0, 1),
+  token = "invalid"
+))
+
+# Real usage: requires valid Bearer Token from `getAccessToken()`
+\dontrun{
+formations <- getFormations(
+  matches = c(84248, 158150),
+  token = "yourToken"
+)
 }
 }

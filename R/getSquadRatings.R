@@ -1,6 +1,6 @@
 #' Return a dataframe that contains squad ratings for a given iteration ID
 #'
-#' @param iteration Impect iteration ID
+#' @param iteration 'IMPECT' iteration ID
 #' @param token bearer token
 #'
 #' @export
@@ -10,10 +10,18 @@
 #' @return a dataframe containing the squad ratings for the given iteration ID
 #'
 #' @examples
-#' \donttest{
-#' try({ # prevent cran errors
-#'   ratings <- getSquadRatings(1005, token)
-#' })
+#' # Toy example: this will error quickly (no API token)
+#' try(squad_ratings <- getSquadRatings(
+#'   iteration = 0,
+#'   token = "invalid"
+#' ))
+#'
+#' # Real usage: requires valid Bearer Token from `getAccessToken()`
+#' \dontrun{
+#' squad_ratings <- getSquadRatings(
+#'   iteration = 1004,
+#'   token = "yourToken"
+#' )
 #' }
 getSquadRatings <- function (iteration, token) {
 

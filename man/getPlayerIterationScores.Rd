@@ -7,7 +7,7 @@
 getPlayerIterationScores(iteration, positions, token)
 }
 \arguments{
-\item{iteration}{Impect iteration ID}
+\item{iteration}{'IMPECT' iteration ID}
 
 \item{positions}{list of position names. Must be one of:   "GOALKEEPER",
 "LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER", "CENTRAL_DEFENDER",
@@ -24,9 +24,19 @@ the given iteration ID and list of positions
 Return a dataframe that contains all player scores for a given iteration ID
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  scores <- getPlayerIterationScores(518, token)
-})
+# Toy example: this will error quickly (no API token)
+try(player_scores <- getPlayerIterationScores(
+  iteration = 0,
+  positions = c("INVALID_POSITION_1", "INVALID_POSITION_2"),
+  token = "invalid"
+))
+
+# Real usage: requires valid Bearer Token from `getAccessToken()`
+\dontrun{
+player_scores <- getPlayerIterationScores(
+  iteration = 1004,
+  positions = c("CENTRAL_DEFENDER", "DEFENSE_MIDFIELD"),
+  token = "yourToken"
+)
 }
 }

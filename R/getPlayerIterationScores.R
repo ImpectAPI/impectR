@@ -15,7 +15,7 @@ allowed_positions <- c(
 
 #' Return a dataframe that contains all player scores for a given iteration ID
 #'
-#' @param iteration Impect iteration ID
+#' @param iteration 'IMPECT' iteration ID
 #' @param positions list of position names. Must be one of:   "GOALKEEPER",
 #' "LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER", "CENTRAL_DEFENDER",
 #' "DEFENSE_MIDFIELD", "CENTRAL_MIDFIELD", "ATTACKING_MIDFIELD", "LEFT_WINGER",
@@ -30,10 +30,20 @@ allowed_positions <- c(
 #' the given iteration ID and list of positions
 #'
 #' @examples
-#' \donttest{
-#' try({ # prevent cran errors
-#'   scores <- getPlayerIterationScores(518, token)
-#' })
+#' # Toy example: this will error quickly (no API token)
+#' try(player_scores <- getPlayerIterationScores(
+#'   iteration = 0,
+#'   positions = c("INVALID_POSITION_1", "INVALID_POSITION_2"),
+#'   token = "invalid"
+#' ))
+#'
+#' # Real usage: requires valid Bearer Token from `getAccessToken()`
+#' \dontrun{
+#' player_scores <- getPlayerIterationScores(
+#'   iteration = 1004,
+#'   positions = c("CENTRAL_DEFENDER", "DEFENSE_MIDFIELD"),
+#'   token = "yourToken"
+#' )
 #' }
 getPlayerIterationScores <- function (iteration, positions, token) {
 
@@ -123,7 +133,7 @@ getPlayerIterationScores <- function (iteration, positions, token) {
     squadIds[!squadIds %in% scores_raw$squadId]
   )
   if (base::length(error_list) > 0) {
-    base::cat(
+    base::message(
       base::sprintf(
         "No players played at position(s) %s for following squads:\n\t%s",
         positions, paste(error_list, collapse = ", ")

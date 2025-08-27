@@ -1,6 +1,6 @@
 #' Return a dataframe that contains all player matchsums for a given match ID
 #'
-#' @param matches Impect match IDs
+#' @param matches 'IMPECT' match IDs
 #' @param token bearer token
 #'
 #' @export
@@ -10,10 +10,18 @@
 #' @return a dataframe containing the matchsums aggregated per player and position for the given match ID
 #'
 #' @examples
-#' \donttest{
-#' try({ # prevent cran errors
-#'   matchsums <- getPlayerMatchsums(84248, token)
-#' })
+#' # Toy example: this will error quickly (no API token)
+#' try(player_match_sums <- getPlayerMatchsums(
+#'   matches = c(0, 1),
+#'   token = "invalid"
+#' ))
+#'
+#' # Real usage: requires valid Bearer Token from `getAccessToken()`
+#' \dontrun{
+#' player_match_sums <- getPlayerMatchsums(
+#'   matches = c(84248, 158150),
+#'   token = "yourToken"
+#' )
 #' }
 getPlayerMatchsums <- function (matches, token) {
 

@@ -16,9 +16,15 @@ a dataframe containing all iterations available to the user
 Return a dataframe containing all iterations available to the user
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  competitionIterations <- getCompetitions(token)
-})
+# Toy example: this will error quickly (no API token)
+try(events <- getIterations(
+  token = "invalid"
+))
+
+# Real usage: requires valid Bearer Token from `getAccessToken()`
+\dontrun{
+iterations <- getIterations(
+  token = "yourToken"
+)
 }
 }
