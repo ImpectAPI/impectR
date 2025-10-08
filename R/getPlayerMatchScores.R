@@ -70,25 +70,38 @@ getPlayerMatchScores <- function (
          ".\nChoose one or more of: ", paste(allowed_positions, collapse = ", "))
   }
 
-  # get match info from API
+  # get matchInfo from API
   matchInfo <-
     purrr::map_df(
       matches,
-      ~ jsonlite::fromJSON(
-        httr::content(
-          .callAPIlimited(
-            host,
-            base_url = "/v5/customerapi/matches/",
-            id = .,
-            token = token
-          ),
-          "text",
-          encoding = "UTF-8"
+      ~ {
+        temp <- jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              host,
+              base_url = "/v5/customerapi/matches/",
+              id = .,
+              token = token
+            ),
+            "text",
+            encoding = "UTF-8"
+          )
+        )$data
+
+        response <- dplyr::tibble(
+          id = temp$id,
+          dateTime = temp$dateTime,
+          iterationId = temp$iterationId,
+          lastCalculationDate = temp$lastCalculationDate,
+          squadHomeId = temp$squadHome$id,
+          squadAwayId = temp$squadAway$id,
+          homeCoachId = temp$squadHome$coachId,
+          awayCoachId = temp$squadAway$coachId,
+          formationHome = temp$squadHome$startingFormation,
+          formationAway = temp$squadAway$startingFormation
         )
-      )$data
-    ) %>%
-    dplyr::select(.data$id, .data$iterationId, .data$lastCalculationDate) %>%
-    base::unique()
+      }
+    )
 
   # filter for fail matches
   fail_matches <- matchInfo %>%
@@ -192,6 +205,36 @@ getPlayerMatchScores <- function (
         )
       )$data %>%
         jsonlite::flatten()
+    ) %>%
+    dplyr::select(.data$id, .data$name) %>%
+    base::unique()
+
+  # get coach master data from API
+
+  # get coach master data from API
+  coaches <-
+    purrr::map_df(
+      iterations,
+      ~ {
+        response <- jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              host,
+              base_url = "/v5/customerapi/iterations/",
+              id = .,
+              suffix = "/coaches",
+              token = token
+            ),
+            "text",
+            encoding = "UTF-8"
+          )
+        )$data
+
+        if (base::length(response) > 0) {
+          response <- response %>%
+            jsonlite::flatten()
+        }
+      }
     ) %>%
     dplyr::select(.data$id, .data$name) %>%
     base::unique()
@@ -342,7 +385,33 @@ getPlayerMatchScores <- function (
         .data$skillCornerId, .data$playerName, .data$firstname, .data$lastname,
         .data$birthdate, .data$birthplace, .data$leg
       ),
-      by = c("playerId" = "id")) %>%
+      by = c("playerId" = "id")
+    ) %>%
+    dplyr::left_join(
+      bind_rows(
+        select(
+          matchInfo,
+          matchId = .data$id,
+          squadId = .data$squadHomeId,
+          coachId = .data$homeCoachId
+        ),
+        select(
+          matchInfo,
+          matchId = .data$id,
+          squadId = .data$squadAwayId,
+          coachId = .data$awayCoachId
+        )
+      ),
+      by = base::c("matchId" = "matchId", "squadId" = "squadId")
+    ) %>%
+    dplyr::left_join(
+      dplyr::select(
+        coaches,
+        coachId = .data$id,
+        coachName = .data$name
+      ),
+      by = base::c("coachId" = "coachId")
+    ) %>%
     # fix some column names
     dplyr::rename(
       dateTime = .data$scheduledDate
@@ -361,6 +430,8 @@ getPlayerMatchScores <- function (
     "matchDayName",
     "squadId",
     "squadName",
+    "coachId",
+    "coachName",
     "playerId",
     "wyscoutId",
     "heimSpielId",

@@ -53,23 +53,34 @@ getEvents <- function (
   matchInfo <-
     purrr::map_df(
       matches,
-      ~ jsonlite::fromJSON(
-        httr::content(
-          .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/matches/",
-            host,
-            base_url = "/v5/customerapi/matches/",
-            id = .,
-            token = token
+      ~ {
+        temp <- jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              host,
+              base_url = "/v5/customerapi/matches/",
+              id = .,
+              token = token
             ),
-          ),
-          "text",
-          encoding = "UTF-8"
+            "text",
+            encoding = "UTF-8"
           )
         )$data
-      ) %>%
-    dplyr::select(.data$id, .data$iterationId, .data$lastCalculationDate) %>%
-    base::unique()
+
+        response <- dplyr::tibble(
+          id = temp$id,
+          dateTime = temp$dateTime,
+          iterationId = temp$iterationId,
+          lastCalculationDate = temp$lastCalculationDate,
+          squadHomeId = temp$squadHome$id,
+          squadAwayId = temp$squadAway$id,
+          homeCoachId = temp$squadHome$coachId,
+          awayCoachId = temp$squadAway$coachId,
+          formationHome = temp$squadHome$startingFormation,
+          formationAway = temp$squadAway$startingFormation
+        )
+      }
+    )
 
   # filter for fail matches
   fail_matches <- matchInfo %>%
@@ -250,6 +261,34 @@ getEvents <- function (
   base::names(squads) <-
     gsub("\\.(.)", "\\U\\1", base::names(squads), perl = TRUE)
 
+  # get coach master data from API
+  coaches <-
+    purrr::map_df(
+      iterations,
+      ~ {
+        response <- jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              host,
+              base_url = "/v5/customerapi/iterations/",
+              id = .,
+              suffix = "/coaches",
+              token = token
+            ),
+            "text",
+            encoding = "UTF-8"
+          )
+        )$data
+
+        if (base::length(response) > 0) {
+          response <- response %>%
+            jsonlite::flatten()
+        }
+      }
+    ) %>%
+    dplyr::select(.data$id, .data$name) %>%
+    base::unique()
+
   # get matchplan data
   matchplan <-
     purrr::map_df(iterations, ~ getMatches(
@@ -297,6 +336,34 @@ getEvents <- function (
         currentAttackingSquadName = .data$name
       ),
       by = base::c("currentAttackingSquadId" = "squadId")
+    )
+
+  # merge events with matchInfo & coaches
+  events <- events %>%
+    dplyr::left_join(
+      dplyr::select(
+        matchInfo,
+        matchId = .data$id,
+        .data$homeCoachId,
+        .data$awayCoachId
+      ),
+      by = base::c("matchId" = "matchId")
+    ) %>%
+    dplyr::left_join(
+      dplyr::select(
+        coaches,
+        homeCoachId = .data$id,
+        homeCoachName = .data$name
+      ),
+      by = base::c("homeCoachId" = "homeCoachId")
+    ) %>%
+    dplyr::left_join(
+      dplyr::select(
+        coaches,
+        awayCoachId = .data$id,
+        awayCoachName = .data$name
+      ),
+      by = base::c("awayCoachId" = "awayCoachId")
     )
 
   # merge events with players
@@ -421,11 +488,15 @@ getEvents <- function (
     "homeSquadCountryId",
     "homeSquadCountryName",
     "homeSquadType",
+    "homeCoachId",
+    "homeCoachName",
     "awaySquadId",
     "awaySquadName",
     "awaySquadCountryId",
     "awaySquadCountryName",
     "awaySquadType",
+    "awayCoachId",
+    "awayCoachName",
     "eventId",
     "eventNumber",
     "sequenceIndex",
