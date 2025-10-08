@@ -22,6 +22,7 @@ allowed_positions <- c(
 #' "DEFENSE_MIDFIELD", "CENTRAL_MIDFIELD", "ATTACKING_MIDFIELD", "LEFT_WINGER",
 #' "RIGHT_WINGER", "CENTER_FORWARD"
 #' @param token bearer token
+#' @param host host environment
 #'
 #' @export
 #'
@@ -46,7 +47,12 @@ allowed_positions <- c(
 #'   token = "yourToken"
 #' )
 #' }
-getPlayerMatchScores <- function (matches, positions, token) {
+getPlayerMatchScores <- function (
+    matches,
+    positions,
+    token,
+    host = "https://api.impect.com"
+) {
 
   # check if match input is a list and convert to list if required
   if (!base::is.list(matches)) {
@@ -64,24 +70,38 @@ getPlayerMatchScores <- function (matches, positions, token) {
          ".\nChoose one or more of: ", paste(allowed_positions, collapse = ", "))
   }
 
-  # get match info from API
+  # get matchInfo from API
   matchInfo <-
     purrr::map_df(
       matches,
-      ~ jsonlite::fromJSON(
-        httr::content(
-          .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/matches/",
-            id = .,
-            token = token
-          ),
-          "text",
-          encoding = "UTF-8"
+      ~ {
+        temp <- jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              host,
+              base_url = "/v5/customerapi/matches/",
+              id = .,
+              token = token
+            ),
+            "text",
+            encoding = "UTF-8"
+          )
+        )$data
+
+        response <- dplyr::tibble(
+          id = temp$id,
+          dateTime = temp$dateTime,
+          iterationId = temp$iterationId,
+          lastCalculationDate = temp$lastCalculationDate,
+          squadHomeId = temp$squadHome$id,
+          squadAwayId = temp$squadAway$id,
+          homeCoachId = temp$squadHome$coachId,
+          awayCoachId = temp$squadAway$coachId,
+          formationHome = temp$squadHome$startingFormation,
+          formationAway = temp$squadAway$startingFormation
         )
-      )$data
-    ) %>%
-    dplyr::select(.data$id, .data$iterationId, .data$lastCalculationDate) %>%
-    base::unique()
+      }
+    )
 
   # filter for fail matches
   fail_matches <- matchInfo %>%
@@ -118,8 +138,9 @@ getPlayerMatchScores <- function (matches, positions, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
+            host,
             base_url = base::paste0(
-              "https://api.impect.com/v5/customerapi/matches/",
+              "/v5/customerapi/matches/",
               .,
               "/positions/",
               position_string,
@@ -145,7 +166,8 @@ getPlayerMatchScores <- function (matches, positions, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/players",
             token = token
@@ -172,7 +194,8 @@ getPlayerMatchScores <- function (matches, positions, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/squads",
             token = token
@@ -186,11 +209,42 @@ getPlayerMatchScores <- function (matches, positions, token) {
     dplyr::select(.data$id, .data$name) %>%
     base::unique()
 
+  # get coach master data from API
+
+  # get coach master data from API
+  coaches <-
+    purrr::map_df(
+      iterations,
+      ~ {
+        response <- jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              host,
+              base_url = "/v5/customerapi/iterations/",
+              id = .,
+              suffix = "/coaches",
+              token = token
+            ),
+            "text",
+            encoding = "UTF-8"
+          )
+        )$data
+
+        if (base::length(response) > 0) {
+          response <- response %>%
+            jsonlite::flatten()
+        }
+      }
+    ) %>%
+    dplyr::select(.data$id, .data$name) %>%
+    base::unique()
+
   # get kpi names from API
   score_list <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/player-scores",
+        host,
+        base_url = "/v5/customerapi/player-scores",
         token = token
       ),
       "text",
@@ -202,10 +256,14 @@ getPlayerMatchScores <- function (matches, positions, token) {
 
   # get matchplan data
   matchplan <-
-    purrr::map_df(iterations, ~ getMatches(iteration = ., token = token))
+    purrr::map_df(iterations, ~ getMatches(
+      iteration = .,
+      token = token,
+      host = host
+    ))
 
   # get competitions
-  iterations <- getIterations(token = token)
+  iterations <- getIterations(token = token, host = host)
 
   # manipulate scores
 
@@ -327,7 +385,33 @@ getPlayerMatchScores <- function (matches, positions, token) {
         .data$skillCornerId, .data$playerName, .data$firstname, .data$lastname,
         .data$birthdate, .data$birthplace, .data$leg
       ),
-      by = c("playerId" = "id")) %>%
+      by = c("playerId" = "id")
+    ) %>%
+    dplyr::left_join(
+      bind_rows(
+        select(
+          matchInfo,
+          matchId = .data$id,
+          squadId = .data$squadHomeId,
+          coachId = .data$homeCoachId
+        ),
+        select(
+          matchInfo,
+          matchId = .data$id,
+          squadId = .data$squadAwayId,
+          coachId = .data$awayCoachId
+        )
+      ),
+      by = base::c("matchId" = "matchId", "squadId" = "squadId")
+    ) %>%
+    dplyr::left_join(
+      dplyr::select(
+        coaches,
+        coachId = .data$id,
+        coachName = .data$name
+      ),
+      by = base::c("coachId" = "coachId")
+    ) %>%
     # fix some column names
     dplyr::rename(
       dateTime = .data$scheduledDate
@@ -346,6 +430,8 @@ getPlayerMatchScores <- function (matches, positions, token) {
     "matchDayName",
     "squadId",
     "squadName",
+    "coachId",
+    "coachName",
     "playerId",
     "wyscoutId",
     "heimSpielId",

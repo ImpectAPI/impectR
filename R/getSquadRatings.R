@@ -2,6 +2,7 @@
 #'
 #' @param iteration 'IMPECT' iteration ID
 #' @param token bearer token
+#' @param host host environment
 #'
 #' @export
 #'
@@ -23,7 +24,11 @@
 #'   token = "yourToken"
 #' )
 #' }
-getSquadRatings <- function (iteration, token) {
+getSquadRatings <- function (
+    iteration,
+    token,
+    host = "https://api.impect.com"
+) {
 
   # check if iteration input is a int
   if (!base::is.numeric(iteration)) {
@@ -33,7 +38,8 @@ getSquadRatings <- function (iteration, token) {
   squads <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        host,
+        base_url = "/v5/customerapi/iterations/",
         id = iteration,
         suffix = "/squads",
         token = token
@@ -54,7 +60,8 @@ getSquadRatings <- function (iteration, token) {
     jsonlite::fromJSON(
       httr::content(
         .callAPIlimited(
-          base_url = "https://api.impect.com/v5/customerapi/iterations/",
+          host,
+          base_url = "/v5/customerapi/iterations/",
           id = iteration,
           suffix = "/squads/ratings",
           token = token
@@ -71,7 +78,7 @@ getSquadRatings <- function (iteration, token) {
     gsub("\\.(.)", "\\U\\1", base::names(ratings), perl = TRUE)
 
   # get competitions
-  iterations <- getIterations(token = token)
+  iterations <- getIterations(token = token, host = host)
 
   # merge with other data
   ratings <- ratings %>%

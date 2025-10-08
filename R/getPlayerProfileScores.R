@@ -22,6 +22,7 @@ allowed_positions <- c(
 #' "DEFENSE_MIDFIELD", "CENTRAL_MIDFIELD", "ATTACKING_MIDFIELD", "LEFT_WINGER",
 #' "RIGHT_WINGER", "CENTER_FORWARD"
 #' @param token bearer token
+#' @param host host environment
 #'
 #' @export
 #'
@@ -46,7 +47,12 @@ allowed_positions <- c(
 #'   token = "yourToken"
 #' )
 #' }
-getPlayerProfileScores <- function (iteration, positions, token) {
+getPlayerProfileScores <- function (
+    iteration,
+    positions,
+    token,
+    host = "https://api.impect.com"
+) {
 
   # check if iteration input is a string or integer
   if (!(base::is.numeric(iteration) ||
@@ -68,7 +74,8 @@ getPlayerProfileScores <- function (iteration, positions, token) {
   squads <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        host,
+        base_url = "/v5/customerapi/iterations/",
         id = iteration,
         suffix = "/squads",
         token = token
@@ -93,8 +100,9 @@ getPlayerProfileScores <- function (iteration, positions, token) {
         response <- jsonlite::fromJSON(
           httr::content(
             .callAPIlimited(
+              host,
               base_url = paste0(
-                "https://api.impect.com/v5/customerapi/iterations/",
+                "/v5/customerapi/iterations/",
                 iteration,
                 "/squads/",
                 .,
@@ -146,7 +154,8 @@ getPlayerProfileScores <- function (iteration, positions, token) {
   players <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        host,
+        base_url = "/v5/customerapi/iterations/",
         id = iteration,
         suffix = "/players",
         token = token
@@ -164,7 +173,8 @@ getPlayerProfileScores <- function (iteration, positions, token) {
   profile_list <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/player-profiles",
+        host,
+        base_url = "/v5/customerapi/player-profiles",
         token = token
       ),
       "text",
@@ -175,7 +185,7 @@ getPlayerProfileScores <- function (iteration, positions, token) {
     dplyr::select(.data$name)
 
   # get competitions
-  iterations <- getIterations(token = token)
+  iterations <- getIterations(token = token, host = host)
 
   # manipulate averages
 

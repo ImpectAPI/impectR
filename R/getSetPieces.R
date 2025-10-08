@@ -3,6 +3,7 @@
 #'
 #' @param matches list fo 'IMPECT' match IDs
 #' @param token bearer token
+#' @param host host environment
 #'
 #' @export
 #'
@@ -27,7 +28,8 @@
 #' }
 getSetPieces <- function (
     matches,
-    token
+    token,
+    host = "https://api.impect.com"
 ) {
 
   # check if match input is not a list and convert to list if required
@@ -46,7 +48,8 @@ getSetPieces <- function (
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            host,
+            base_url = "/v5/customerapi/matches/",
             id = .,
             token = token
           ),
@@ -91,7 +94,8 @@ getSetPieces <- function (
         jsonlite::fromJSON(
           httr::content(
             .callAPIlimited(
-              base_url = "https://api.impect.com/v5/customerapi/matches/",
+              host,
+              base_url = "/v5/customerapi/matches/",
               id = .,
               suffix = "/set-pieces",
               token = token
@@ -124,7 +128,8 @@ getSetPieces <- function (
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/players",
             token = token
@@ -144,7 +149,8 @@ getSetPieces <- function (
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/squads",
             token = token
@@ -161,10 +167,10 @@ getSetPieces <- function (
   # get matchplan data
   matchplan <-
     purrr::map_df(iterations,
-                  ~ getMatches(iteration = ., token = token))
+                  ~ getMatches(iteration = ., token = token, host = host))
 
   # get iterations
-  iterations <- getIterations(token = token)
+  iterations <- getIterations(token = token, host = host)
 
   # start merging dfs
 

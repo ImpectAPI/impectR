@@ -14,15 +14,15 @@
 #' \dontrun{
 #'   token <- getAccessToken(username = "yourUsername", password = "yourPassword")
 #' }
-getAccessToken <- function(username, password) {
+getAccessToken <- function(
+    username,
+    password,
+    token_url = "https://login.impect.com/auth/realms/production/protocol/openid-connect/token"
+  ) {
   # validate input parameters
   if (missing(username) || missing(password) || username == "" || password == "") {
     stop("Username and password are required.")
   }
-
-  # create tokenURL
-  token_url <-
-    "https://login.impect.com/auth/realms/production/protocol/openid-connect/token"
 
   # compose login link
   login <- base::paste0(

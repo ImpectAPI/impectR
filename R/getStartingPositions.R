@@ -3,6 +3,7 @@
 #'
 #' @param matches 'IMPECT' match ID or a list of match IDs
 #' @param token bearer token
+#' @param host host environment
 #'
 #' @export
 #'
@@ -27,7 +28,8 @@
 #' }
 getStartingPositions <- function (
     matches,
-    token
+    token,
+    host = "https://api.impect.com"
 ) {
 
   # check if match input is not a list and convert to list if required
@@ -46,7 +48,8 @@ getStartingPositions <- function (
       response <- jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            host,
+            base_url = "/v5/customerapi/matches/",
             id = .,
             token = token
           ),
@@ -116,7 +119,8 @@ getStartingPositions <- function (
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/players",
             token = token
@@ -138,7 +142,8 @@ getStartingPositions <- function (
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/squads",
             token = token
@@ -158,10 +163,14 @@ getStartingPositions <- function (
 
   # get matchplan data
   matchplan <-
-    purrr::map_df(iterations, ~ getMatches(iteration = ., token = token))
+    purrr::map_df(iterations, ~ getMatches(
+      iteration = .,
+      token = token,
+      host = host
+    ))
 
   # get iterations
-  iterations <- getIterations(token = token)
+  iterations <- getIterations(token = token, host = host)
 
   # extract shirt numbers
   shirt_numbers_home <- match_info %>%

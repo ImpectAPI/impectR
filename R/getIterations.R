@@ -1,6 +1,7 @@
 #' Return a dataframe containing all iterations available to the user
 #'
 #' @param token bearer token
+#' @param host host environment
 #'
 #' @export
 
@@ -19,12 +20,13 @@
 #'   token = "yourToken"
 #' )
 #' }
-getIterations <- function(token) {
+getIterations <- function(token, host = "https://api.impect.com") {
   # get iteration data from API
   iterations <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/iterations",
+        host,
+        base_url = "/v5/customerapi/iterations",
         token = token
         ),
       "text",
