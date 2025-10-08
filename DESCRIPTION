@@ -1,5 +1,5 @@
 Package: impectR
-Title: Access Data from the Impect API
+Title: Access Data from the 'Impect' API
 Version: 2.4.3
 Authors@R: c(
   person("Impect", "GmbH", , "info.impect@impect.com", role = c("cph")),
