@@ -2,6 +2,7 @@
 #'
 #' @param matches 'IMPECT' match IDs
 #' @param token bearer token
+#' @param host host environment
 #'
 #' @export
 #'
@@ -23,7 +24,11 @@
 #'   token = "yourToken"
 #' )
 #' }
-getPlayerMatchsums <- function (matches, token) {
+getPlayerMatchsums <- function (
+    matches,
+    token,
+    host = "https://api.impect.com"
+) {
 
   # check if match input is a list and convert to list if required
   if (!base::is.list(matches)) {
@@ -41,7 +46,8 @@ getPlayerMatchsums <- function (matches, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            host,
+            base_url = "/v5/customerapi/matches/",
             id = .,
             token = token
           ),
@@ -86,7 +92,8 @@ getPlayerMatchsums <- function (matches, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            host,
+            base_url = "/v5/customerapi/matches/",
             id = .,
             suffix = "/player-kpis",
             token = token
@@ -109,7 +116,8 @@ getPlayerMatchsums <- function (matches, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/players",
             token = token
@@ -137,7 +145,8 @@ getPlayerMatchsums <- function (matches, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/squads",
             token = token
@@ -156,7 +165,8 @@ getPlayerMatchsums <- function (matches, token) {
   kpis <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/kpis",
+        host,
+        base_url = "/v5/customerapi/kpis",
         token = token
       ),
       "text",
@@ -169,10 +179,10 @@ getPlayerMatchsums <- function (matches, token) {
 
   # get matchplan data
   matchplan <-
-    purrr::map_df(iterations, ~ getMatches(iteration = ., token = token))
+    purrr::map_df(iterations, ~ getMatches(iteration = ., token = token, host = host))
 
   # get competitions
-  iterations <- getIterations(token = token)
+  iterations <- getIterations(token = token, host = host)
 
   # manipulate matchsums
 

@@ -4,13 +4,14 @@
 #'
 #' @noRd
 #'
+#' @param host host environment
 #' @param base_url API endpoint URL
 #' @param id The id of the object to be retrieved
 #' @param suffix The suffix of the endpoint URL that comes after the id
 #' @param token Bearer token
 #'
 #' @return Response content of the API endpoint
-.callAPI <- function(base_url, id = "", suffix = "", token,
+.callAPI <- function(host, base_url, id = "", suffix = "", token,
                      max_retries = 3, retry_delay = 1) {
 
   # try API call
@@ -18,7 +19,7 @@
     # get API response
     response <-
       httr::GET(
-        url = base::paste0(base_url, id, suffix),
+        url = base::paste0(host, base_url, id, suffix),
         httr::add_headers(
           Authorization = base::paste("Bearer", token, sep = " "))
         )
@@ -59,19 +60,20 @@
 #'
 #' @noRd
 #'
+#' @param host host environment
 #' @param base_url Impect API endpoint URL
 #' @param id the id of the object to be retrieved
 #' @param suffix suffix of the endpoint URL that comes after the id
 #' @param token bearer token
 #'
 #' @return a dataframe containing the response of an API endpoint
-.callAPIlimited <- function(base_url, id = "", suffix = "", token) {
+.callAPIlimited <- function(host, base_url, id = "", suffix = "", token) {
 
   # check if Token bucket exist and create it if not
   if (is.null(.api_state$bucket)) {
 
     # get response from API
-    response <- .callAPI(base_url, id, suffix, token)
+    response <- .callAPI(host, base_url, id, suffix, token)
 
     # get rate limit policy
     policy <- response[["all_headers"]][[1]][["headers"]][["ratelimit-policy"]]
@@ -100,7 +102,7 @@
   # check if a token is available
   if (.api_state$bucket$isTokenAvailable()) {
     # get API response
-    response <- .callAPI(base_url, id, suffix, token)
+    response <- .callAPI(host, base_url, id, suffix, token)
 
     # consume a token
     .api_state$bucket$consumeToken()
@@ -109,7 +111,7 @@
     Sys.sleep(.api_state$bucket$intervall)
 
     # call function again
-    response <- .callAPIlimited(base_url, id, suffix, token)
+    response <- .callAPIlimited(host, base_url, id, suffix, token)
   }
 
   # return response

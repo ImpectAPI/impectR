@@ -22,6 +22,7 @@ allowed_positions <- c(
 #' "DEFENSE_MIDFIELD", "CENTRAL_MIDFIELD", "ATTACKING_MIDFIELD", "LEFT_WINGER",
 #' "RIGHT_WINGER", "CENTER_FORWARD"
 #' @param token bearer token
+#' @param host host environment
 #'
 #' @export
 #'
@@ -46,7 +47,12 @@ allowed_positions <- c(
 #'   token = "yourToken"
 #' )
 #' }
-getPlayerMatchScores <- function (matches, positions, token) {
+getPlayerMatchScores <- function (
+    matches,
+    positions,
+    token,
+    host = "https://api.impect.com"
+) {
 
   # check if match input is a list and convert to list if required
   if (!base::is.list(matches)) {
@@ -71,7 +77,8 @@ getPlayerMatchScores <- function (matches, positions, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            host,
+            base_url = "/v5/customerapi/matches/",
             id = .,
             token = token
           ),
@@ -118,8 +125,9 @@ getPlayerMatchScores <- function (matches, positions, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
+            host,
             base_url = base::paste0(
-              "https://api.impect.com/v5/customerapi/matches/",
+              "/v5/customerapi/matches/",
               .,
               "/positions/",
               position_string,
@@ -145,7 +153,8 @@ getPlayerMatchScores <- function (matches, positions, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/players",
             token = token
@@ -172,7 +181,8 @@ getPlayerMatchScores <- function (matches, positions, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/squads",
             token = token
@@ -190,7 +200,8 @@ getPlayerMatchScores <- function (matches, positions, token) {
   score_list <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/player-scores",
+        host,
+        base_url = "/v5/customerapi/player-scores",
         token = token
       ),
       "text",
@@ -202,10 +213,14 @@ getPlayerMatchScores <- function (matches, positions, token) {
 
   # get matchplan data
   matchplan <-
-    purrr::map_df(iterations, ~ getMatches(iteration = ., token = token))
+    purrr::map_df(iterations, ~ getMatches(
+      iteration = .,
+      token = token,
+      host = host
+    ))
 
   # get competitions
-  iterations <- getIterations(token = token)
+  iterations <- getIterations(token = token, host = host)
 
   # manipulate scores
 

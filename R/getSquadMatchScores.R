@@ -2,6 +2,7 @@
 #'
 #' @param matches 'IMPECT' match IDs
 #' @param token bearer token
+#' @param host host environment
 #'
 #' @export
 #'
@@ -23,7 +24,11 @@
 #'   token = "yourToken"
 #' )
 #' }
-getSquadMatchScores <- function (matches, token) {
+getSquadMatchScores <- function (
+    matches,
+    token,
+    host = "https://api.impect.com"
+) {
 
   # check if match input is a list and convert to list if required
   if (!base::is.list(matches)) {
@@ -41,7 +46,8 @@ getSquadMatchScores <- function (matches, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            host,
+            base_url = "/v5/customerapi/matches/",
             id = .,
             token = token
           ),
@@ -85,7 +91,8 @@ getSquadMatchScores <- function (matches, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            host,
+            base_url = "/v5/customerapi/matches/",
             id = .,
             suffix = "/squad-scores",
             token = token
@@ -108,7 +115,8 @@ getSquadMatchScores <- function (matches, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/squads",
             token = token
@@ -129,7 +137,8 @@ getSquadMatchScores <- function (matches, token) {
   scores_list <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/squad-scores",
+        host,
+        base_url = "/v5/customerapi/squad-scores",
         token = token
       ),
       "text",
@@ -141,10 +150,14 @@ getSquadMatchScores <- function (matches, token) {
 
   # get matchplan data
   matchplan <-
-    purrr::map_df(iterations, ~ getMatches(iteration = ., token = token))
+    purrr::map_df(iterations, ~ getMatches(
+      iteration = .,
+      token = token,
+      host = host
+    ))
 
   # get competitions
-  iterations <- getIterations(token = token)
+  iterations <- getIterations(token = token, host = host)
 
   # manipulate matchsums
 

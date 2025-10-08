@@ -5,6 +5,7 @@
 #' @param token bearer token
 #' @param include_kpis include KPIs in event data
 #' @param include_set_pieces include additional set piece data in event data
+#' @param host host environment
 #'
 #' @export
 #'
@@ -35,8 +36,9 @@ getEvents <- function (
     matches,
     token,
     include_kpis = TRUE,
-    include_set_pieces = FALSE
-    ) {
+    include_set_pieces = FALSE,
+    host = "https://api.impect.com"
+) {
 
   # check if match input is not a list and convert to list if required
   if (!base::is.list(matches)) {
@@ -55,9 +57,12 @@ getEvents <- function (
         httr::content(
           .callAPIlimited(
             base_url = "https://api.impect.com/v5/customerapi/matches/",
+            host,
+            base_url = "/v5/customerapi/matches/",
             id = .,
             token = token
             ),
+          ),
           "text",
           encoding = "UTF-8"
           )
@@ -98,18 +103,19 @@ getEvents <- function (
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            host,
+            base_url = "/v5/customerapi/matches/",
             id = .,
             suffix = "/events",
             token = token
           ),
           "text",
           encoding = "UTF-8"
-          )
-        )$data %>%
+        )
+      )$data %>%
         dplyr::mutate(matchId = ..1) %>%
         jsonlite::flatten()
-      )
+    )
 
   # fix column names using regex
   base::names(events) <-
@@ -123,7 +129,8 @@ getEvents <- function (
         ~ jsonlite::fromJSON(
           httr::content(
             .callAPIlimited(
-              base_url = "https://api.impect.com/v5/customerapi/matches/",
+              host,
+              base_url = "/v5/customerapi/matches/",
               id = .,
               suffix = "/event-kpis",
               token = token
@@ -138,13 +145,14 @@ getEvents <- function (
     kpis <- jsonlite::fromJSON(
       httr::content(
         .callAPIlimited(
-          base_url = "https://api.impect.com/v5/customerapi/kpis/event",
+          host,
+          base_url = "/v5/customerapi/kpis/event",
           token = token
-          ),
+        ),
         "text",
         encoding = "UTF-8"
-        )
-      )$data %>%
+      )
+    )$data %>%
       jsonlite::flatten() %>%
       dplyr::select(.data$id, .data$name)
   }
@@ -157,7 +165,8 @@ getEvents <- function (
         ~ jsonlite::fromJSON(
           httr::content(
             .callAPIlimited(
-              base_url = "https://api.impect.com/v5/customerapi/matches/",
+              host,
+              base_url = "/v5/customerapi/matches/",
               id = .,
               suffix = "/set-pieces",
               token = token
@@ -167,7 +176,7 @@ getEvents <- function (
           )
         )$data %>%
           dplyr::mutate(matchId = ..1) %>%
-        jsonlite::flatten()
+          jsonlite::flatten()
       ) %>%
       tidyr::unnest_longer(.data$setPieceSubPhase) %>%
       tidyr::unnest(.data$setPieceSubPhase, names_sep = ".") %>%
@@ -201,7 +210,8 @@ getEvents <- function (
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/players",
             token = token
@@ -221,7 +231,8 @@ getEvents <- function (
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/squads",
             token = token
@@ -241,10 +252,14 @@ getEvents <- function (
 
   # get matchplan data
   matchplan <-
-    purrr::map_df(iterations, ~ getMatches(iteration = ., token = token))
+    purrr::map_df(iterations, ~ getMatches(
+      iteration = .,
+      token = token,
+      host = host)
+    )
 
   # get iterations
-  iterations <- getIterations(token = token)
+  iterations <- getIterations(token = token, host = host)
 
   # account for matches without dribbles, duels, or opponents tagged
   attributes <- c(
@@ -316,7 +331,7 @@ getEvents <- function (
       dplyr::left_join(
         dplyr::select(
           players, .data$id, setPieceSubPhaseMainEventPlayerName = .data$commonname
-          ),
+        ),
         by = base::c("setPieceSubPhaseMainEventPlayerId" = "id")
       ) %>%
       dplyr::left_join(

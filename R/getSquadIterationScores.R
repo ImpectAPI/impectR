@@ -2,6 +2,7 @@
 #'
 #' @param iteration 'IMPCET' iteration ID
 #' @param token bearer token
+#' @param host host environment
 
 #' @export
 
@@ -24,7 +25,11 @@
 #'   token = "yourToken"
 #' )
 #' }
-getSquadIterationScores <- function (iteration, token) {
+getSquadIterationScores <- function (
+    iteration,
+    token,
+    host = "https://api.impect.com"
+) {
 
   # check if iteration input is a string or integer
   if (!(base::is.numeric(iteration) ||
@@ -36,7 +41,8 @@ getSquadIterationScores <- function (iteration, token) {
   squads <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        host,
+        base_url = "/v5/customerapi/iterations/",
         id = iteration,
         suffix = "/squads",
         token = token
@@ -60,7 +66,8 @@ getSquadIterationScores <- function (iteration, token) {
   scores_raw <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        host,
+        base_url = "/v5/customerapi/iterations/",
         id = iteration,
         suffix = "/squad-scores",
         token = token
@@ -75,7 +82,8 @@ getSquadIterationScores <- function (iteration, token) {
   score_list <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/squad-scores",
+        host,
+        base_url = "/v5/customerapi/squad-scores",
         token = token
       ),
       "text",
@@ -86,7 +94,7 @@ getSquadIterationScores <- function (iteration, token) {
     dplyr::select(.data$id, .data$name)
 
   # get competitions
-  iterations <- getIterations(token = token)
+  iterations <- getIterations(token = token, host = host)
 
   # manipulate averages
 

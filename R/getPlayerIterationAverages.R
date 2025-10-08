@@ -2,6 +2,7 @@
 #'
 #' @param iteration 'IMPECT' iteration ID
 #' @param token bearer token
+#' @param host host environment
 #'
 #' @export
 #'
@@ -24,7 +25,11 @@
 #'   token = "yourToken"
 #' )
 #' }
-getPlayerIterationAverages <- function (iteration, token) {
+getPlayerIterationAverages <- function (
+    iteration,
+    token,
+    host = "https://api.impect.com"
+) {
 
   # check if iteration input is a string or integer
   if (!(base::is.numeric(iteration) ||
@@ -36,7 +41,8 @@ getPlayerIterationAverages <- function (iteration, token) {
   squads <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        host,
+        base_url = "/v5/customerapi/iterations/",
         id = iteration,
         suffix = "/squads",
         token = token
@@ -60,8 +66,9 @@ getPlayerIterationAverages <- function (iteration, token) {
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
+            host,
             base_url = paste0(
-              "https://api.impect.com/v5/customerapi/iterations/",
+              "/v5/customerapi/iterations/",
               iteration,
               "/squads/",
               .,
@@ -80,7 +87,8 @@ getPlayerIterationAverages <- function (iteration, token) {
   players <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        host,
+        base_url = "/v5/customerapi/iterations/",
         id = iteration,
         suffix = "/players",
         token = token
@@ -98,7 +106,8 @@ getPlayerIterationAverages <- function (iteration, token) {
   kpis <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/kpis",
+        host,
+        base_url = "/v5/customerapi/kpis",
         token = token
       ),
       "text",
@@ -109,7 +118,7 @@ getPlayerIterationAverages <- function (iteration, token) {
     dplyr::select(.data$id, .data$name)
 
   # get iterations from API
-  iterations <- getIterations(token = token)
+  iterations <- getIterations(token = token, host = host)
 
   # manipulate averages
 

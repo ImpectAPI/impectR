@@ -2,6 +2,7 @@
 #'
 #' @param iteration 'IMPECT' iteration ID
 #' @param token bearer token
+#' @param host host environment
 #'
 #' @export
 #'
@@ -23,13 +24,14 @@
 #'   token = "yourToken"
 #' )
 #' }
-getMatches <- function(iteration, token) {
+getMatches <- function(iteration, token, host = "https://api.impect.com") {
 
   # get matches from API
   matches <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        host,
+        base_url = "/v5/customerapi/iterations/",
         id = iteration,
         suffix = "/matches",
         token = token
@@ -47,7 +49,8 @@ getMatches <- function(iteration, token) {
   squads <-jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        host,
+        base_url = "/v5/customerapi/iterations/",
         id = iteration,
         suffix = "/squads",
         token = token
@@ -90,7 +93,8 @@ getMatches <- function(iteration, token) {
   countries <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/countries/",
+        host,
+        base_url = "/v5/customerapi/countries/",
         token = token
         ),
       "text",
