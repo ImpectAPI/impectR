@@ -16,11 +16,12 @@ allowed_positions <- c(
 #' Return a dataframe that contains all player scores for a given iteration ID
 #'
 #' @param iteration 'IMPECT' iteration ID
-#' @param positions list of position names. Must be one of:   "GOALKEEPER",
+#' @param token bearer token
+#' @param positions optional list of position names. Must be one of:   "GOALKEEPER",
 #' "LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER", "CENTRAL_DEFENDER",
 #' "DEFENSE_MIDFIELD", "CENTRAL_MIDFIELD", "ATTACKING_MIDFIELD", "LEFT_WINGER",
-#' "RIGHT_WINGER", "CENTER_FORWARD"
-#' @param token bearer token
+#' "RIGHT_WINGER", "CENTER_FORWARD". If not submitted, function will return all
+#' positions individually.
 #' @param host host environment
 #'
 #' @export
@@ -48,8 +49,8 @@ allowed_positions <- c(
 #' }
 getPlayerIterationScores <- function (
     iteration,
-    positions,
     token,
+    positions = NULL,
     host = "https://api.impect.com"
 ) {
 
@@ -59,15 +60,17 @@ getPlayerIterationScores <- function (
     stop("Unprocessable type for 'iteration' variable")
   }
 
-  # check if the input positions are valid
-  invalid_positions <- positions[!positions %in% allowed_positions]
-  if (length(invalid_positions) > 0) {
-    stop("Invalid position(s): ", paste(invalid_positions, collapse = ", "),
-         ".\nChoose one or more of: ", paste(allowed_positions, collapse = ", "))
-  }
+  if (!base::is.null(positions)) {
+    # check if the input positions are valid
+    invalid_positions <- positions[!positions %in% allowed_positions]
+    if (length(invalid_positions) > 0) {
+      stop("Invalid position(s): ", paste(invalid_positions, collapse = ", "),
+           ".\nChoose one or more of: ", paste(allowed_positions, collapse = ", "))
+    }
 
-  # compile position string
-  position_string <- paste(positions, collapse = ",")
+    # compile position string
+    position_string <- paste(positions, collapse = ",")
+  }
 
   # get squads master data from API
   squads <- jsonlite::fromJSON(
@@ -92,61 +95,92 @@ getPlayerIterationScores <- function (
     base::unique()
 
   # get player iteration scores from API
-  scores_raw <-
-    purrr::map_df(
-      squadIds,
-      ~ {
-        response <- jsonlite::fromJSON(
-        httr::content(
-          .callAPIlimited(
-            host,
-            base_url = paste0(
-              "/v5/customerapi/iterations/",
-              iteration,
-              "/squads/",
-              .,
-              "/positions/",
-              position_string,
-              "/player-scores"
+  if (!base::is.null(positions)) {
+    scores_raw <-
+      purrr::map_df(
+        squadIds,
+        ~ {
+          response <- jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              host,
+              base_url = paste0(
+                "/v5/customerapi/iterations/",
+                iteration,
+                "/squads/",
+                .,
+                "/positions/",
+                position_string,
+                "/player-scores"
+              ),
+              token = token
             ),
-            token = token
-          ),
-          "text",
-          encoding = "UTF-8"
-          )
-        )$data
+            "text",
+            encoding = "UTF-8"
+            )
+          )$data
 
-        if (base::length(response) > 0) {
-          response <- response %>%
-            dplyr::mutate(squadId = ..1, iterationId = iteration)
+          if (base::length(response) > 0) {
+            response <- response %>%
+              dplyr::mutate(squadId = ..1, iterationId = iteration)
+          }
         }
-      }
-    )
-
-  # raise exception if no player played at given positions in matches
-  if (base::length(scores_raw) == 0) {
-    base::stop(
-      base::paste0(
-        "No players played at position(s) ",
-        position_string,
-        " in iteration ",
-        iteration,
-        "."
       )
-    )
-  }
 
-  # print matches without players at given position
-  error_list <- base::as.character(
-    squadIds[!squadIds %in% scores_raw$squadId]
-  )
-  if (base::length(error_list) > 0) {
-    base::message(
-      base::sprintf(
-        "No players played at position(s) %s for following squads:\n\t%s",
-        positions, paste(error_list, collapse = ", ")
+    # raise exception if no player played at given positions in matches
+    if (base::length(scores_raw) == 0) {
+      base::stop(
+        base::paste0(
+          "No players played at position(s) ",
+          position_string,
+          " in iteration ",
+          iteration,
+          "."
+        )
       )
+    }
+
+    # print matches without players at given position
+    error_list <- base::as.character(
+      squadIds[!squadIds %in% scores_raw$squadId]
     )
+    if (base::length(error_list) > 0) {
+      base::message(
+        base::sprintf(
+          "No players played at position(s) %s for following squads:\n\t%s",
+          positions, paste(error_list, collapse = ", ")
+        )
+      )
+    }
+  } else {
+    scores_raw <-
+      purrr::map_df(
+        squadIds,
+        ~ {
+          response <- jsonlite::fromJSON(
+            httr::content(
+              .callAPIlimited(
+                host,
+                base_url = paste0(
+                  "/v5/customerapi/iterations/",
+                  iteration,
+                  "/squads/",
+                  .,
+                  "/player-scores"
+                ),
+                token = token
+              ),
+              "text",
+              encoding = "UTF-8"
+            )
+          )$data
+
+          if (base::length(response) > 0) {
+            response <- response %>%
+              dplyr::mutate(squadId = ..1, iterationId = iteration)
+          }
+        }
+      )
   }
 
   # get player master data from API
@@ -189,20 +223,39 @@ getPlayerIterationScores <- function (
   # manipulate averages
 
   # unnest scorings
-  scores <- scores_raw %>%
-    tidyr::unnest("playerScores", keep_empty = TRUE) %>%
-    dplyr::select(
-      .data$iterationId,
-      .data$squadId,
-      .data$playerId,
-      .data$playDuration,
-      .data$matchShare,
-      .data$playerScoreId,
-      .data$value
-    ) %>%
+  if (!base::is.null(positions)) {
+    scores <- scores_raw %>%
+      tidyr::unnest("playerScores", keep_empty = TRUE) %>%
+      dplyr::select(
+        .data$iterationId,
+        .data$squadId,
+        .data$playerId,
+        .data$playDuration,
+        .data$matchShare,
+        .data$playerScoreId,
+        .data$value
+      )
+
     # add column to store positions string
-    dplyr::mutate(positions = position_string) %>%
-    # join with kpis to ensure all scores are present and order by playerScoreId
+    scores <- scores %>%
+      dplyr::mutate(positions = position_string)
+  } else {
+    scores <- scores_raw %>%
+      tidyr::unnest("playerScores", keep_empty = TRUE) %>%
+      dplyr::select(
+        .data$iterationId,
+        .data$squadId,
+        .data$playerId,
+        .data$position,
+        .data$playDuration,
+        .data$matchShare,
+        .data$playerScoreId,
+        .data$value
+      )
+  }
+
+  # join with kpis to ensure all scores are present and order by playerScoreId
+  scores <- scores %>%
     dplyr::full_join(score_list, by = c("playerScoreId" = "id")) %>%
     dplyr::arrange(.data$playerScoreId, .data$playerId) %>%
     # drop playerScoreId column
@@ -265,6 +318,10 @@ getPlayerIterationScores <- function (
     "playDuration",
     score_list$name
   )
+
+  if (base::is.null(positions)) {
+    order[order == "positions"] <- "position"
+  }
 
   # select columns
   scores <- scores %>%
