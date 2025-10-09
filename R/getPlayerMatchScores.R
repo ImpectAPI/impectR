@@ -17,11 +17,12 @@ allowed_positions <- c(
 #' and list of positions
 #'
 #' @param matches 'IMPECT' match IDs
-#' @param positions list of position names. Must be one of:   "GOALKEEPER",
+#' @param token bearer token
+#' @param positions optional list of position names. Must be one of:   "GOALKEEPER",
 #' "LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER", "CENTRAL_DEFENDER",
 #' "DEFENSE_MIDFIELD", "CENTRAL_MIDFIELD", "ATTACKING_MIDFIELD", "LEFT_WINGER",
-#' "RIGHT_WINGER", "CENTER_FORWARD"
-#' @param token bearer token
+#' "RIGHT_WINGER", "CENTER_FORWARD". If not submitted, function will return all
+#' positions individually.
 #' @param host host environment
 #'
 #' @export
@@ -49,8 +50,8 @@ allowed_positions <- c(
 #' }
 getPlayerMatchScores <- function (
     matches,
-    positions,
     token,
+    positions = NULL,
     host = "https://api.impect.com"
 ) {
 
@@ -63,11 +64,16 @@ getPlayerMatchScores <- function (
     }
   }
 
-  # check if the input positions are valid
-  invalid_positions <- positions[!positions %in% allowed_positions]
-  if (length(invalid_positions) > 0) {
-    stop("Invalid position(s): ", paste(invalid_positions, collapse = ", "),
-         ".\nChoose one or more of: ", paste(allowed_positions, collapse = ", "))
+  if (!base::is.null(positions)) {
+    # check if the input positions are valid
+    invalid_positions <- positions[!positions %in% allowed_positions]
+    if (length(invalid_positions) > 0) {
+      stop("Invalid position(s): ", paste(invalid_positions, collapse = ", "),
+           ".\nChoose one or more of: ", paste(allowed_positions, collapse = ", "))
+    }
+
+    # compile position string
+    position_string <- paste(positions, collapse = ",")
   }
 
   # get matchInfo from API
@@ -88,6 +94,9 @@ getPlayerMatchScores <- function (
           )
         )$data
 
+        # define functino to convert NULL to NA
+        safe_extract <- function(x) if (is.null(x)) NA else x
+
         response <- dplyr::tibble(
           id = temp$id,
           dateTime = temp$dateTime,
@@ -95,8 +104,8 @@ getPlayerMatchScores <- function (
           lastCalculationDate = temp$lastCalculationDate,
           squadHomeId = temp$squadHome$id,
           squadAwayId = temp$squadAway$id,
-          homeCoachId = temp$squadHome$coachId,
-          awayCoachId = temp$squadAway$coachId,
+          homeCoachId = safe_extract(temp$squadHome$coachId),
+          awayCoachId = safe_extract(temp$squadAway$coachId),
           formationHome = temp$squadHome$startingFormation,
           formationAway = temp$squadAway$startingFormation
         )
@@ -128,31 +137,50 @@ getPlayerMatchScores <- function (
     }
   }
 
-  # compile position string
-  position_string <- paste(positions, collapse = ",")
-
   # get player match scores from API
-  scores_raw <-
-    purrr::map(
-      matches,
-      ~ jsonlite::fromJSON(
-        httr::content(
-          .callAPIlimited(
-            host,
-            base_url = base::paste0(
-              "/v5/customerapi/matches/",
-              .,
-              "/positions/",
-              position_string,
-              "/player-scores"
+  if (!base::is.null(positions)) {
+    scores_raw <-
+      purrr::map(
+        matches,
+        ~ jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              host,
+              base_url = base::paste0(
+                "/v5/customerapi/matches/",
+                .,
+                "/positions/",
+                position_string,
+                "/player-scores"
+              ),
+              token = token
             ),
-            token = token
-          ),
-          "text",
-          encoding = "UTF-8"
-        )
-      )$data
-    )
+            "text",
+            encoding = "UTF-8"
+          )
+        )$data
+      )
+  } else {
+    scores_raw <-
+      purrr::map(
+        matches,
+        ~ jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              host,
+              base_url = base::paste0(
+                "/v5/customerapi/matches/",
+                .,
+                "/player-scores"
+              ),
+              token = token
+            ),
+            "text",
+            encoding = "UTF-8"
+          )
+        )$data
+      )
+  }
 
   # get unique iterationIds
   iterations <- matchInfo %>%
@@ -235,9 +263,18 @@ getPlayerMatchScores <- function (
             jsonlite::flatten()
         }
       }
-    ) %>%
-    dplyr::select(.data$id, .data$name) %>%
-    base::unique()
+    )
+  if (base::length(coaches) > 0) {
+    coaches <- coaches %>%
+      dplyr::select(.data$id, .data$name) %>%
+      base::unique()
+  } else {
+    coaches <- coaches %>%
+      dplyr::mutate(
+        id = NA,
+        name = NA
+      )
+  }
 
   # get kpi names from API
   score_list <- jsonlite::fromJSON(
@@ -277,17 +314,43 @@ getPlayerMatchScores <- function (
           jsonlite::toJSON(dict[side][[1]]$players),
           simplifyDataFrame = TRUE
         ),
-        recursive = FALSE)
+        recursive = FALSE) %>%
+        dplyr::mutate(
+          matchId = dict$matchId,
+          squadId = dict[side][[1]]$id,
+        )
 
-      # unnest scores
+      if (!base::is.null(positions)) {
+        # unnest scores
+        temp <- temp %>%
+          tidyr::unnest("playerScores", keep_empty = TRUE) %>%
+          dplyr::select(
+            "matchId",
+            "squadId",
+            "playerId" = "id",
+            "playerScoreId",
+            "value",
+            "matchShare",
+            "playDuration") %>%
+          # add positions
+          dplyr::mutate(positions = position_string)
+      } else {
+        # unnest scores
+        temp <- temp %>%
+          tidyr::unnest("playerScores", keep_empty = TRUE) %>%
+          dplyr::select(
+            "matchId",
+            "squadId",
+            "playerId" = "id",
+            "position",
+            "playerScoreId",
+            "value",
+            "matchShare",
+            "playDuration")
+
+      }
+
       temp <- temp %>%
-        tidyr::unnest("playerScores", keep_empty = TRUE) %>%
-        dplyr::select(
-          "playerId" = "id",
-          "playerScoreId",
-          "value",
-          "matchShare",
-          "playDuration") %>%
         # join with kpis to ensure all kpiIds are present and order by kpiId
         dplyr::full_join(score_list, by = c("playerScoreId" = "id")) %>%
         dplyr::arrange("playerScoreId", "playerId") %>%
@@ -308,9 +371,8 @@ getPlayerMatchScores <- function (
           # add matchId
           matchId = dict$matchId,
           # add squadId
-          squadId = dict[[side]]$id,
-          # add positions
-          positions = position_string)
+          squadId = dict[[side]]$id
+        )
 
       return(temp)
     }
@@ -447,6 +509,10 @@ getPlayerMatchScores <- function (
     "playDuration",
     score_list$name
   )
+
+  if (base::is.null(positions)) {
+    order[order == "positions"] <- "position"
+  }
 
   # select columns
   scores <- scores %>%
