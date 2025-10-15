@@ -104,8 +104,8 @@ getPlayerMatchScores <- function (
           lastCalculationDate = temp$lastCalculationDate,
           squadHomeId = temp$squadHome$id,
           squadAwayId = temp$squadAway$id,
-          homeCoachId = safe_extract(temp$squadHome$coachId),
-          awayCoachId = safe_extract(temp$squadAway$coachId),
+          homeCoachId = purrr::pluck(temp, "squadHome", "coachId", .default = NA),
+          awayCoachId = purrr::pluck(temp, "squadAway", "coachId", .default = NA),
           formationHome = temp$squadHome$startingFormation,
           formationAway = temp$squadAway$startingFormation
         )
@@ -261,6 +261,12 @@ getPlayerMatchScores <- function (
         if (base::length(response) > 0) {
           response <- response %>%
             jsonlite::flatten()
+        } else {
+          response <- base::data.frame(
+            id = -1,
+            name = "",
+            stringsAsFactors = FALSE
+          )
         }
       }
     )
