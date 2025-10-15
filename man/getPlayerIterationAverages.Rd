@@ -4,12 +4,14 @@
 \alias{getPlayerIterationAverages}
 \title{Return a dataframe that contains all player averages for a given iteration ID}
 \usage{
-getPlayerIterationAverages(iteration, token)
+getPlayerIterationAverages(iteration, token, host = "https://api.impect.com")
 }
 \arguments{
 \item{iteration}{'IMPECT' iteration ID}
 
 \item{token}{bearer token}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing the KPI averages aggregated per player and

@@ -5,7 +5,12 @@
 \title{Return a dataframe that contains all player profile scores for a given
 iteration ID}
 \usage{
-getPlayerProfileScores(iteration, positions, token)
+getPlayerProfileScores(
+  iteration,
+  positions,
+  token,
+  host = "https://api.impect.com"
+)
 }
 \arguments{
 \item{iteration}{'IMPECT' iteration ID}
@@ -16,6 +21,8 @@ getPlayerProfileScores(iteration, positions, token)
 "RIGHT_WINGER", "CENTER_FORWARD"}
 
 \item{token}{bearer token}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing the player profilescores aggregated per player

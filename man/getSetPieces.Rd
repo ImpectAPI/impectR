@@ -5,12 +5,14 @@
 \title{Return a dataframe that contains all set pieces and aggregated kpi values per
 set piece sub phase for a set of given list of match IDs}
 \usage{
-getSetPieces(matches, token)
+getSetPieces(matches, token, host = "https://api.impect.com")
 }
 \arguments{
 \item{matches}{list fo 'IMPECT' match IDs}
 
 \item{token}{bearer token}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing all set pieces and aggregated kpi values per

@@ -4,17 +4,25 @@
 \alias{getPlayerIterationScores}
 \title{Return a dataframe that contains all player scores for a given iteration ID}
 \usage{
-getPlayerIterationScores(iteration, positions, token)
+getPlayerIterationScores(
+  iteration,
+  token,
+  positions = NULL,
+  host = "https://api.impect.com"
+)
 }
 \arguments{
 \item{iteration}{'IMPECT' iteration ID}
 
-\item{positions}{list of position names. Must be one of:   "GOALKEEPER",
+\item{token}{bearer token}
+
+\item{positions}{optional list of position names. Must be one of:   "GOALKEEPER",
 "LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER", "CENTRAL_DEFENDER",
 "DEFENSE_MIDFIELD", "CENTRAL_MIDFIELD", "ATTACKING_MIDFIELD", "LEFT_WINGER",
-"RIGHT_WINGER", "CENTER_FORWARD"}
+"RIGHT_WINGER", "CENTER_FORWARD". If not submitted, function will return all
+positions individually.}
 
-\item{token}{bearer token}
+\item{host}{host environment}
 }
 \value{
 a dataframe containing the player scores aggregated per player for

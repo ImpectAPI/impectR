@@ -4,12 +4,19 @@
 \alias{getAccessToken}
 \title{Get an access token from the 'Impect' Customer API}
 \usage{
-getAccessToken(username, password)
+getAccessToken(
+  username,
+  password,
+  token_url =
+    "https://login.impect.com/auth/realms/production/protocol/openid-connect/token"
+)
 }
 \arguments{
 \item{username}{your 'IMPECT' username}
 
 \item{password}{your 'IMPECT' password}
+
+\item{token_url}{host specific token url}
 }
 \value{
 a string containing a bearer token

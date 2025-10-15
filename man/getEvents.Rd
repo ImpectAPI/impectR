@@ -5,7 +5,13 @@
 \title{Return a dataframe that contains all events and kpi values for a set of given
 match IDs}
 \usage{
-getEvents(matches, token, include_kpis = TRUE, include_set_pieces = FALSE)
+getEvents(
+  matches,
+  token,
+  include_kpis = TRUE,
+  include_set_pieces = FALSE,
+  host = "https://api.impect.com"
+)
 }
 \arguments{
 \item{matches}{'IMPECT' match ID or a list of match IDs}
@@ -15,6 +21,8 @@ getEvents(matches, token, include_kpis = TRUE, include_set_pieces = FALSE)
 \item{include_kpis}{include KPIs in event data}
 
 \item{include_set_pieces}{include additional set piece data in event data}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing all events and kpi values for a set of given

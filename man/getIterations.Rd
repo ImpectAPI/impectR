@@ -4,10 +4,12 @@
 \alias{getIterations}
 \title{Return a dataframe containing all iterations available to the user}
 \usage{
-getIterations(token)
+getIterations(token, host = "https://api.impect.com")
 }
 \arguments{
 \item{token}{bearer token}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing all iterations available to the user

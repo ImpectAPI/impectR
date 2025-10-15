@@ -4,12 +4,14 @@
 \alias{getSquadIterationAverages}
 \title{Return a dataframe that contains all squads averages for a given iteration ID}
 \usage{
-getSquadIterationAverages(iteration, token)
+getSquadIterationAverages(iteration, token, host = "https://api.impect.com")
 }
 \arguments{
 \item{iteration}{'IMPECT' iteration ID}
 
 \item{token}{bearer token}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing the KPI averages aggregated per squad for the

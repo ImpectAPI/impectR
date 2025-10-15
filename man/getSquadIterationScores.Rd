@@ -4,12 +4,14 @@
 \alias{getSquadIterationScores}
 \title{Return a dataframe that contains all squads scores for a given iteration ID}
 \usage{
-getSquadIterationScores(iteration, token)
+getSquadIterationScores(iteration, token, host = "https://api.impect.com")
 }
 \arguments{
 \item{iteration}{'IMPCET' iteration ID}
 
 \item{token}{bearer token}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing the squad scores aggregated per squad for the

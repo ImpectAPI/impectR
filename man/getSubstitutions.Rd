@@ -5,12 +5,14 @@
 \title{Return a dataframe that contains all line-up changes for a set of given
 match IDs}
 \usage{
-getSubstitutions(matches, token)
+getSubstitutions(matches, token, host = "https://api.impect.com")
 }
 \arguments{
 \item{matches}{'IMPECT' match ID or a list of match IDs}
 
 \item{token}{bearer token}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing all line-up changes for a set of given

@@ -4,12 +4,14 @@
 \alias{getSquadMatchScores}
 \title{Return a dataframe that contains squad level scores and ratios for a given match ID}
 \usage{
-getSquadMatchScores(matches, token)
+getSquadMatchScores(matches, token, host = "https://api.impect.com")
 }
 \arguments{
 \item{matches}{'IMPECT' match IDs}
 
 \item{token}{bearer token}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing the scores and rations aggregated per squad for the given match ID
