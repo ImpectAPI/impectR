@@ -1,3 +1,8 @@
+# impectR 2.5.1
+
+## Minor Changes
+* fix bugs with new coaches data that occured when a match has no coaches data
+
 # impectR 2.5.0
 
 ## Major Changes
