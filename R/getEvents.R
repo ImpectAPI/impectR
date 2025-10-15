@@ -418,6 +418,9 @@ getEvents <- function (
           players, .data$id, setPieceSubPhaseSecondTouchPlayerName = .data$commonname
         ),
         by = base::c("setPieceSubPhaseSecondTouchPlayerId" = "id")
+      ) %>%
+      dplyr::rename(
+        setPieceSubPhaseMainEvent = "setPieceMainEvent"
       )
   }
 
@@ -467,8 +470,7 @@ getEvents <- function (
       gameTimeInSec = "gameTimeGameTimeInSec",
       eventId = "id",
       eventNumber = "index",
-      dribbleOpponentPlayerId = "dribblePlayerId",
-      setPieceSubPhaseMainEvent = "setPieceMainEvent"
+      dribbleOpponentPlayerId = "dribblePlayerId"
     )
 
   # reorder columns
