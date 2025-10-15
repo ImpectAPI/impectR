@@ -275,14 +275,14 @@ getSquadMatchsums <- function (
       by = c("squadId" = "squadId")
     ) %>%
     dplyr::left_join(
-      bind_rows(
-        select(
+      dplyr::bind_rows(
+        dplyr::select(
           matchInfo,
           matchId = .data$id,
           squadId = .data$squadHomeId,
           coachId = .data$homeCoachId
         ),
-        select(
+        dplyr::select(
           matchInfo,
           matchId = .data$id,
           squadId = .data$squadAwayId,

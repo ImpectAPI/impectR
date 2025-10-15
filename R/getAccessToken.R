@@ -2,6 +2,7 @@
 #'
 #' @param username your 'IMPECT' username
 #' @param password your 'IMPECT' password
+#' @param token_url host specific token url
 #'
 #' @return a string containing a bearer token
 #' @export
