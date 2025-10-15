@@ -1,29 +1,44 @@
 #' Return a dataframe that contains all events and kpi values for a set of given
 #' match IDs
 #'
-#' @param matches IMPECT match ID or a list of match IDs
+#' @param matches 'IMPECT' match ID or a list of match IDs
 #' @param token bearer token
 #' @param include_kpis include KPIs in event data
 #' @param include_set_pieces include additional set piece data in event data
+#' @param host host environment
 #'
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing all events and kpi values for a set of given
 #' match IDs
 #'
 #' @examples
-#' \donttest{
-#' try({ # prevent cran errors
-#'   events <- getEvents(matches = c(84248), token = token)
-#' })
+#' # Toy example: this will error quickly (no API token)
+#' try(events <- getEvents(
+#'   matches = c(0, 1),
+#'   token = "invalid",
+#'   include_kpis = T,
+#'   include_set_pieces = F
+#' ))
+#'
+#' # Real usage: requires valid Bearer Token from `getAccessToken()`
+#' \dontrun{
+#' events <- getEvents(
+#'   matches = c(84248, 158150),
+#'   token = "yourToken",
+#'   include_kpis = T,
+#'   include_set_pieces = F
+#' )
 #' }
 getEvents <- function (
     matches,
     token,
     include_kpis = TRUE,
-    include_set_pieces = FALSE
-    ) {
+    include_set_pieces = FALSE,
+    host = "https://api.impect.com"
+) {
 
   # check if match input is not a list and convert to list if required
   if (!base::is.list(matches)) {
@@ -38,30 +53,44 @@ getEvents <- function (
   matchInfo <-
     purrr::map_df(
       matches,
-      ~ jsonlite::fromJSON(
-        httr::content(
-          .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/matches/",
-            id = .,
-            token = token
+      ~ {
+        temp <- jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              host,
+              base_url = "/v5/customerapi/matches/",
+              id = .,
+              token = token
             ),
-          "text",
-          encoding = "UTF-8"
+            "text",
+            encoding = "UTF-8"
           )
         )$data
-      ) %>%
-    dplyr::select(id, iterationId, lastCalculationDate) %>%
-    base::unique()
+
+        response <- dplyr::tibble(
+          id = temp$id,
+          dateTime = temp$dateTime,
+          iterationId = temp$iterationId,
+          lastCalculationDate = temp$lastCalculationDate,
+          squadHomeId = temp$squadHome$id,
+          squadAwayId = temp$squadAway$id,
+          homeCoachId = temp$squadHome$coachId,
+          awayCoachId = temp$squadAway$coachId,
+          formationHome = temp$squadHome$startingFormation,
+          formationAway = temp$squadAway$startingFormation
+        )
+      }
+    )
 
   # filter for fail matches
   fail_matches <- matchInfo %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == TRUE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == TRUE) %>%
+    dplyr::pull(.data$id)
 
   # filter for avilable matches
   matches <- matchInfo %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == FALSE) %>%
-    dplyr::pull(id)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == FALSE) %>%
+    dplyr::pull(.data$id)
 
   # raise warnings
   if (base::length(fail_matches) > 0) {
@@ -85,18 +114,19 @@ getEvents <- function (
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            host,
+            base_url = "/v5/customerapi/matches/",
             id = .,
             suffix = "/events",
             token = token
           ),
           "text",
           encoding = "UTF-8"
-          )
-        )$data %>%
+        )
+      )$data %>%
         dplyr::mutate(matchId = ..1) %>%
         jsonlite::flatten()
-      )
+    )
 
   # fix column names using regex
   base::names(events) <-
@@ -110,7 +140,8 @@ getEvents <- function (
         ~ jsonlite::fromJSON(
           httr::content(
             .callAPIlimited(
-              base_url = "https://api.impect.com/v5/customerapi/matches/",
+              host,
+              base_url = "/v5/customerapi/matches/",
               id = .,
               suffix = "/event-kpis",
               token = token
@@ -125,15 +156,16 @@ getEvents <- function (
     kpis <- jsonlite::fromJSON(
       httr::content(
         .callAPIlimited(
-          base_url = "https://api.impect.com/v5/customerapi/kpis/event",
+          host,
+          base_url = "/v5/customerapi/kpis/event",
           token = token
-          ),
+        ),
         "text",
         encoding = "UTF-8"
-        )
-      )$data %>%
+      )
+    )$data %>%
       jsonlite::flatten() %>%
-      dplyr::select(id, name)
+      dplyr::select(.data$id, .data$name)
   }
 
   if (include_set_pieces) {
@@ -144,7 +176,8 @@ getEvents <- function (
         ~ jsonlite::fromJSON(
           httr::content(
             .callAPIlimited(
-              base_url = "https://api.impect.com/v5/customerapi/matches/",
+              host,
+              base_url = "/v5/customerapi/matches/",
               id = .,
               suffix = "/set-pieces",
               token = token
@@ -154,10 +187,10 @@ getEvents <- function (
           )
         )$data %>%
           dplyr::mutate(matchId = ..1) %>%
-        jsonlite::flatten()
+          jsonlite::flatten()
       ) %>%
-      tidyr::unnest_longer(setPieceSubPhase) %>%
-      tidyr::unnest(setPieceSubPhase, names_sep = ".") %>%
+      tidyr::unnest_longer(.data$setPieceSubPhase) %>%
+      tidyr::unnest(.data$setPieceSubPhase, names_sep = ".") %>%
       dplyr::rename(setPiecePhaseIndex = "phaseIndex")
 
     # fix column names using regex
@@ -167,7 +200,7 @@ getEvents <- function (
     # merge events and set pieces
     events <- events %>%
       dplyr::left_join(
-        dplyr::select(set_pieces, -matchId, -squadId),
+        dplyr::select(set_pieces, -.data$matchId, -.data$squadId),
         by = c(
           "setPieceId" = "id",
           "setPieceSubPhaseId" = "setPieceSubPhaseId"
@@ -177,7 +210,7 @@ getEvents <- function (
 
   # get unique iterationIds
   iterations <- matchInfo %>%
-    dplyr::pull(iterationId) %>%
+    dplyr::pull(.data$iterationId) %>%
     base::unique()
 
 
@@ -188,7 +221,8 @@ getEvents <- function (
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/players",
             token = token
@@ -198,7 +232,7 @@ getEvents <- function (
         )
       )$data
     ) %>%
-    dplyr::select(id, commonname) %>%
+    dplyr::select(.data$id, .data$commonname) %>%
     base::unique()
 
   # get squad master data from API
@@ -208,7 +242,8 @@ getEvents <- function (
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/squads",
             token = token
@@ -219,19 +254,51 @@ getEvents <- function (
       )$data %>%
         jsonlite::flatten()
     ) %>%
-    dplyr::select(id, name) %>%
+    dplyr::select(.data$id, .data$name) %>%
     base::unique()
 
   # fix column names using regex
   base::names(squads) <-
     gsub("\\.(.)", "\\U\\1", base::names(squads), perl = TRUE)
 
+  # get coach master data from API
+  coaches <-
+    purrr::map_df(
+      iterations,
+      ~ {
+        response <- jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              host,
+              base_url = "/v5/customerapi/iterations/",
+              id = .,
+              suffix = "/coaches",
+              token = token
+            ),
+            "text",
+            encoding = "UTF-8"
+          )
+        )$data
+
+        if (base::length(response) > 0) {
+          response <- response %>%
+            jsonlite::flatten()
+        }
+      }
+    ) %>%
+    dplyr::select(.data$id, .data$name) %>%
+    base::unique()
+
   # get matchplan data
   matchplan <-
-    purrr::map_df(iterations, ~ getMatches(iteration = ., token = token))
+    purrr::map_df(iterations, ~ getMatches(
+      iteration = .,
+      token = token,
+      host = host)
+    )
 
   # get iterations
-  iterations <- getIterations(token = token)
+  iterations <- getIterations(token = token, host = host)
 
   # account for matches without dribbles, duels, or opponents tagged
   attributes <- c(
@@ -258,41 +325,71 @@ getEvents <- function (
 
   # merge events with squads
   events <- events %>%
-    dplyr::left_join(dplyr::select(squads, squadId = id, squadName = name),
-                     by = base::c("squadId" = "squadId")) %>%
+    dplyr::left_join(
+      dplyr::select(squads, squadId = .data$id, squadName = .data$name),
+      by = base::c("squadId" = "squadId")
+    ) %>%
     dplyr::left_join(
       dplyr::select(
         squads,
-        squadId = id,
-        currentAttackingSquadName = name
+        squadId = .data$id,
+        currentAttackingSquadName = .data$name
       ),
       by = base::c("currentAttackingSquadId" = "squadId")
+    )
+
+  # merge events with matchInfo & coaches
+  events <- events %>%
+    dplyr::left_join(
+      dplyr::select(
+        matchInfo,
+        matchId = .data$id,
+        .data$homeCoachId,
+        .data$awayCoachId
+      ),
+      by = base::c("matchId" = "matchId")
+    ) %>%
+    dplyr::left_join(
+      dplyr::select(
+        coaches,
+        homeCoachId = .data$id,
+        homeCoachName = .data$name
+      ),
+      by = base::c("homeCoachId" = "homeCoachId")
+    ) %>%
+    dplyr::left_join(
+      dplyr::select(
+        coaches,
+        awayCoachId = .data$id,
+        awayCoachName = .data$name
+      ),
+      by = base::c("awayCoachId" = "awayCoachId")
     )
 
   # merge events with players
   events <- events %>%
     dplyr::left_join(
-      dplyr::select(players, id, playerName = commonname),
+      dplyr::select(players, .data$id, playerName = .data$commonname),
       by = base::c("playerId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(players, id, pressingPlayerName = commonname),
+      dplyr::select(players, .data$id, pressingPlayerName = .data$commonname),
       by = base::c("pressingPlayerId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(players, id, fouledPlayerName = commonname),
+      dplyr::select(players, .data$id, fouledPlayerName = .data$commonname),
       by = base::c("fouledPlayerId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(players, id, duelPlayerName = commonname),
+      dplyr::select(players, .data$id, duelPlayerName = .data$commonname),
       by = base::c("duelPlayerId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(players, id, passReceiverPlayerName = commonname),
+      dplyr::select(players, .data$id, passReceiverPlayerName = .data$commonname),
       by = base::c("passReceiverPlayerId" = "id")
     ) %>%
     dplyr::left_join(
-      dplyr::select(players, id, dribbleOpponentPlayerName = commonname),
+      dplyr::select(players, .data$id, dribbleOpponentPlayerName = .data$commonname),
       by = base::c("dribblePlayerId" = "id")
     )
 
@@ -300,25 +397,25 @@ getEvents <- function (
     events <- events %>%
       dplyr::left_join(
         dplyr::select(
-          players, id, setPieceSubPhaseMainEventPlayerName = commonname
-          ),
+          players, .data$id, setPieceSubPhaseMainEventPlayerName = .data$commonname
+        ),
         by = base::c("setPieceSubPhaseMainEventPlayerId" = "id")
       ) %>%
       dplyr::left_join(
         dplyr::select(
-          players, id, setPieceSubPhasePassReceiverName = commonname
+          players, .data$id, setPieceSubPhasePassReceiverName = .data$commonname
         ),
         by = base::c("setPieceSubPhasePassReceiverId" = "id")
       ) %>%
       dplyr::left_join(
         dplyr::select(
-          players, id, setPieceSubPhaseFirstTouchPlayerName = commonname
+          players, .data$id, setPieceSubPhaseFirstTouchPlayerName = .data$commonname
         ),
         by = base::c("setPieceSubPhaseFirstTouchPlayerId" = "id")
       ) %>%
       dplyr::left_join(
         dplyr::select(
-          players, id, setPieceSubPhaseSecondTouchPlayerName = commonname
+          players, .data$id, setPieceSubPhaseSecondTouchPlayerName = .data$commonname
         ),
         by = base::c("setPieceSubPhaseSecondTouchPlayerId" = "id")
       ) %>%
@@ -393,11 +490,15 @@ getEvents <- function (
     "homeSquadCountryId",
     "homeSquadCountryName",
     "homeSquadType",
+    "homeCoachId",
+    "homeCoachName",
     "awaySquadId",
     "awaySquadName",
     "awaySquadCountryId",
     "awaySquadCountryName",
     "awaySquadType",
+    "awayCoachId",
+    "awayCoachName",
     "eventId",
     "eventNumber",
     "sequenceIndex",

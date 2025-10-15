@@ -4,12 +4,14 @@
 \alias{getMatches}
 \title{Return a dataframe with basic information for all matches for a given iteration ID}
 \usage{
-getMatches(iteration, token)
+getMatches(iteration, token, host = "https://api.impect.com")
 }
 \arguments{
-\item{iteration}{IMPECT iteration ID}
+\item{iteration}{'IMPECT' iteration ID}
 
 \item{token}{bearer token}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing all matches for a given iteration ID
@@ -18,9 +20,17 @@ a dataframe containing all matches for a given iteration ID
 Return a dataframe with basic information for all matches for a given iteration ID
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  matches <- getMatches(518, token)
-})
+# Toy example: this will error quickly (no API token)
+try(matchplan <- getMatches(
+  iteration = 0,
+  token = "invalid"
+))
+
+# Real usage: requires valid Bearer Token from `getAccessToken()`
+\dontrun{
+matchplan <- getMatches(
+  iteration = 1004,
+  token = "yourToken"
+)
 }
 }

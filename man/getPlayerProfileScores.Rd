@@ -5,10 +5,15 @@
 \title{Return a dataframe that contains all player profile scores for a given
 iteration ID}
 \usage{
-getPlayerProfileScores(iteration, positions, token)
+getPlayerProfileScores(
+  iteration,
+  positions,
+  token,
+  host = "https://api.impect.com"
+)
 }
 \arguments{
-\item{iteration}{Impect iteration ID}
+\item{iteration}{'IMPECT' iteration ID}
 
 \item{positions}{list of position names. Must be one of:   "GOALKEEPER",
 "LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER", "CENTRAL_DEFENDER",
@@ -16,6 +21,8 @@ getPlayerProfileScores(iteration, positions, token)
 "RIGHT_WINGER", "CENTER_FORWARD"}
 
 \item{token}{bearer token}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing the player profilescores aggregated per player
@@ -26,9 +33,19 @@ Return a dataframe that contains all player profile scores for a given
 iteration ID
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  scores <- getPlayerProfileScores(518, token)
-})
+# Toy example: this will error quickly (no API token)
+try(player_profile_scores <- getPlayerProfileScores(
+  iteration = 0,
+  positions = c("INVALID_POSITION_1", "INVALID_POSITION_2"),
+  token = "invalid"
+))
+
+# Real usage: requires valid Bearer Token from `getAccessToken()`
+\dontrun{
+player_profile_scores <- getPlayerProfileScores(
+  iteration = 1004,
+  positions = c("CENTRAL_DEFENDER", "DEFENSE_MIDFIELD"),
+  token = "yourToken"
+)
 }
 }

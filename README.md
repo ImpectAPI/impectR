@@ -9,9 +9,9 @@
 
 A package provided by: Impect GmbH
 
-Version: v2.4.4
+Version: v2.5.0
 
-**Updated: August 19th 2025**
+**Updated: October 15th 2025**
 
 ------------------------------------------------------------------------
 
@@ -34,12 +34,17 @@ match and season level.
 
 ## Installation
 
-You can install the latest version of impectR from
-[GitHub](https://github.com/) with:
+You can install the latest version of impectR from CRAN with:
+
+``` r
+install.packages("impectR")
+```
+
+You can also install it from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ImpectAPI/impectR@v2.4.4")
+devtools::install_github("ImpectAPI/impectR@v2.5.0")
 ```
 
 ## Usage
@@ -147,8 +152,11 @@ squadMatchsums <- getSquadMatchsums(matches = matchIds, token = token)
 positions <- c("LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER")
 
 # get player scores and ratios for match and positions per player
-playerMatchScores <- 
-  getPlayerMatchScores(matches = matchIds, positions = positions, token = token)
+playerMatchScores <- getPlayerMatchScores(
+  matches = matchIds, 
+  token = token,
+  positions = positions  # optional
+)
 
 # get squad scores and ratios for match per squad
 squadMatchScores <- getSquadMatchScores(matches = matchIds, token = token)
@@ -222,14 +230,53 @@ squadIterationAverages <-
 
 # get player scores and ratios for iteration and positions
 playerIterationScores <- 
-  getPlayerIterationScores(iteration = iteration, positions = positions, token = token)
+  getPlayerIterationScores(
+    iteration = iteration,
+    token = token,
+    positions = positions. #optional
+  )
 
 # get squad scores and ratios for iteration
 squadIterationScores <- 
   getSquadIterationScores(iteration = iteration, token = token)
+```
 
-# get squad ratings for iteration
+The squad rating values that you can find on the league ranking in the
+Scouting portal can also be retrieved from the API. In addition, we also
+provide you with the more detailed squad coefficients that can be used
+to make match predictions. See [this example
+script](https://github.com/ImpectAPI/impectPy/blob/release/examples/predict_matches.ipynb)
+for further details.
+
+``` r
+# get squad rating for iteration
 squadRatings <- getSquadRatings(iteration = iteration, token = token)
+
+# get squad coefficients for iteration
+squadCoefficients <- getSquadCoefficients(iteration = iteration, token = token)
+```
+
+You can now also retrieve the positional profile scores for players via
+our API. This includes profiles that you created through the scouting
+portal. The function requires a positional input that determines which
+matchShares to consider when computing the scores. In the below example,
+all matchShares that a player played as either a left back or a right
+back are included for profile score calculation.
+
+``` r
+# define iteration ID
+iteration = 518
+
+# define positions to get scores aggregated by
+positions = ["LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER"]
+
+# get player profile scores
+playerProfileScores <- 
+  ip.getPlayerProfileScores(
+    iteration = iteration,
+    positions = positions,
+    token = token
+  )
 ```
 
 Please keep in mind that Impect enforces a rate limit of 10 requests per

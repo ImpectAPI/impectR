@@ -4,17 +4,25 @@
 \alias{getPlayerIterationScores}
 \title{Return a dataframe that contains all player scores for a given iteration ID}
 \usage{
-getPlayerIterationScores(iteration, positions, token)
+getPlayerIterationScores(
+  iteration,
+  token,
+  positions = NULL,
+  host = "https://api.impect.com"
+)
 }
 \arguments{
-\item{iteration}{Impect iteration ID}
-
-\item{positions}{list of position names. Must be one of:   "GOALKEEPER",
-"LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER", "CENTRAL_DEFENDER",
-"DEFENSE_MIDFIELD", "CENTRAL_MIDFIELD", "ATTACKING_MIDFIELD", "LEFT_WINGER",
-"RIGHT_WINGER", "CENTER_FORWARD"}
+\item{iteration}{'IMPECT' iteration ID}
 
 \item{token}{bearer token}
+
+\item{positions}{optional list of position names. Must be one of:   "GOALKEEPER",
+"LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER", "CENTRAL_DEFENDER",
+"DEFENSE_MIDFIELD", "CENTRAL_MIDFIELD", "ATTACKING_MIDFIELD", "LEFT_WINGER",
+"RIGHT_WINGER", "CENTER_FORWARD". If not submitted, function will return all
+positions individually.}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing the player scores aggregated per player for
@@ -24,9 +32,19 @@ the given iteration ID and list of positions
 Return a dataframe that contains all player scores for a given iteration ID
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  scores <- getPlayerIterationScores(518, token)
-})
+# Toy example: this will error quickly (no API token)
+try(player_scores <- getPlayerIterationScores(
+  iteration = 0,
+  positions = c("INVALID_POSITION_1", "INVALID_POSITION_2"),
+  token = "invalid"
+))
+
+# Real usage: requires valid Bearer Token from `getAccessToken()`
+\dontrun{
+player_scores <- getPlayerIterationScores(
+  iteration = 1004,
+  positions = c("CENTRAL_DEFENDER", "DEFENSE_MIDFIELD"),
+  token = "yourToken"
+)
 }
 }

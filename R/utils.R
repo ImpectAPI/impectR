@@ -4,13 +4,14 @@
 #'
 #' @noRd
 #'
+#' @param host host environment
 #' @param base_url API endpoint URL
 #' @param id The id of the object to be retrieved
 #' @param suffix The suffix of the endpoint URL that comes after the id
 #' @param token Bearer token
 #'
 #' @return Response content of the API endpoint
-.callAPI <- function(base_url, id = "", suffix = "", token,
+.callAPI <- function(host, base_url, id = "", suffix = "", token,
                      max_retries = 3, retry_delay = 1) {
 
   # try API call
@@ -18,7 +19,7 @@
     # get API response
     response <-
       httr::GET(
-        url = base::paste0(base_url, id, suffix),
+        url = base::paste0(host, base_url, id, suffix),
         httr::add_headers(
           Authorization = base::paste("Bearer", token, sep = " "))
         )
@@ -29,7 +30,7 @@
     } else if (httr::status_code(response) == 429) {
       # handle rate limiting (429 status code)
       message <- httr::content(response, "parsed")$message
-      base::cat(base::paste("Received status code 429 (", message,
+      base::message(base::paste("Received status code 429 (", message,
                 "), retrying in", retry_delay, "seconds...\n"))
       Sys.sleep(retry_delay)
     } else if (httr::status_code(response) %in% c(401, 403)) {
@@ -52,23 +53,27 @@
   }
 }
 
+# private storage for bucket
+.api_state <- new.env(parent = emptyenv())
+
 #' Applies the rate limit policy to the .callAPI function
 #'
 #' @noRd
 #'
+#' @param host host environment
 #' @param base_url Impect API endpoint URL
 #' @param id the id of the object to be retrieved
 #' @param suffix suffix of the endpoint URL that comes after the id
 #' @param token bearer token
 #'
 #' @return a dataframe containing the response of an API endpoint
-.callAPIlimited <- function(base_url, id = "", suffix = "", token) {
+.callAPIlimited <- function(host, base_url, id = "", suffix = "", token) {
 
   # check if Token bucket exist and create it if not
-  if (!exists("bucket")) {
+  if (is.null(.api_state$bucket)) {
 
     # get response from API
-    response <- .callAPI(base_url, id, suffix, token)
+    response <- .callAPI(host, base_url, id, suffix, token)
 
     # get rate limit policy
     policy <- response[["all_headers"]][[1]][["headers"]][["ratelimit-policy"]]
@@ -81,7 +86,7 @@
 
 
     # create TokenBucket
-    bucket <<- TokenBucket(
+    .api_state$bucket <- TokenBucket(
       # set default rate, capacity, available tokens and time
       capacity = capacity,
       intervall = intervall,
@@ -95,18 +100,18 @@
   }
 
   # check if a token is available
-  if (bucket$isTokenAvailable()) {
+  if (.api_state$bucket$isTokenAvailable()) {
     # get API response
-    response <- .callAPI(base_url, id, suffix, token)
+    response <- .callAPI(host, base_url, id, suffix, token)
 
     # consume a token
-    bucket$consumeToken()
+    .api_state$bucket$consumeToken()
   } else {
     # wait for bucket intervall
-    Sys.sleep(bucket$intervall)
+    Sys.sleep(.api_state$bucket$intervall)
 
     # call function again
-    response <- .callAPIlimited(base_url, id, suffix, token)
+    response <- .callAPIlimited(host, base_url, id, suffix, token)
   }
 
   # return response
@@ -122,6 +127,7 @@
 #' @param data a data frame
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing clean columns names and SkillCorner/HeimSpiel
 #' columns
 .cleanData <- function (data) {
@@ -151,16 +157,10 @@
 
   # edit column names
   data <- data %>%
-    dplyr::rename(skillCornerId = "skillCorner",
-                  heimSpielId = "heimSpiel",
-                  wyscoutId = "wyscout")
-
-  # edit column types
-  data <- data %>%
-    mutate(
-      skillCornerId = as.integer(skillCornerId),
-      heimSpielId = as.integer(heimSpielId),
-      wyscoutId = as.integer(wyscoutId)
+    dplyr::mutate(
+      skillCornerId = as.integer(.data$skillCorner),
+      heimSpielId   = as.integer(.data$heimSpiel),
+      wyscoutId     = as.integer(.data$wyscout)
     )
 
   # return squads
@@ -174,18 +174,16 @@
 #' to control the frequency of certain actions or requests based on available tokens.
 #' Tokens are added to the bucket at a specified rate and can be consumed when needed.
 #'
-#' @name TokenBucket
+#' @field capacity The maximum number of tokens in the bucket.
+#' @field tokens The number of tokens currently available in the bucket.
+#' @field interval The duration in seconds after which the bucket gets refilled.
+#' @field last_update The timestamp of the last update to the bucket.
 #'
-#' @slot capacity the maximum amount of tokens in the bucket
-#' @slot tokens the amount of token currently available in the bucket
-#' @slot intervall the duration in seconds after which the bucket gets refilled
-#' @slot last_update the timestamp from the liast time tokens were added or consumed
-#'
-#' @importFrom methods new
-#'
-#' @export
+#' @exportClass TokenBucket
 #'
 #' @keywords classes
+#'
+#' @importFrom methods new
 #'
 #' @examples
 #' \donttest{

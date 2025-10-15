@@ -24,7 +24,7 @@
 #'   token = "yourToken"
 #' )
 #' }
-getSquadRatings <- function (
+getSquadCoefficients <- function (
     iteration,
     token,
     host = "https://api.impect.com"
@@ -34,7 +34,7 @@ getSquadRatings <- function (
   if (!base::is.numeric(iteration)) {
     stop("Unprocessable type for 'iteration' variable")
   }
-  # get squad amster data from API
+  # get squad amater data from API
   squads <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
@@ -56,46 +56,60 @@ getSquadRatings <- function (
   squads <- .cleanData(squads)
 
   # get squad ratings from API
-  ratings <- jsonlite::flatten(
+  coefficients <- jsonlite::flatten(
     jsonlite::fromJSON(
       httr::content(
         .callAPIlimited(
           host,
           base_url = "/v5/customerapi/iterations/",
           id = iteration,
-          suffix = "/squads/ratings",
+          suffix = "/predictions/model-coefficients",
           token = token
         ),
         "text",
         encoding = "UTF-8"
-        )
-    )$data$squadRatingsEntries %>%
+      )
+    )$data$entries %>%
       dplyr::mutate(iterationId = iteration)
   )
 
   # fix column names using regex
-  base::names(ratings) <-
-    gsub("\\.(.)", "\\U\\1", base::names(ratings), perl = TRUE)
+  base::names(coefficients) <-
+    gsub("\\.(.)", "\\U\\1", base::names(coefficients), perl = TRUE)
 
   # get competitions
   iterations <- getIterations(token = token, host = host)
 
-  # merge with other data
-  ratings <- ratings %>%
-    tidyr::unnest(.data$squadRatings) %>%
+  # unnest squads column
+  coefficients <- coefficients %>%
+    tidyr::unnest(.data$squads)
+
+    # merge with other data
+  coefficients <- coefficients %>%
     dplyr::left_join(
       dplyr::select(
         squads, .data$id, .data$wyscoutId, .data$heimSpielId,
         .data$skillCornerId, squadName = .data$name
       ),
-      by = c("squadId" = "id")
+      by = c("id" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
-        iterations, .data$id, .data$competitionId, .data$competitionName,
+        iterations, .data$id, .data$competitionName,
         .data$competitionType, .data$season, .data$competitionGender
       ),
       by = c("iterationId" = "id")
+    )
+
+  # rename columns
+  coefficients <- coefficients %>%
+    dplyr::rename(
+      squadId = .data$id,
+      attackCoefficient = .data$att,
+      defenseCoefficient = .data$def,
+      interceptCoefficient = .data$competitionIntercept,
+      homeCoefficient = .data$competitionHome,
+      competitionCoefficient = .data$competitionComp
     )
 
   # define column order
@@ -106,19 +120,23 @@ getSquadRatings <- function (
     "competitionType",
     "season",
     "competitionGender",
+    "interceptCoefficient",
+    "homeCoefficient",
+    "competitionCoefficient",
     "date",
     "squadId",
     "wyscoutId",
     "heimSpielId",
     "skillCornerId",
     "squadName",
-    "value"
+    "attackCoefficient",
+    "defenseCoefficient"
   )
 
   # select columns
-  ratings <- ratings %>%
+  coefficients <- coefficients %>%
     dplyr::select(dplyr::all_of(order))
 
   # return matchsums
-  return(ratings)
+  return(coefficients)
 }

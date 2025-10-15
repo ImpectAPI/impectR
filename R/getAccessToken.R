@@ -1,28 +1,29 @@
-#' Get an access token from the Impect Customer API
+#' Get an access token from the 'Impect' Customer API
 #'
-#' @param username your IMPECT username
-#' @param password your IMPECT password
+#' @param username your 'IMPECT' username
+#' @param password your 'IMPECT' password
+#' @param token_url host specific token url
 #'
 #' @return a string containing a bearer token
 #' @export
 #'
 #' @examples
-#' \donttest{
-#' try({ # prevent cran errors
-#'   username <- "yourUsername"
-#'   password <- "youPassword"
-#'   token <- getAccessToken(username = username, password = password)
-#' })
+#' # Toy example: this will error quickly (no credentials)
+#' try(getAccessToken(username = "invalidUser", password = "invalidPassword"))
+#'
+#' # Real usage: requires valid credentials
+#' \dontrun{
+#'   token <- getAccessToken(username = "yourUsername", password = "yourPassword")
 #' }
-getAccessToken <- function(username, password) {
+getAccessToken <- function(
+    username,
+    password,
+    token_url = "https://login.impect.com/auth/realms/production/protocol/openid-connect/token"
+  ) {
   # validate input parameters
   if (missing(username) || missing(password) || username == "" || password == "") {
     stop("Username and password are required.")
   }
-
-  # create tokenURL
-  token_url <-
-    "https://login.impect.com/auth/realms/production/protocol/openid-connect/token"
 
   # compose login link
   login <- base::paste0(

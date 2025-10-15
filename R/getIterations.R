@@ -1,6 +1,7 @@
 #' Return a dataframe containing all iterations available to the user
 #'
 #' @param token bearer token
+#' @param host host environment
 #'
 #' @export
 
@@ -8,17 +9,24 @@
 #' @return a dataframe containing all iterations available to the user
 #'
 #' @examples
-#' \donttest{
-#' try({ # prevent cran errors
-#'   competitionIterations <- getCompetitions(token)
-#' })
+#' # Toy example: this will error quickly (no API token)
+#' try(events <- getIterations(
+#'   token = "invalid"
+#' ))
+#'
+#' # Real usage: requires valid Bearer Token from `getAccessToken()`
+#' \dontrun{
+#' iterations <- getIterations(
+#'   token = "yourToken"
+#' )
 #' }
-getIterations <- function(token) {
+getIterations <- function(token, host = "https://api.impect.com") {
   # get iteration data from API
   iterations <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/iterations",
+        host,
+        base_url = "/v5/customerapi/iterations",
         token = token
         ),
       "text",

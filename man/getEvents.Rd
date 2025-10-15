@@ -5,16 +5,24 @@
 \title{Return a dataframe that contains all events and kpi values for a set of given
 match IDs}
 \usage{
-getEvents(matches, token, include_kpis = TRUE, include_set_pieces = FALSE)
+getEvents(
+  matches,
+  token,
+  include_kpis = TRUE,
+  include_set_pieces = FALSE,
+  host = "https://api.impect.com"
+)
 }
 \arguments{
-\item{matches}{IMPECT match ID or a list of match IDs}
+\item{matches}{'IMPECT' match ID or a list of match IDs}
 
 \item{token}{bearer token}
 
 \item{include_kpis}{include KPIs in event data}
 
 \item{include_set_pieces}{include additional set piece data in event data}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing all events and kpi values for a set of given
@@ -25,9 +33,21 @@ Return a dataframe that contains all events and kpi values for a set of given
 match IDs
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  events <- getEvents(matches = c(84248), token = token)
-})
+# Toy example: this will error quickly (no API token)
+try(events <- getEvents(
+  matches = c(0, 1),
+  token = "invalid",
+  include_kpis = T,
+  include_set_pieces = F
+))
+
+# Real usage: requires valid Bearer Token from `getAccessToken()`
+\dontrun{
+events <- getEvents(
+  matches = c(84248, 158150),
+  token = "yourToken",
+  include_kpis = T,
+  include_set_pieces = F
+)
 }
 }

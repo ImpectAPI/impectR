@@ -3,3 +3,7 @@
 ^LICENSE\.md$
 ^README\.Rmd$
 ^\.github$
+^\.gitignore$
+^\.Rhistory$
+^dev$
+^examples$

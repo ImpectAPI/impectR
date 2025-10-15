@@ -1,21 +1,35 @@
 #' Return a dataframe that contains all squads averages for a given iteration ID
 #'
-#' @param iteration Impect iteration ID
+#' @param iteration 'IMPECT' iteration ID
 #' @param token bearer token
+#' @param host host environment
 
 #' @export
 
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing the KPI averages aggregated per squad for the
 #' given iteration ID
 #'
 #' @examples
-#' \donttest{
-#' try({ # prevent cran errors
-#'   squadIterationAverages <- getSquadIterationAverages(518, token)
-#' })
+#' # Toy example: this will error quickly (no API token)
+#' try(squad_avgs <- getSquadIterationAverages(
+#'   iteration = 0,
+#'   token = "invalid"
+#' ))
+#'
+#' # Real usage: requires valid Bearer Token from `getAccessToken()`
+#' \dontrun{
+#' squad_avgs <- getSquadIterationAverages(
+#'   iteration = 1004,
+#'   token = "yourToken"
+#' )
 #' }
-getSquadIterationAverages <- function (iteration, token) {
+getSquadIterationAverages <- function (
+    iteration,
+    token,
+    host = "https://api.impect.com"
+) {
 
   # check if iteration input is a string or integer
   if (!(base::is.numeric(iteration) ||
@@ -27,7 +41,8 @@ getSquadIterationAverages <- function (iteration, token) {
   squads <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        host,
+        base_url = "/v5/customerapi/iterations/",
         id = iteration,
         suffix = "/squads",
         token = token
@@ -40,7 +55,7 @@ getSquadIterationAverages <- function (iteration, token) {
 
   # get squadIds
   squadIds <- squads %>%
-    dplyr::pull(id)
+    dplyr::pull(.data$id)
 
   # clean data
   squads <- .cleanData(squads)
@@ -49,7 +64,8 @@ getSquadIterationAverages <- function (iteration, token) {
   averages_raw <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/iterations/",
+        host,
+        base_url = "/v5/customerapi/iterations/",
         id = iteration,
         suffix = "/squad-kpis",
         token = token
@@ -64,7 +80,8 @@ getSquadIterationAverages <- function (iteration, token) {
   kpis <- jsonlite::fromJSON(
     httr::content(
       .callAPIlimited(
-        base_url = "https://api.impect.com/v5/customerapi/kpis",
+        host,
+        base_url = "/v5/customerapi/kpis",
         token = token
       ),
       "text",
@@ -72,48 +89,50 @@ getSquadIterationAverages <- function (iteration, token) {
     )
   )$data %>%
     jsonlite::flatten() %>%
-    dplyr::select(id, name)
+    dplyr::select(.data$id, .data$name)
 
   # get competitions from API
-  iterations <- getIterations(token = token)
+  iterations <- getIterations(token = token, host = host)
 
   # manipulate averages
 
   # unnest scorings
   averages <- averages_raw %>%
-    tidyr::unnest(kpis) %>%
+    tidyr::unnest(.data$kpis) %>%
     dplyr::select(
-      iterationId,
-      squadId,
-      matches,
-      kpiId,
-      value) %>%
+      .data$iterationId,
+      .data$squadId,
+      .data$matches,
+      .data$kpiId,
+      .data$value) %>%
     # join with kpis to ensure all kpiIds are present and order by kpiId
     dplyr::full_join(kpis, by = c("kpiId" = "id")) %>%
-    dplyr::arrange(kpiId, squadId) %>%
+    dplyr::arrange(.data$kpiId, .data$squadId) %>%
     # drop kpiId column
-    dplyr::select(-kpiId) %>%
+    dplyr::select(-.data$kpiId) %>%
     # pivot data
     tidyr::pivot_wider(
-      names_from = name,
-      values_from = value,
+      names_from = .data$name,
+      values_from = .data$value,
       values_fill = 0,
       values_fn = base::sum
     ) %>%
     # filter for non NA columns that were created by full join
-    dplyr::filter(base::is.na(squadId) == FALSE)
+    dplyr::filter(base::is.na(.data$squadId) == FALSE)
 
   # merge with other data
   averages <- averages %>%
     dplyr::left_join(
       dplyr::select(
-        squads, id, wyscoutId, heimSpielId, skillCornerId, squadName = name
+        squads, .data$id, .data$wyscoutId, .data$heimSpielId,
+        .data$skillCornerId, squadName = .data$name
       ),
       by = c("squadId" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
-        iterations, id, competitionId, competitionName, competitionType, season
+        iterations, .data$id, .data$competitionId, .data$competitionName,
+        .data$competitionType, .data$season
       ),
       by = c("iterationId" = "id")
     )

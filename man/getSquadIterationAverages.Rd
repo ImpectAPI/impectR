@@ -4,12 +4,14 @@
 \alias{getSquadIterationAverages}
 \title{Return a dataframe that contains all squads averages for a given iteration ID}
 \usage{
-getSquadIterationAverages(iteration, token)
+getSquadIterationAverages(iteration, token, host = "https://api.impect.com")
 }
 \arguments{
-\item{iteration}{Impect iteration ID}
+\item{iteration}{'IMPECT' iteration ID}
 
 \item{token}{bearer token}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing the KPI averages aggregated per squad for the
@@ -19,9 +21,17 @@ given iteration ID
 Return a dataframe that contains all squads averages for a given iteration ID
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  squadIterationAverages <- getSquadIterationAverages(518, token)
-})
+# Toy example: this will error quickly (no API token)
+try(squad_avgs <- getSquadIterationAverages(
+  iteration = 0,
+  token = "invalid"
+))
+
+# Real usage: requires valid Bearer Token from `getAccessToken()`
+\dontrun{
+squad_avgs <- getSquadIterationAverages(
+  iteration = 1004,
+  token = "yourToken"
+)
 }
 }

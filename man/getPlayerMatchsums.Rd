@@ -4,12 +4,14 @@
 \alias{getPlayerMatchsums}
 \title{Return a dataframe that contains all player matchsums for a given match ID}
 \usage{
-getPlayerMatchsums(matches, token)
+getPlayerMatchsums(matches, token, host = "https://api.impect.com")
 }
 \arguments{
-\item{matches}{Impect match IDs}
+\item{matches}{'IMPECT' match IDs}
 
 \item{token}{bearer token}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing the matchsums aggregated per player and position for the given match ID
@@ -18,9 +20,17 @@ a dataframe containing the matchsums aggregated per player and position for the 
 Return a dataframe that contains all player matchsums for a given match ID
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  matchsums <- getPlayerMatchsums(84248, token)
-})
+# Toy example: this will error quickly (no API token)
+try(player_match_sums <- getPlayerMatchsums(
+  matches = c(0, 1),
+  token = "invalid"
+))
+
+# Real usage: requires valid Bearer Token from `getAccessToken()`
+\dontrun{
+player_match_sums <- getPlayerMatchsums(
+  matches = c(84248, 158150),
+  token = "yourToken"
+)
 }
 }

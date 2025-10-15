@@ -5,12 +5,14 @@
 \title{Return a dataframe that contains all line-up changes for a set of given
 match IDs}
 \usage{
-getSubstitutions(matches, token)
+getSubstitutions(matches, token, host = "https://api.impect.com")
 }
 \arguments{
-\item{matches}{IMPECT match ID or a list of match IDs}
+\item{matches}{'IMPECT' match ID or a list of match IDs}
 
 \item{token}{bearer token}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing all line-up changes for a set of given
@@ -21,9 +23,17 @@ Return a dataframe that contains all line-up changes for a set of given
 match IDs
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  substitutions <- getSubstitutions(matches = c(84248), token = token)
-})
+# Toy example: this will error quickly (no API token)
+try(subs <- getSubstitutions(
+  matches = c(0, 1),
+  token = "invalid"
+))
+
+# Real usage: requires valid Bearer Token from `getAccessToken()`
+\dontrun{
+subs <- getSubstitutions(
+  matches = c(84248, 158150),
+  token = "yourToken"
+)
 }
 }

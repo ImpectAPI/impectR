@@ -4,12 +4,14 @@
 \alias{getSquadMatchScores}
 \title{Return a dataframe that contains squad level scores and ratios for a given match ID}
 \usage{
-getSquadMatchScores(matches, token)
+getSquadMatchScores(matches, token, host = "https://api.impect.com")
 }
 \arguments{
-\item{matches}{Impect match IDs}
+\item{matches}{'IMPECT' match IDs}
 
 \item{token}{bearer token}
+
+\item{host}{host environment}
 }
 \value{
 a dataframe containing the scores and rations aggregated per squad for the given match ID
@@ -18,9 +20,17 @@ a dataframe containing the scores and rations aggregated per squad for the given
 Return a dataframe that contains squad level scores and ratios for a given match ID
 }
 \examples{
-\donttest{
-try({ # prevent cran errors
-  squadMatchScores <- getSquadMatchsums(84248, token)
-})
+# Toy example: this will error quickly (no API token)
+try(squad_match_scores <- getSquadMatchScores(
+  matches = c(0, 1),
+  token = "invalid"
+))
+
+# Real usage: requires valid Bearer Token from `getAccessToken()`
+\dontrun{
+squad_match_scores <- getSquadMatchScores(
+  matches = c(84248, 158150),
+  token = "yourToken"
+)
 }
 }

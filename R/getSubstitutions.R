@@ -1,24 +1,35 @@
 #' Return a dataframe that contains all line-up changes for a set of given
 #' match IDs
 #'
-#' @param matches IMPECT match ID or a list of match IDs
+#' @param matches 'IMPECT' match ID or a list of match IDs
 #' @param token bearer token
+#' @param host host environment
 #'
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing all line-up changes for a set of given
 #' match IDs
 #'
 #' @examples
-#' \donttest{
-#' try({ # prevent cran errors
-#'   substitutions <- getSubstitutions(matches = c(84248), token = token)
-#' })
+#' # Toy example: this will error quickly (no API token)
+#' try(subs <- getSubstitutions(
+#'   matches = c(0, 1),
+#'   token = "invalid"
+#' ))
+#'
+#' # Real usage: requires valid Bearer Token from `getAccessToken()`
+#' \dontrun{
+#' subs <- getSubstitutions(
+#'   matches = c(84248, 158150),
+#'   token = "yourToken"
+#' )
 #' }
 getSubstitutions <- function (
     matches,
-    token
+    token,
+    host = "https://api.impect.com"
 ) {
 
   # check if match input is not a list and convert to list if required
@@ -37,7 +48,8 @@ getSubstitutions <- function (
       response <- jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/matches/",
+            host,
+            base_url = "/v5/customerapi/matches/",
             id = .,
             token = token
           ),
@@ -67,17 +79,17 @@ getSubstitutions <- function (
 
   # filter for fail matches
   fail_matches <- match_info %>%
-    dplyr::select(matchId, lastCalculationDate) %>%
+    dplyr::select(.data$matchId, .data$lastCalculationDate) %>%
     base::unique() %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == TRUE) %>%
-    dplyr::pull(matchId)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == TRUE) %>%
+    dplyr::pull(.data$matchId)
 
   # filter for available matches
   matches <- match_info %>%
-    dplyr::select(matchId, lastCalculationDate) %>%
+    dplyr::select(.data$matchId, .data$lastCalculationDate) %>%
     base::unique() %>%
-    dplyr::filter(base::is.na(lastCalculationDate) == FALSE) %>%
-    dplyr::pull(matchId)
+    dplyr::filter(base::is.na(.data$lastCalculationDate) == FALSE) %>%
+    dplyr::pull(.data$matchId)
 
   # raise warnings
   if (base::length(fail_matches) > 0) {
@@ -96,7 +108,7 @@ getSubstitutions <- function (
 
   # get unique iterationIds
   iterations <- match_info %>%
-    dplyr::pull(iterationId) %>%
+    dplyr::pull(.data$iterationId) %>%
     base::unique()
 
 
@@ -107,7 +119,8 @@ getSubstitutions <- function (
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/players",
             token = token
@@ -129,7 +142,8 @@ getSubstitutions <- function (
       ~ jsonlite::fromJSON(
         httr::content(
           .callAPIlimited(
-            base_url = "https://api.impect.com/v5/customerapi/iterations/",
+            host,
+            base_url = "/v5/customerapi/iterations/",
             id = .,
             suffix = "/squads",
             token = token
@@ -140,7 +154,7 @@ getSubstitutions <- function (
       )$data %>%
         jsonlite::flatten()
     ) %>%
-    dplyr::select(id, name) %>%
+    dplyr::select(.data$id, .data$name) %>%
     base::unique()
 
   # fix column names using regex
@@ -149,20 +163,26 @@ getSubstitutions <- function (
 
   # get matchplan data
   matchplan <-
-    purrr::map_df(iterations, ~ getMatches(iteration = ., token = token))
+    purrr::map_df(iterations, ~ getMatches(
+      iteration = .,
+      token = token,
+      host = host
+    ))
 
   # get iterations
-  iterations <- getIterations(token = token)
+  iterations <- getIterations(token = token, host = host)
 
   # extract shirt numbers
   shirt_numbers_home <- match_info %>%
     dplyr::select(
-      matchId, squadId = squadHomeId, squadPlayers = squadHomePlayers
+      .data$matchId, squadId = .data$squadHomeId,
+      squadPlayers = .data$squadHomePlayers
     )
 
   shirt_numbers_away <- match_info %>%
     dplyr::select(
-      matchId, squadId = squadAwayId, squadPlayers = squadAwayPlayers
+      .data$matchId, squadId = .data$squadAwayId,
+      squadPlayers = .data$squadAwayPlayers
     )
 
   # combine data frames
@@ -170,48 +190,48 @@ getSubstitutions <- function (
 
   # unnest players column
   shirt_numbers <- shirt_numbers %>%
-    tidyr::unnest_longer(squadPlayers)
+    tidyr::unnest_longer(.data$squadPlayers)
 
   # normalize the JSON structure into separate columns
   shirt_numbers <- shirt_numbers %>%
-    tidyr::unnest(squadPlayers) %>%
+    tidyr::unnest(.data$squadPlayers) %>%
     dplyr::rename("playerId" = "id")
 
   # extract substitutions
   substitutions_home <- match_info %>%
     dplyr::select(
-      matchId,
-      squadId = squadHomeId,
-      squadSubstitutions = squadHomeSubstitutions
+      .data$matchId,
+      squadId = .data$squadHomeId,
+      squadSubstitutions = .data$squadHomeSubstitutions
     )
 
   substitutions_away <- match_info %>%
     dplyr::select(
-      matchId,
-      squadId = squadAwayId,
-      squadSubstitutions = squadAwaySubstitutions
+      .data$matchId,
+      squadId = .data$squadAwayId,
+      squadSubstitutions = .data$squadAwaySubstitutions
     )
 
   # combine data frames
   substitutions <- dplyr::bind_rows(substitutions_home, substitutions_away) %>%
-    filter(purrr::map_lgl(squadSubstitutions, ~ base::is.data.frame(.)))
+    dplyr::filter(purrr::map_lgl(.data$squadSubstitutions, ~ base::is.data.frame(.)))
 
   # unnest starting_positions column
   substitutions <- substitutions %>%
-    filter(lengths(squadSubstitutions) > 0) %>%
-    tidyr::unnest_longer(squadSubstitutions)
+    dplyr::filter(lengths(.data$squadSubstitutions) > 0) %>%
+    tidyr::unnest_longer(.data$squadSubstitutions)
 
   # normalize the JSON structure into separate columns
   substitutions <- substitutions %>%
-    tidyr::unnest(squadSubstitutions) %>%
-    tidyr::unnest(gameTime)
+    tidyr::unnest(.data$squadSubstitutions) %>%
+    tidyr::unnest(.data$gameTime)
 
   # start merging dfs
 
   # merge substitutions with squads
   substitutions <- substitutions %>%
     dplyr::left_join(
-      dplyr::select(squads, squadId = id, squadName = name),
+      dplyr::select(squads, squadId = .data$id, squadName = .data$name),
       by = base::c("squadId" = "squadId")
     )
 
@@ -226,10 +246,10 @@ getSubstitutions <- function (
     dplyr::left_join(
       dplyr::select(
         shirt_numbers,
-        matchId,
-        squadId,
-        exchangedPlayerId = playerId,
-        exchangedShirtNumber = shirtNumber
+        .data$matchId,
+        .data$squadId,
+        exchangedPlayerId = .data$playerId,
+        exchangedShirtNumber = .data$shirtNumber
         ),
       by = base::c(
         "exchangedPlayerId" = "exchangedPlayerId",
@@ -241,14 +261,14 @@ getSubstitutions <- function (
   # merge with players
   substitutions <- substitutions %>%
     dplyr::left_join(
-      dplyr::select(players, id, playerName = commonname),
+      dplyr::select(players, .data$id, playerName = .data$commonname),
       by = base::c("playerId" = "id")
     ) %>%
     dplyr::left_join(
       dplyr::select(
         players,
-        exchangedPlayerId = id,
-        exchangedPlayerName = commonname
+        exchangedPlayerId = .data$id,
+        exchangedPlayerName = .data$commonname
         ),
       by = base::c("exchangedPlayerId" = "exchangedPlayerId")
     )
@@ -256,16 +276,17 @@ getSubstitutions <- function (
   # merge with matches info
   substitutions <- substitutions %>%
     dplyr::left_join(
-      dplyr::select(matchplan, id, matchDayIndex, matchDayName,
-                    dateTime = scheduledDate,lastCalculationDate, iterationId),
+      dplyr::select(matchplan, .data$id, .data$matchDayIndex,
+                    .data$matchDayName, dateTime = .data$scheduledDate,
+                    .data$lastCalculationDate, .data$iterationId),
       by = base::c("matchId" = "id")
     )
 
   # merge with competition info
   substitutions <- substitutions %>%
     dplyr::left_join(
-      dplyr::select(iterations, id, competitionName, competitionId,
-                    competitionType, season),
+      dplyr::select(iterations, .data$id, .data$competitionName,
+                    .data$competitionId, .data$competitionType, .data$season),
       by = base::c("iterationId" = "id")
     )
 
