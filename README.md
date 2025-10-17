@@ -9,9 +9,9 @@
 
 A package provided by: Impect GmbH
 
-Version: v2.5.1
+Version: v2.5.2
 
-**Updated: October 15th 2025**
+**Updated: October 17th 2025**
 
 ------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ You can also install it from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ImpectAPI/impectR@v2.5.1")
+devtools::install_github("ImpectAPI/impectR@v2.5.2")
 ```
 
 ## Usage
