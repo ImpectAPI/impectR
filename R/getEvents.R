@@ -262,35 +262,50 @@ getEvents <- function (
     gsub("\\.(.)", "\\U\\1", base::names(squads), perl = TRUE)
 
   # get coach master data from API
+  coaches_blacklisted = FALSE
   coaches <-
     purrr::map_df(
       iterations,
       ~ {
-        response <- jsonlite::fromJSON(
-          httr::content(
-            .callAPIlimited(
-              host,
-              base_url = "/v5/customerapi/iterations/",
-              id = .,
-              suffix = "/coaches",
-              token = token
-            ),
-            "text",
-            encoding = "UTF-8"
+        response <- .callAPIlimited(
+            host,
+            base_url = "/v5/customerapi/iterations/",
+            id = .,
+            suffix = "/coaches",
+            token = token,
+            ignore_403 = TRUE
           )
-        )$data
 
-        if (base::length(response) > 0) {
-          response <- response %>%
-            jsonlite::flatten()
-        } else {
-          response <- base::data.frame(
-            id = -1,
-            name = "",
-            stringsAsFactors = FALSE
-          )
+        # check status
+          status <- httr::status_code(response)
+
+          if (status == 403) {
+            coaches_blacklisted <<- TRUE
+
+            # insert empty df as response
+            response <- base::data.frame(
+              id = -1,
+              name = "",
+              stringsAsFactors = FALSE
+            )
+          } else {
+            response <- jsonlite::fromJSON(
+              httr::content(response, "text", encoding = "UTF-8")
+            )$data
+
+            # flatten response
+            if (base::length(response) > 0) {
+              response <- response %>%
+                jsonlite::flatten()
+            } else {
+              response <- base::data.frame(
+                id = -1,
+                name = "",
+                stringsAsFactors = FALSE
+              )
+            }
+          }
         }
-      }
     ) %>%
     dplyr::select(.data$id, .data$name) %>%
     base::unique()
@@ -344,7 +359,7 @@ getEvents <- function (
       by = base::c("currentAttackingSquadId" = "squadId")
     )
 
-  # merge events with matchInfo & coaches
+  # merge events with matchInfo
   events <- events %>%
     dplyr::left_join(
       dplyr::select(
@@ -354,23 +369,28 @@ getEvents <- function (
         .data$awayCoachId
       ),
       by = base::c("matchId" = "matchId")
-    ) %>%
-    dplyr::left_join(
-      dplyr::select(
-        coaches,
-        homeCoachId = .data$id,
-        homeCoachName = .data$name
-      ),
-      by = base::c("homeCoachId" = "homeCoachId")
-    ) %>%
-    dplyr::left_join(
-      dplyr::select(
-        coaches,
-        awayCoachId = .data$id,
-        awayCoachName = .data$name
-      ),
-      by = base::c("awayCoachId" = "awayCoachId")
     )
+
+  # merge events with coaches
+  if (coaches_blacklisted == FALSE) {
+    events <- events %>%
+      dplyr::left_join(
+        dplyr::select(
+          coaches,
+          homeCoachId = .data$id,
+          homeCoachName = .data$name
+        ),
+        by = base::c("homeCoachId" = "homeCoachId")
+      ) %>%
+      dplyr::left_join(
+        dplyr::select(
+          coaches,
+          awayCoachId = .data$id,
+          awayCoachName = .data$name
+        ),
+        by = base::c("awayCoachId" = "awayCoachId")
+      )
+  }
 
   # merge events with players
   events <- events %>%
@@ -630,6 +650,13 @@ getEvents <- function (
   # add kpis if necessary
   if (include_kpis) {
     order <- base::c(order, kpis$name)
+  }
+
+  # check if coaches are blacklisted
+  if (coaches_blacklisted) {
+    order <- order[!order %in% c(
+      "homeCoachId", "homeCoachName", "awayCoachId", "awayCoachName"
+      )]
   }
 
   # reorder data

@@ -173,33 +173,48 @@ getPlayerMatchsums <- function (
     base::unique()
 
   # get coach master data from API
+  coaches_blacklisted = FALSE
   coaches <-
     purrr::map_df(
       iterations,
       ~ {
-          response <- jsonlite::fromJSON(
-          httr::content(
-            .callAPIlimited(
-              host,
-              base_url = "/v5/customerapi/iterations/",
-              id = .,
-              suffix = "/coaches",
-              token = token
-            ),
-            "text",
-            encoding = "UTF-8"
-          )
-        )$data
+        response <- .callAPIlimited(
+          host,
+          base_url = "/v5/customerapi/iterations/",
+          id = .,
+          suffix = "/coaches",
+          token = token,
+          ignore_403 = TRUE
+        )
 
-        if (base::length(response) > 0) {
-          response <- response %>%
-            jsonlite::flatten()
-        } else {
+        # check status
+        status <- httr::status_code(response)
+
+        if (status == 403) {
+          coaches_blacklisted <<- TRUE
+
+          # insert empty df as response
           response <- base::data.frame(
             id = -1,
             name = "",
             stringsAsFactors = FALSE
           )
+        } else {
+          response <- jsonlite::fromJSON(
+            httr::content(response, "text", encoding = "UTF-8")
+          )$data
+
+          # flatten response
+          if (base::length(response) > 0) {
+            response <- response %>%
+              jsonlite::flatten()
+          } else {
+            response <- base::data.frame(
+              id = -1,
+              name = "",
+              stringsAsFactors = FALSE
+            )
+          }
         }
       }
     ) %>%
@@ -331,18 +346,23 @@ getPlayerMatchsums <- function (
       ),
       by = base::c("matchId" = "matchId", "squadId" = "squadId")
     ) %>%
-    dplyr::left_join(
-      dplyr::select(
-        coaches,
-        coachId = .data$id,
-        coachName = .data$name
-      ),
-      by = base::c("coachId" = "coachId")
-    ) %>%
     # fix some column names
     dplyr::rename(
       dateTime = .data$scheduledDate
     )
+
+  # merge events with coaches
+  if (coaches_blacklisted == FALSE) {
+    matchsums <- matchsums %>%
+      dplyr::left_join(
+        dplyr::select(
+          coaches,
+          coachId = .data$id,
+          coachName = .data$name
+        ),
+        by = base::c("coachId" = "coachId")
+      )
+  }
 
   # define column order
   order <- c(
@@ -374,6 +394,11 @@ getPlayerMatchsums <- function (
     "playDuration",
     kpis$name
   )
+
+  # check if coaches are blacklisted
+  if (coaches_blacklisted) {
+    order <- order[!order %in% c("coachId", "coachName")]
+  }
 
   # select columns
   matchsums <- matchsums %>%
