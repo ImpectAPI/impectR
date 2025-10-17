@@ -5,8 +5,8 @@ library(impectR)
 devtools::load_all()
 
 # define login credentials
-username <- "florian.schmitt@impect.com"
-password <- "JT!jX9bVjn7gwGP"
+username <- "username"
+password <- "password"
 
 # set env
 host <- "https://api.release.impect.com"
