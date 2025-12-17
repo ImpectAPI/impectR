@@ -1,3 +1,8 @@
+# impectR 2.5.3
+
+## Minor Changes
+* fix bug in the `getPlayerIterationAverages()` function that occurred if a squad has no computed matches within the iteration.
+  
 # impectR 2.5.2
 
 ## Minor Changes

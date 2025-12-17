@@ -63,24 +63,32 @@ getPlayerIterationAverages <- function (
   averages_raw <-
     purrr::map_df(
       squadIds,
-      ~ jsonlite::fromJSON(
-        httr::content(
-          .callAPIlimited(
-            host,
-            base_url = paste0(
-              "/v5/customerapi/iterations/",
-              iteration,
-              "/squads/",
-              .,
-              "/player-kpis"
+      ~ {
+        temp <-jsonlite::fromJSON(
+          httr::content(
+            .callAPIlimited(
+              host,
+              base_url = paste0(
+                "/v5/customerapi/iterations/",
+                iteration,
+                "/squads/",
+                .,
+                "/player-kpis"
+                ),
+              token = token
               ),
-            token = token
-            ),
-          "text",
-          encoding = "UTF-8"
-          )
-        )$data %>%
-        dplyr::mutate(squadId = ..1, iterationId = iteration)
+            "text",
+            encoding = "UTF-8"
+            )
+          )$data
+
+        if (base::length(temp) > 0) {
+          temp <- temp %>%
+            dplyr::mutate(squadId = ..1, iterationId = iteration)
+        } else {
+          temp <- dplyr::tibble()
+        }
+        }
       )
 
   # get player master data from API
