@@ -617,19 +617,27 @@ getEvents <- function (
     "setPieceSubPhaseCornerType",
     "setPieceSubPhaseFreeKickEndZone",
     "setPieceSubPhaseFreeKickType",
+    "setPieceSubPhaseGoalKickEndZone",
+    "setPieceSubPhaseGoalKickType",
+    "setPieceSubPhaseThrowInEndZone",
+    "setPieceSubPhaseThrowInType",
+    "setPieceSubPhaseSecondDeliveryEndZone",
+    "setPieceSubPhaseSecondDeliveryType",
     "setPieceSubPhaseMainEvent",
     "setPieceSubPhaseMainEventPlayerId",
     "setPieceSubPhaseMainEventPlayerName",
     "setPieceSubPhaseMainEventOutcome",
     "setPieceSubPhasePassReceiverId",
     "setPieceSubPhasePassReceiverName",
+    "setPieceSubPhaseBallTrajectory",
     "setPieceSubPhaseFirstTouchPlayerId",
     "setPieceSubPhaseFirstTouchPlayerName",
     "setPieceSubPhaseFirstTouchWon",
     "setPieceSubPhaseIndirectHeader",
     "setPieceSubPhaseSecondTouchPlayerId",
     "setPieceSubPhaseSecondTouchPlayerName",
-    "setPieceSubPhaseSecondTouchWon"
+    "setPieceSubPhaseSecondTouchWon",
+    "setPieceSubPhaseSecondTouchEndZone"
   )
 
   # add columns that might not exist in previous data versions
