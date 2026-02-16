@@ -9,9 +9,9 @@
 
 A package provided by: Impect GmbH
 
-Version: v2.5.3
+Version: v2.5.4
 
-**Updated: December 17th 2025**
+**Updated: Fabruary 16th 2026**
 
 ------------------------------------------------------------------------
 

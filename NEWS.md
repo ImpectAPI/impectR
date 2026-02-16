@@ -1,3 +1,16 @@
+# impectR 2.5.4
+
+## Minor Changes
+* Add new columns to `getEvents()` and `getSetPieces()` functions:
+  * `setPieceSubPhaseGoalKickEndZone`
+  * `setPieceSubPhaseGoalKickType`
+  * `setPieceSubPhaseThrowInEndZone`
+  * `setPieceSubPhaseThrowInType`
+  * `setPieceSubPhaseSecondDeliveryEndZone`
+  * `setPieceSubPhaseSecondDeliveryType`
+  * `setPieceSubPhaseBallTrajectory`
+  * `setPieceSubPhaseSecondTouchEndZone`
+
 # impectR 2.5.3
 
 ## Minor Changes
