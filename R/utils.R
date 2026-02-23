@@ -30,8 +30,16 @@
     } else if (httr::status_code(response) == 429) {
       # handle rate limiting (429 status code)
       message <- httr::content(response, "parsed")$message
+
+      # calculate actual remaining refill time from TokenBucket if available
+      if (!is.null(.api_state$bucket)) {
+        current_time <- as.numeric(Sys.time())
+        elapsed_time <- current_time - .api_state$bucket$last_update
+        retry_delay <- .api_state$bucket$intervall - elapsed_time
+      }
+
       base::message(base::paste("Received status code 429 (", message,
-                "), retrying in", retry_delay, "seconds...\n"))
+                "), retrying in", round(retry_delay, 2), "seconds...\n"))
       Sys.sleep(retry_delay)
     } else if (httr::status_code(response) == 401) {
       # handle unauthorized (401 status codes)
