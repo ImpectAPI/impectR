@@ -243,7 +243,7 @@ TokenBucket <- setRefClass(
     addTokens = function() {
       current_time <- as.numeric(Sys.time())
       elapsed_time <- current_time - last_update
-      if (elapsed_time >= 1) {
+      if (elapsed_time >= intervall) {
         tokens <<- capacity
         last_update <<- current_time
       }
