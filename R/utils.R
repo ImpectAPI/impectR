@@ -30,8 +30,16 @@
     } else if (httr::status_code(response) == 429) {
       # handle rate limiting (429 status code)
       message <- httr::content(response, "parsed")$message
+
+      # calculate actual remaining refill time from TokenBucket if available
+      if (!is.null(.api_state$bucket)) {
+        current_time <- as.numeric(Sys.time())
+        elapsed_time <- current_time - .api_state$bucket$last_update
+        retry_delay <- .api_state$bucket$intervall - elapsed_time
+      }
+
       base::message(base::paste("Received status code 429 (", message,
-                "), retrying in", retry_delay, "seconds...\n"))
+                "), retrying in", round(retry_delay, 2), "seconds...\n"))
       Sys.sleep(retry_delay)
     } else if (httr::status_code(response) == 401) {
       # handle unauthorized (401 status codes)
@@ -136,7 +144,7 @@
 
 
 #' Processes a dataframe and fixes column names and extracts the first mapping
-#' ID for SkillCOrner and Heimspiel
+#' ID for third party providers
 #'
 #' @noRd
 #'
@@ -144,8 +152,8 @@
 #'
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
-#' @return a dataframe containing clean columns names and SkillCorner/HeimSpiel
-#' columns
+#' @return a dataframe containing clean columns names and third party provider
+#' ID columns
 .cleanData <- function (data) {
 
   # unnest mappings column
@@ -157,9 +165,9 @@
   base::names(data) <-
     base::gsub("[\\.\\_](.)", "\\U\\1", base::names(data), perl = TRUE)
 
-  # iterate over the skillCorner, heimSpiel and wyscout columns and keep first
-  # value only
-  for (provider in c("skillCorner", "heimSpiel", "wyscout")) {
+  # iterate over provider columns and keep first value only
+  for (provider in c("skillCorner", "heimSpiel", "wyscout", "opta",
+                     "statsPerform", "transfermarkt", "soccerdonna")) {
     # drop null values in lists und keep first list entry
     data[[provider]] <-
       purrr::map(data[[provider]], ~ purrr::discard(.x, is.null)[[1]])
@@ -174,9 +182,13 @@
   # edit column names
   data <- data %>%
     dplyr::mutate(
-      skillCornerId = as.integer(.data$skillCorner),
-      heimSpielId   = as.integer(.data$heimSpiel),
-      wyscoutId     = as.integer(.data$wyscout)
+      skillCornerId   = as.integer(.data$skillCorner),
+      heimSpielId     = as.integer(.data$heimSpiel),
+      wyscoutId       = as.integer(.data$wyscout),
+      optaId          = as.integer(.data$opta),
+      statsPerformId  = as.character(.data$statsPerform),
+      transfermarktId = as.character(.data$transfermarkt),
+      soccerdonnaId   = as.integer(.data$soccerdonna)
     )
 
   # return squads
@@ -235,7 +247,7 @@ TokenBucket <- setRefClass(
     addTokens = function() {
       current_time <- as.numeric(Sys.time())
       elapsed_time <- current_time - last_update
-      if (elapsed_time >= 1) {
+      if (elapsed_time >= intervall) {
         tokens <<- capacity
         last_update <<- current_time
       }

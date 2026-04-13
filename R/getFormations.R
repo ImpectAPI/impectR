@@ -185,7 +185,9 @@ getFormations <- function (
   formations <- formations %>%
     dplyr::left_join(
       dplyr::select(matchplan, .data$id, .data$skillCornerId, .data$heimSpielId,
-                    .data$wyscoutId, .data$matchDayIndex, .data$matchDayName,
+                    .data$wyscoutId, .data$optaId, .data$statsPerformId,
+                    .data$transfermarktId, .data$soccerdonnaId,
+                    .data$matchDayIndex, .data$matchDayName,
                     .data$scheduledDate, .data$lastCalculationDate,
                     .data$iterationId),
       by = base::c("id" = "id")

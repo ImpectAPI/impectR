@@ -326,7 +326,8 @@ getPlayerMatchsums <- function (
       dplyr::select(players, .data$id, .data$playerName, .data$firstname,
                     .data$lastname, .data$birthdate, .data$birthplace,
                     .data$leg, .data$wyscoutId, .data$heimSpielId,
-                    .data$skillCornerId),
+                    .data$skillCornerId, .data$optaId, .data$statsPerformId,
+                    .data$transfermarktId, .data$soccerdonnaId),
       by = c("playerId" = "id")
     ) %>%
     dplyr::left_join(
@@ -383,6 +384,10 @@ getPlayerMatchsums <- function (
     "wyscoutId",
     "heimSpielId",
     "skillCornerId",
+    "optaId",
+    "statsPerformId",
+    "transfermarktId",
+    "soccerdonnaId",
     "playerName",
     "firstname",
     "lastname",

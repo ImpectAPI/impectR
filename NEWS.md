@@ -1,3 +1,8 @@
+# impectR 2.5.5
+
+## Minor Changes
+* Add new provider ID mappings to functions
+
 # impectR 2.5.4
 
 ## Minor Changes

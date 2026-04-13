@@ -89,7 +89,8 @@ getSquadCoefficients <- function (
     dplyr::left_join(
       dplyr::select(
         squads, .data$id, .data$wyscoutId, .data$heimSpielId,
-        .data$skillCornerId, squadName = .data$name
+        .data$skillCornerId, .data$optaId, .data$statsPerformId,
+        .data$transfermarktId, .data$soccerdonnaId, squadName = .data$name
       ),
       by = c("id" = "id")
     ) %>%
@@ -128,6 +129,10 @@ getSquadCoefficients <- function (
     "wyscoutId",
     "heimSpielId",
     "skillCornerId",
+    "optaId",
+    "statsPerformId",
+    "transfermarktId",
+    "soccerdonnaId",
     "squadName",
     "attackCoefficient",
     "defenseCoefficient"

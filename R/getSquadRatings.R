@@ -86,7 +86,8 @@ getSquadRatings <- function (
     dplyr::left_join(
       dplyr::select(
         squads, .data$id, .data$wyscoutId, .data$heimSpielId,
-        .data$skillCornerId, squadName = .data$name
+        .data$skillCornerId, .data$optaId, .data$statsPerformId,
+        .data$transfermarktId, .data$soccerdonnaId, squadName = .data$name
       ),
       by = c("squadId" = "id")
     ) %>%
@@ -111,6 +112,10 @@ getSquadRatings <- function (
     "wyscoutId",
     "heimSpielId",
     "skillCornerId",
+    "optaId",
+    "statsPerformId",
+    "transfermarktId",
+    "soccerdonnaId",
     "squadName",
     "value"
   )

@@ -9,9 +9,9 @@
 
 A package provided by: Impect GmbH
 
-Version: v2.5.4
+Version: v2.5.5
 
-**Updated: Fabruary 16th 2026**
+**Updated: April 13th 2026**
 
 ------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ You can also install it from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ImpectAPI/impectR@v2.5.3")
+devtools::install_github("ImpectAPI/impectR@v2.5.5")
 ```
 
 ## Usage
@@ -180,7 +180,7 @@ events <- getEvents(
 )
 
 # get set piece data including KPI aggregates
-setPieces <- getSetPieces(ip.getSetPieces(matches = matchIds, token = token)
+setPieces <- getSetPieces(matches = matchIds, token = token)
                             
 # get matchsums for matches per player and position
 playerMatchsums <- getPlayerMatchsums(matches = matchIds, token = token)
@@ -272,7 +272,7 @@ positions = ["LEFT_WINGBACK_DEFENDER", "RIGHT_WINGBACK_DEFENDER"]
 
 # get player profile scores
 playerProfileScores <- 
-  ip.getPlayerProfileScores(
+  getPlayerProfileScores(
     iteration = iteration,
     positions = positions,
     token = token
