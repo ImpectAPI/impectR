@@ -75,6 +75,10 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
       homeSquadSkillCornerId = .data$skillCornerId_home,
       homeSquadHeimSpielId = .data$heimSpielId_home,
       homeSquadWyscoutId = .data$wyscoutId_home,
+      homeSquadOptaId = .data$optaId_home,
+      homeSquadStatsPerformId = .data$statsPerformId_home,
+      homeSquadTransfermarktId = .data$transfermarktId_home,
+      homeSquadSoccerdonnaId = .data$soccerdonnaId_home,
       homeSquadCountryId = .data$countryId
     ) %>%
     dplyr::left_join(squads,
@@ -86,6 +90,10 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
       awaySquadSkillCornerId = .data$skillCornerId_away,
       awaySquadHeimSpielId = .data$heimSpielId_away,
       awaySquadWyscoutId = .data$wyscoutId_away,
+      awaySquadOptaId = .data$optaId_away,
+      awaySquadStatsPerformId = .data$statsPerformId_away,
+      awaySquadTransfermarktId = .data$transfermarktId_away,
+      awaySquadSoccerdonnaId = .data$soccerdonnaId_away,
       awaySquadCountryId = .data$countryId
     )
 
@@ -117,6 +125,10 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
       .data$skillCornerId,
       .data$heimSpielId,
       .data$wyscoutId,
+      .data$optaId,
+      .data$statsPerformId,
+      .data$transfermarktId,
+      .data$soccerdonnaId,
       .data$iterationId,
       .data$matchDayIndex,
       .data$matchDayName,
@@ -128,6 +140,10 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
       .data$homeSquadSkillCornerId,
       .data$homeSquadHeimSpielId,
       .data$homeSquadWyscoutId,
+      .data$homeSquadOptaId,
+      .data$homeSquadStatsPerformId,
+      .data$homeSquadTransfermarktId,
+      .data$homeSquadSoccerdonnaId,
       .data$awaySquadId,
       .data$awaySquadName,
       .data$awaySquadType,
@@ -136,6 +152,10 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
       .data$awaySquadSkillCornerId,
       .data$awaySquadHeimSpielId,
       .data$awaySquadWyscoutId,
+      .data$awaySquadOptaId,
+      .data$awaySquadStatsPerformId,
+      .data$awaySquadTransfermarktId,
+      .data$awaySquadSoccerdonnaId,
       .data$scheduledDate,
       .data$lastCalculationDate,
       .data$available

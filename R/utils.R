@@ -144,7 +144,7 @@
 
 
 #' Processes a dataframe and fixes column names and extracts the first mapping
-#' ID for SkillCOrner and Heimspiel
+#' ID for third party providers
 #'
 #' @noRd
 #'
@@ -152,8 +152,8 @@
 #'
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
-#' @return a dataframe containing clean columns names and SkillCorner/HeimSpiel
-#' columns
+#' @return a dataframe containing clean columns names and third party provider
+#' ID columns
 .cleanData <- function (data) {
 
   # unnest mappings column
@@ -165,9 +165,9 @@
   base::names(data) <-
     base::gsub("[\\.\\_](.)", "\\U\\1", base::names(data), perl = TRUE)
 
-  # iterate over the skillCorner, heimSpiel and wyscout columns and keep first
-  # value only
-  for (provider in c("skillCorner", "heimSpiel", "wyscout")) {
+  # iterate over provider columns and keep first value only
+  for (provider in c("skillCorner", "heimSpiel", "wyscout", "opta",
+                     "statsPerform", "transfermarkt", "soccerdonna")) {
     # drop null values in lists und keep first list entry
     data[[provider]] <-
       purrr::map(data[[provider]], ~ purrr::discard(.x, is.null)[[1]])
@@ -182,9 +182,13 @@
   # edit column names
   data <- data %>%
     dplyr::mutate(
-      skillCornerId = as.integer(.data$skillCorner),
-      heimSpielId   = as.integer(.data$heimSpiel),
-      wyscoutId     = as.integer(.data$wyscout)
+      skillCornerId   = as.integer(.data$skillCorner),
+      heimSpielId     = as.integer(.data$heimSpiel),
+      wyscoutId       = as.integer(.data$wyscout),
+      optaId          = as.integer(.data$opta),
+      statsPerformId  = as.character(.data$statsPerform),
+      transfermarktId = as.character(.data$transfermarkt),
+      soccerdonnaId   = as.integer(.data$soccerdonna)
     )
 
   # return squads

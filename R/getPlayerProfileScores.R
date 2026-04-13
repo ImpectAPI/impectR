@@ -225,7 +225,9 @@ getPlayerProfileScores <- function (
     dplyr::left_join(
       dplyr::select(
         players, .data$id, .data$wyscoutId, .data$heimSpielId,
-        .data$skillCornerId, playerName = .data$commonname, .data$firstname,
+        .data$skillCornerId, .data$optaId, .data$statsPerformId,
+        .data$transfermarktId, .data$soccerdonnaId,
+        playerName = .data$commonname, .data$firstname,
         .data$lastname, .data$birthdate, .data$birthplace, .data$leg
       ),
       by = c("playerId" = "id")) %>%
@@ -248,6 +250,10 @@ getPlayerProfileScores <- function (
     "wyscoutId",
     "heimSpielId",
     "skillCornerId",
+    "optaId",
+    "statsPerformId",
+    "transfermarktId",
+    "soccerdonnaId",
     "playerName",
     "firstname",
     "lastname",
