@@ -7,3 +7,4 @@
 ^\.Rhistory$
 ^dev$
 ^examples$
+^\.claude$
