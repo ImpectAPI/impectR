@@ -79,6 +79,7 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
       homeSquadStatsPerformId = .data$statsPerformId_home,
       homeSquadTransfermarktId = .data$transfermarktId_home,
       homeSquadSoccerdonnaId = .data$soccerdonnaId_home,
+      homeSquadDflId = .data$dflId_home,
       homeSquadCountryId = .data$countryId
     ) %>%
     dplyr::left_join(squads,
@@ -94,6 +95,7 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
       awaySquadStatsPerformId = .data$statsPerformId_away,
       awaySquadTransfermarktId = .data$transfermarktId_away,
       awaySquadSoccerdonnaId = .data$soccerdonnaId_away,
+      awaySquadDflId = .data$dflId_away,
       awaySquadCountryId = .data$countryId
     )
 
@@ -129,6 +131,7 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
       .data$statsPerformId,
       .data$transfermarktId,
       .data$soccerdonnaId,
+      .data$dflId,
       .data$iterationId,
       .data$matchDayIndex,
       .data$matchDayName,
@@ -144,6 +147,7 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
       .data$homeSquadStatsPerformId,
       .data$homeSquadTransfermarktId,
       .data$homeSquadSoccerdonnaId,
+      .data$homeSquadDflId,
       .data$awaySquadId,
       .data$awaySquadName,
       .data$awaySquadType,
@@ -156,6 +160,7 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
       .data$awaySquadStatsPerformId,
       .data$awaySquadTransfermarktId,
       .data$awaySquadSoccerdonnaId,
+      .data$awaySquadDflId,
       .data$scheduledDate,
       .data$lastCalculationDate,
       .data$available

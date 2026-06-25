@@ -166,8 +166,9 @@
     base::gsub("[\\.\\_](.)", "\\U\\1", base::names(data), perl = TRUE)
 
   # iterate over provider columns and keep first value only
-  for (provider in c("skillCorner", "heimSpiel", "wyscout", "opta",
-                     "statsPerform", "transfermarkt", "soccerdonna")) {
+  providers <- c("skillCorner", "heimSpiel", "wyscout", "opta",
+                 "statsPerform", "transfermarkt", "soccerdonna", "dfl")
+  for (provider in providers) {
     # drop null values in lists und keep first list entry
     data[[provider]] <-
       purrr::map(data[[provider]], ~ purrr::discard(.x, is.null)[[1]])
@@ -188,8 +189,13 @@
       optaId          = as.integer(.data$opta),
       statsPerformId  = as.character(.data$statsPerform),
       transfermarktId = as.character(.data$transfermarkt),
-      soccerdonnaId   = as.integer(.data$soccerdonna)
+      soccerdonnaId   = as.integer(.data$soccerdonna),
+      dflId           = as.character(.data$dfl)
     )
+
+  # drop original provider mapping columns, keeping the converted ID columns
+  data <- data %>%
+    dplyr::select(-dplyr::any_of(providers))
 
   # return squads
   return(data)

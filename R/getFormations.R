@@ -186,7 +186,7 @@ getFormations <- function (
     dplyr::left_join(
       dplyr::select(matchplan, .data$id, .data$skillCornerId, .data$heimSpielId,
                     .data$wyscoutId, .data$optaId, .data$statsPerformId,
-                    .data$transfermarktId, .data$soccerdonnaId,
+                    .data$transfermarktId, .data$soccerdonnaId, .data$dflId,
                     .data$matchDayIndex, .data$matchDayName,
                     .data$scheduledDate, .data$lastCalculationDate,
                     .data$iterationId),
