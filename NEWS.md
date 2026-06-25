@@ -1,3 +1,9 @@
+# impectR 2.5.6
+
+## Minor Changes
+* Add DFL ID provider ID mapping to functions
+* Drop original provider mapping columns in `.cleanData()`, keeping only the converted ID columns
+
 # impectR 2.5.5
 
 ## Minor Changes
