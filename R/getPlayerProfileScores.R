@@ -226,7 +226,7 @@ getPlayerProfileScores <- function (
       dplyr::select(
         players, .data$id, .data$wyscoutId, .data$heimSpielId,
         .data$skillCornerId, .data$optaId, .data$statsPerformId,
-        .data$transfermarktId, .data$soccerdonnaId,
+        .data$transfermarktId, .data$soccerdonnaId, .data$dflId,
         playerName = .data$commonname, .data$firstname,
         .data$lastname, .data$birthdate, .data$birthplace, .data$leg
       ),
@@ -254,6 +254,7 @@ getPlayerProfileScores <- function (
     "statsPerformId",
     "transfermarktId",
     "soccerdonnaId",
+    "dflId",
     "playerName",
     "firstname",
     "lastname",
