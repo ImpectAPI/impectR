@@ -2,6 +2,7 @@
 .Rhistory
 .Rdata
 .httr-oauth
+.env
 .DS_Store
 dev/
 .claude

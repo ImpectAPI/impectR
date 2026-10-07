@@ -299,6 +299,30 @@ playerProfileScores <-
   )
 ```
 
+### Create Video Clips
+
+You can also cut a short video clip around each row of a (filtered) events
+dataframe and merge them into a single video file. Each clip runs from
+`gameTimeInSec - lead` to `gameTimeInSec + duration + lag`. This requires
+[ffmpeg](https://ffmpeg.org/download.html) to be installed and available on your
+`PATH`. Please note that this is an interim solution that cuts the full match
+videos client-side and will most likely be replaced by an API endpoint that
+returns already-cut clips.
+
+```{r video clips, eval=FALSE}
+# filter events for shots
+shots <- events[events$actionType == "SHOT", ]
+
+# cut and merge video clips for all shots
+getVideoClips(
+  events = shots,
+  output_path = "shots.mp4",
+  token = token,
+  lead = 3, # seconds before the event
+  lag = 3   # seconds after the event
+)
+```
+
 
 Please keep in mind that Impect enforces a rate limit of 10 requests per second
 per user. A token bucket logic has been implemented to restrict the amount of API
