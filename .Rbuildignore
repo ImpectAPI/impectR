@@ -8,3 +8,4 @@
 ^dev$
 ^examples$
 ^\.claude$
+^cran-comments\.md$

@@ -1,3 +1,8 @@
+# impectR 2.5.7
+
+## Minor Changes
+* Add `include_bench` parameter to `getStartingPositions()` to append all matchday squad players who did not start (including substitutes who came on) with `position = "BENCH"`
+
 # impectR 2.5.6
 
 ## Minor Changes
