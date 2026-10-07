@@ -197,6 +197,9 @@ playerMatchScores <-
 
 # get squad scores and ratios for match per squad
 squadMatchScores <- getSquadMatchScores(matches = matchIds, token = token)
+
+# get squad style of play values for match per squad
+squadMatchStyleOfPlay <- getSquadMatchStyleOfPlay(matches = matchIds, token = token)
 ```
 
 ### Retrieve Iteration Level Data
@@ -239,6 +242,10 @@ playerIterationScores <-
 # get squad scores and ratios for iteration
 squadIterationScores <- 
   getSquadIterationScores(iteration = iteration, token = token)
+
+# get squad style of play values for iteration
+squadIterationStyleOfPlay <-
+  getSquadIterationStyleOfPlay(iteration = iteration, token = token)
 ```
 
 The squad rating values that you can find on the league ranking in the

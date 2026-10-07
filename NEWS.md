@@ -1,6 +1,7 @@
 # impectR 2.5.7
 
 ## Minor Changes
+* Add new `getSquadIterationStyleOfPlay()` and `getSquadMatchStyleOfPlay()` functions to retrieve squad style of play values per iteration and per match
 * Add new `getMatchPredictions()` function to retrieve market, model and expert match predictions for an iteration
 * Align output columns with impectPy:
   * Add `playerCountry` to `getPlayerMatchsums()`, `getPlayerIterationAverages()`, `getPlayerMatchScores()`, `getPlayerIterationScores()` and `getPlayerProfileScores()`
