@@ -208,12 +208,15 @@ getPlayerMatchScores <- function (
     dplyr::select(
       .data$id, playerName = .data$commonname, .data$firstname,
       .data$lastname, .data$birthdate, .data$birthplace, .data$leg,
-      .data$idMappings
+      .data$countryIds, .data$idMappings
     ) %>%
     base::unique()
 
   # clean data
   players <- .cleanData(players)
+
+  # add player country
+  players <- .addPlayerCountry(players, token = token, host = host)
 
   # get squad master data from API
   squads <-
@@ -456,7 +459,7 @@ getPlayerMatchScores <- function (
         .data$skillCornerId, .data$optaId, .data$statsPerformId,
         .data$transfermarktId, .data$soccerdonnaId, .data$dflId, .data$playerName,
         .data$firstname, .data$lastname, .data$birthdate, .data$birthplace,
-        .data$leg
+        .data$playerCountry, .data$leg
       ),
       by = c("playerId" = "id")
     ) %>%
@@ -524,6 +527,7 @@ getPlayerMatchScores <- function (
     "lastname",
     "birthdate",
     "birthplace",
+    "playerCountry",
     "leg",
     "positions",
     "matchShare",

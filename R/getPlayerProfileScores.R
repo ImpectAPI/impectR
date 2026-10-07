@@ -169,6 +169,9 @@ getPlayerProfileScores <- function (
   # clean data
   players <- .cleanData(players)
 
+  # add player country
+  players <- .addPlayerCountry(players, token = token, host = host)
+
   # get profile names from API
   profile_list <- jsonlite::fromJSON(
     httr::content(
@@ -228,7 +231,8 @@ getPlayerProfileScores <- function (
         .data$skillCornerId, .data$optaId, .data$statsPerformId,
         .data$transfermarktId, .data$soccerdonnaId, .data$dflId,
         playerName = .data$commonname, .data$firstname,
-        .data$lastname, .data$birthdate, .data$birthplace, .data$leg
+        .data$lastname, .data$birthdate, .data$birthplace,
+        .data$playerCountry, .data$leg
       ),
       by = c("playerId" = "id")) %>%
     dplyr::left_join(
@@ -260,6 +264,7 @@ getPlayerProfileScores <- function (
     "lastname",
     "birthdate",
     "birthplace",
+    "playerCountry",
     "leg",
     "positions",
     "matchShare",

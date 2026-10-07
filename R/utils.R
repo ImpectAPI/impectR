@@ -202,6 +202,73 @@
 }
 
 
+#' Return a dataframe containing all countries
+#'
+#' @noRd
+#'
+#' @param token bearer token
+#' @param host host environment
+#'
+#' @importFrom dplyr %>%
+#' @importFrom rlang .data
+#' @return a dataframe containing the country ID and FIFA name
+.getCountries <- function (token, host) {
+
+  # get countries data from API
+  countries <- jsonlite::fromJSON(
+    httr::content(
+      .callAPIlimited(
+        host,
+        base_url = "/v5/customerapi/countries/",
+        token = token
+      ),
+      "text",
+      encoding = "UTF-8"
+    )
+  )$data %>%
+    jsonlite::flatten() %>%
+    dplyr::select(.data$id, .data$fifaName)
+
+  # return countries
+  return(countries)
+}
+
+
+#' Adds the player country to a player master data dataframe using the first
+#' entry of the countryIds column
+#'
+#' @noRd
+#'
+#' @param players a player master data dataframe containing a countryIds column
+#' @param token bearer token
+#' @param host host environment
+#'
+#' @importFrom dplyr %>%
+#' @importFrom rlang .data
+#' @return the players dataframe with an additional playerCountry column
+.addPlayerCountry <- function (players, token, host) {
+
+  # get countries
+  countries <- .getCountries(token = token, host = host)
+
+  # keep first country ID per player and merge with countries
+  players <- players %>%
+    dplyr::mutate(
+      countryId = purrr::map_int(
+        .data$countryIds,
+        ~ if (base::length(.x) > 0) base::as.integer(.x[[1]]) else NA_integer_
+      )
+    ) %>%
+    dplyr::left_join(
+      dplyr::select(countries, .data$id, playerCountry = .data$fifaName),
+      by = c("countryId" = "id")
+    )
+
+  # return players
+  return(players)
+}
+
+
 #' TokenBucket Class
 #'
 #' This class represents a token bucket, which is a rate limiting mechanism used
