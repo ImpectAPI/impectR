@@ -6,6 +6,7 @@
 #' @export
 
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @return a dataframe containing all iterations available to the user
 #'
 #' @examples
@@ -37,6 +38,45 @@ getIterations <- function(token, host = "https://api.impect.com") {
 
   # clean data
   iterations <- .cleanData(iterations)
+
+  # get countries
+  countries <- .getCountries(token = token, host = host)
+
+  # merge with countries
+  iterations <- iterations %>%
+    dplyr::left_join(
+      dplyr::select(
+        countries, .data$id, competitionCountryName = .data$fifaName
+      ),
+      by = c("competitionCountryId" = "id")
+    )
+
+  # define column order
+  order <- c(
+    "id",
+    "competitionId",
+    "competitionName",
+    "season",
+    "competitionType",
+    "competitionCountryId",
+    "competitionCountryName",
+    "competitionGender",
+    "competitionAgeGroup",
+    "dataVersion",
+    "lastChangeTimestamp",
+    "wyscoutId",
+    "heimSpielId",
+    "skillCornerId",
+    "optaId",
+    "statsPerformId",
+    "transfermarktId",
+    "soccerdonnaId",
+    "dflId"
+  )
+
+  # select columns
+  iterations <- iterations %>%
+    dplyr::select(dplyr::all_of(order))
 
   # return dataframe
   return(iterations)

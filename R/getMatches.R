@@ -72,6 +72,7 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
     dplyr::rename(
       homeSquadName = .data$name,
       homeSquadType = .data$type,
+      homeSquadGender = .data$gender,
       homeSquadSkillCornerId = .data$skillCornerId_home,
       homeSquadHeimSpielId = .data$heimSpielId_home,
       homeSquadWyscoutId = .data$wyscoutId_home,
@@ -88,6 +89,7 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
     dplyr::rename(
       awaySquadName = .data$name,
       awaySquadType = .data$type,
+      awaySquadGender = .data$gender,
       awaySquadSkillCornerId = .data$skillCornerId_away,
       awaySquadHeimSpielId = .data$heimSpielId_away,
       awaySquadWyscoutId = .data$wyscoutId_away,
@@ -99,19 +101,8 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
       awaySquadCountryId = .data$countryId
     )
 
-  # get countries data from API
-  countries <- jsonlite::fromJSON(
-    httr::content(
-      .callAPIlimited(
-        host,
-        base_url = "/v5/customerapi/countries/",
-        token = token
-        ),
-      "text",
-      encoding = "UTF-8"
-      )
-    )$data %>%
-    jsonlite::flatten()
+  # get countries
+  countries <- .getCountries(token = token, host = host)
 
   # merge matches with countries
   matches <- matches %>%
@@ -119,6 +110,25 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
     dplyr::rename(homeSquadCountryName = .data$fifaName) %>%
     dplyr::left_join(countries, by = c("awaySquadCountryId" = "id")) %>%
     dplyr::rename(awaySquadCountryName = .data$fifaName)
+
+  # derive final goals per squad based on result type
+  goals_col <- function(side, suffix) {
+    col <- base::paste0("goals", side, suffix)
+    if (col %in% base::names(matches)) matches[[col]] else NA_integer_
+  }
+  matches <- matches %>%
+    dplyr::mutate(
+      homeSquadGoals = base::as.integer(dplyr::case_when(
+        .data$resultType == "REGULAR" ~ goals_col("Home", "FullTime"),
+        .data$resultType == "EXTRA_TIME" ~ goals_col("Home", "ExtraTime2"),
+        .data$resultType == "PENALTIES" ~ goals_col("Home", "Penalties")
+      )),
+      awaySquadGoals = base::as.integer(dplyr::case_when(
+        .data$resultType == "REGULAR" ~ goals_col("Away", "FullTime"),
+        .data$resultType == "EXTRA_TIME" ~ goals_col("Away", "ExtraTime2"),
+        .data$resultType == "PENALTIES" ~ goals_col("Away", "Penalties")
+      ))
+    )
 
   # reorder columns
   matches <- matches %>%
@@ -135,9 +145,11 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
       .data$iterationId,
       .data$matchDayIndex,
       .data$matchDayName,
+      .data$stadiumId,
       .data$homeSquadId,
       .data$homeSquadName,
       .data$homeSquadType,
+      .data$homeSquadGender,
       .data$homeSquadCountryId,
       .data$homeSquadCountryName,
       .data$homeSquadSkillCornerId,
@@ -151,6 +163,7 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
       .data$awaySquadId,
       .data$awaySquadName,
       .data$awaySquadType,
+      .data$awaySquadGender,
       .data$awaySquadCountryId,
       .data$awaySquadCountryName,
       .data$awaySquadSkillCornerId,
@@ -163,7 +176,11 @@ getMatches <- function(iteration, token, host = "https://api.impect.com") {
       .data$awaySquadDflId,
       .data$scheduledDate,
       .data$lastCalculationDate,
-      .data$available
+      .data$available,
+      .data$homeSquadGoals,
+      .data$awaySquadGoals,
+      .data$result,
+      .data$resultType
     )
 
   # return matches

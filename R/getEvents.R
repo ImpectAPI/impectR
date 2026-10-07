@@ -452,7 +452,8 @@ getEvents <- function (
 
   # merge with matchplan info
   events <- events %>%
-    dplyr::left_join(matchplan, by = base::c("matchId" = "id"))
+    dplyr::left_join(matchplan, by = base::c("matchId" = "id"),
+                     suffix = base::c("", "_matchplan"))
 
   # merge with competition info
   events <- events %>%

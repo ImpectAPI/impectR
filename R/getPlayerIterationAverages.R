@@ -110,6 +110,9 @@ getPlayerIterationAverages <- function (
   # clean data
   players <- .cleanData(players)
 
+  # add player country
+  players <- .addPlayerCountry(players, token = token, host = host)
+
   # get kpi names from API
   kpis <- jsonlite::fromJSON(
     httr::content(
@@ -181,6 +184,7 @@ getPlayerIterationAverages <- function (
         .data$lastname,
         .data$birthdate,
         .data$birthplace,
+        .data$playerCountry,
         .data$leg
       ),
       by = c("playerId" = "id")) %>%
@@ -210,6 +214,7 @@ getPlayerIterationAverages <- function (
     "lastname",
     "birthdate",
     "birthplace",
+    "playerCountry",
     "leg",
     "position",
     "matchShare",

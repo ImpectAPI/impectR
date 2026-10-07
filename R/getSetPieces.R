@@ -176,7 +176,8 @@ getSetPieces <- function (
 
   # merge with matchplan info
   set_pieces <- set_pieces %>%
-    dplyr::left_join(matchplan, by = base::c("matchId" = "id"))
+    dplyr::left_join(matchplan, by = base::c("matchId" = "id"),
+                     suffix = base::c("", "_matchplan"))
 
   # merge with competition info
   set_pieces <- set_pieces %>%
@@ -252,6 +253,10 @@ getSetPieces <- function (
       dateTime = "scheduledDate",
       attackingSquadId = "squadId",
       setPiecePhaseIndex = "phaseIndex",
+      setPieceStartTime = "startTime",
+      setPieceStartTimeInSec = "startTimeInSec",
+      setPieceEndTime = "endTime",
+      setPieceEndTimeInSec = "endTimeInSec",
       setPieceSubPhase_SHOT_XG = "setPieceSubPhaseAggregatesSHOT_XG",
       setPieceSubPhase_PACKING_XG = "setPieceSubPhaseAggregatesPACKING_XG",
       setPieceSubPhase_POSTSHOT_XG = "setPieceSubPhaseAggregatesPOSTSHOT_XG",
@@ -277,6 +282,10 @@ getSetPieces <- function (
     "defendingSquadName",
     "setPieceId",
     "setPiecePhaseIndex",
+    "setPieceStartTime",
+    "setPieceStartTimeInSec",
+    "setPieceEndTime",
+    "setPieceEndTimeInSec",
     "setPieceCategory",
     "adjSetPieceCategory",
     "setPieceExecutionType",

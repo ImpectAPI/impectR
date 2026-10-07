@@ -202,6 +202,9 @@ getPlayerIterationScores <- function (
   # clean data
   players <- .cleanData(players)
 
+  # add player country
+  players <- .addPlayerCountry(players, token = token, host = host)
+
   # get score names from API
   score_list <- jsonlite::fromJSON(
     httr::content(
@@ -293,6 +296,7 @@ getPlayerIterationScores <- function (
         .data$lastname,
         .data$birthdate,
         .data$birthplace,
+        .data$playerCountry,
         .data$leg
       ),
       by = c("playerId" = "id")) %>%
@@ -322,6 +326,7 @@ getPlayerIterationScores <- function (
     "lastname",
     "birthdate",
     "birthplace",
+    "playerCountry",
     "leg",
     "positions",
     "matchShare",

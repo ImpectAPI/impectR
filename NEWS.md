@@ -2,6 +2,11 @@
 
 ## Minor Changes
 * Add new `getMatchPredictions()` function to retrieve market, model and expert match predictions for an iteration
+* Align output columns with impectPy:
+  * Add `playerCountry` to `getPlayerMatchsums()`, `getPlayerIterationAverages()`, `getPlayerMatchScores()`, `getPlayerIterationScores()` and `getPlayerProfileScores()`
+  * Add `stadiumId`, `homeSquadGender`, `awaySquadGender`, `homeSquadGoals`, `awaySquadGoals`, `result` and `resultType` to `getMatches()`
+  * Add `setPieceStartTime`, `setPieceStartTimeInSec`, `setPieceEndTime` and `setPieceEndTimeInSec` to `getSetPieces()`
+  * Add `competitionCountryName` and a fixed column order to `getIterations()`
 * Add `include_bench` parameter to `getStartingPositions()` to append all matchday squad players who did not start (including substitutes who came on) with `position = "BENCH"`
 
 # impectR 2.5.6
