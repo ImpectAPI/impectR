@@ -254,6 +254,9 @@ squadRatings <- getSquadRatings(iteration = iteration, token = token)
 
 # get squad coefficients for iteration
 squadCoefficients <- getSquadCoefficients(iteration = iteration, token = token)
+
+# get match predictions for iteration
+matchPredictions <- getMatchPredictions(iteration = iteration, token = token)
 ```
 
 You can now also retrieve the positional profile scores for players via
