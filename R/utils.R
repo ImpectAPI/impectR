@@ -9,23 +9,29 @@
 #' @param id The id of the object to be retrieved
 #' @param suffix The suffix of the endpoint URL that comes after the id
 #' @param token Bearer token
+#' @param method HTTP method
+#' @param body optional request body, sent as JSON
 #'
 #' @return Response content of the API endpoint
 .callAPI <- function(host, base_url, id = "", suffix = "", token,
-                     max_retries = 3, retry_delay = 1, ignore_403 = FALSE) {
+                     max_retries = 3, retry_delay = 1, ignore_403 = FALSE,
+                     method = "GET", body = NULL) {
 
   # try API call
   for (i in 1:max_retries) {
     # get API response
     response <-
-      httr::GET(
+      httr::VERB(
+        verb = method,
         url = base::paste0(host, base_url, id, suffix),
         httr::add_headers(
-          Authorization = base::paste("Bearer", token, sep = " "))
+          Authorization = base::paste("Bearer", token, sep = " ")),
+        body = body,
+        encode = "json"
         )
 
-    # return the response if status code is 200
-    if (httr::status_code(response) == 200) {
+    # return the response if status code is 2xx
+    if (httr::status_code(response) %/% 100 == 2) {
       return(response)
     } else if (httr::status_code(response) == 429) {
       # handle rate limiting (429 status code)
@@ -85,38 +91,49 @@
 #' @param id the id of the object to be retrieved
 #' @param suffix suffix of the endpoint URL that comes after the id
 #' @param token bearer token
+#' @param method HTTP method
+#' @param body optional request body, sent as JSON
 #'
 #' @return a dataframe containing the response of an API endpoint
 .callAPIlimited <- function(host, base_url, id = "", suffix = "",
-                            token, ignore_403 = FALSE) {
+                            token, ignore_403 = FALSE, method = "GET",
+                            body = NULL) {
 
   # check if Token bucket exist and create it if not
   if (is.null(.api_state$bucket)) {
 
     # get response from API
     response <- .callAPI(host, base_url, id, suffix, token,
-                         ignore_403 = ignore_403)
+                         ignore_403 = ignore_403, method = method, body = body)
 
     # get rate limit policy
     policy <- response[["all_headers"]][[1]][["headers"]][["ratelimit-policy"]]
 
     # extract maximum requests using regex
-    capacity <- as.numeric(gsub(";.*", "", policy))
+    capacity <- suppressWarnings(as.numeric(gsub(";.*", "", policy)))
 
     # extract time window using regex
-    intervall <- as.numeric(gsub(".*w=(\\d+).*", "\\1", policy))
-
-
-    # create TokenBucket
-    .api_state$bucket <- TokenBucket(
-      # set default rate, capacity, available tokens and time
-      capacity = capacity,
-      intervall = intervall,
-      tokens = as.numeric(
-        response[["all_headers"]][[1]][["headers"]][["ratelimit-remaining"]]
-        ),
-      last_update = as.numeric(Sys.time())
+    intervall <- suppressWarnings(
+      as.numeric(gsub(".*w=(\\d+).*", "\\1", policy))
     )
+
+    # get remaining requests
+    tokens <- suppressWarnings(as.numeric(
+      response[["all_headers"]][[1]][["headers"]][["ratelimit-remaining"]]
+    ))
+
+    # create TokenBucket only if all rate limit headers are valid
+    if (base::length(capacity) == 1 && base::is.finite(capacity) &&
+        base::length(intervall) == 1 && base::is.finite(intervall) &&
+        base::length(tokens) == 1 && base::is.finite(tokens)) {
+      .api_state$bucket <- TokenBucket(
+        # set default rate, capacity, available tokens and time
+        capacity = capacity,
+        intervall = intervall,
+        tokens = tokens,
+        last_update = as.numeric(Sys.time())
+      )
+    }
 
     return(response)
   }
@@ -125,7 +142,7 @@
   if (.api_state$bucket$isTokenAvailable()) {
     # get API response
     response <- .callAPI(host, base_url, id, suffix, token,
-                         ignore_403 = ignore_403)
+                         ignore_403 = ignore_403, method = method, body = body)
 
     # consume a token
     .api_state$bucket$consumeToken()
@@ -135,7 +152,8 @@
 
     # call function again
     response <- .callAPIlimited(host, base_url, id, suffix, token,
-                                ignore_403 = ignore_403)
+                                ignore_403 = ignore_403, method = method,
+                                body = body)
   }
 
   # return response
