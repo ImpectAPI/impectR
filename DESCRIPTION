@@ -1,14 +1,15 @@
 Package: impectR
 Title: Access Data from the 'Impect' API
-Version: 2.5.6
+Version: 2.6.0
 Authors@R: c(
-  person("Impect", "GmbH", , "info.impect@impect.com", role = c("cph")),
-  person("Florian", "Schmitt", , "florian.schmitt@impect.com", role = c("aut", "cre")),
-  person("Thomas", "Walentin", , "thomas.walentin@impect.com", role = c("ctb"))
+  person("Catapult Sports", role = c("cph")),
+  person("Florian", "Schmitt", , "florian.schmitt@catapultsports.com", role = c("aut", "cre")),
+  person("Thomas", "Walentin", , "thomas.walentin@catapultsports.com", role = c("ctb"))
   )
-Maintainer: Florian Schmitt <florian.schmitt@impect.com>
+Maintainer: Florian Schmitt <florian.schmitt@catapultsports.com>
 Description: Pull data from the 'Impect' Customer API <https://glossary.impect.com/api-design>. The package can retrieve data such as events or match sums.
 License: MIT + file LICENSE
+SystemRequirements: ffmpeg (optional, only required for getVideoClips())
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

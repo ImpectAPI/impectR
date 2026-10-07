@@ -1,3 +1,19 @@
+# impectR 2.6.0
+
+## Major Changes
+* Add new `getData()` function to send a rate-limited request to any API endpoint and return the flattened response as a dataframe
+* Add new `getVideoClips()` function to cut a video clip around each row of an events dataframe and merge them into a single file (interim solution, requires `ffmpeg`)
+* Add new `getSquadIterationStyleOfPlay()` and `getSquadMatchStyleOfPlay()` functions to retrieve squad style of play values per iteration and per match
+* Add new `getMatchPredictions()` function to retrieve market, model and expert match predictions for an iteration
+
+## Minor Changes
+* Align output columns with impectPy:
+  * Add `playerCountry` to `getPlayerMatchsums()`, `getPlayerIterationAverages()`, `getPlayerMatchScores()`, `getPlayerIterationScores()` and `getPlayerProfileScores()`
+  * Add `stadiumId`, `homeSquadGender`, `awaySquadGender`, `homeSquadGoals`, `awaySquadGoals`, `result` and `resultType` to `getMatches()`
+  * Add `setPieceStartTime`, `setPieceStartTimeInSec`, `setPieceEndTime` and `setPieceEndTimeInSec` to `getSetPieces()`
+  * Add `competitionCountryName` and a fixed column order to `getIterations()`
+* Add `include_bench` parameter to `getStartingPositions()` to append all matchday squad players who did not start (including substitutes who came on) with `position = "BENCH"`
+
 # impectR 2.5.6
 
 ## Minor Changes

@@ -4,13 +4,15 @@
 #' @param matches 'IMPECT' match ID or a list of match IDs
 #' @param token bearer token
 #' @param host host environment
+#' @param include_bench include players from the matchday squad who did not
+#' start, with `position = "BENCH"` and `positionSide = NA`
 #'
 #' @export
 #'
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
 #' @return a dataframe containing all starting positions for a set of given
-#' match IDs
+#' match IDs, optionally including bench players
 #'
 #' @examples
 #' # Toy example: this will error quickly (no API token)
@@ -29,7 +31,8 @@
 getStartingPositions <- function (
     matches,
     token,
-    host = "https://api.impect.com"
+    host = "https://api.impect.com",
+    include_bench = FALSE
 ) {
 
   # check if match input is not a list and convert to list if required
@@ -225,6 +228,22 @@ getStartingPositions <- function (
   starting_positions <- starting_positions %>%
     tidyr::unnest(.data$squadStartingPositions)
 
+  # add bench players
+  if (include_bench) {
+    bench <- shirt_numbers %>%
+      dplyr::filter(.data$matchId %in% matches) %>%
+      dplyr::select(.data$matchId, .data$squadId, .data$playerId) %>%
+      dplyr::anti_join(
+        starting_positions,
+        by = base::c(
+          "matchId" = "matchId", "squadId" = "squadId", "playerId" = "playerId"
+        )
+      ) %>%
+      dplyr::mutate(position = "BENCH", positionSide = NA_character_)
+
+    starting_positions <- dplyr::bind_rows(starting_positions, bench)
+  }
+
   # start merging dfs
 
   # merge starting_positions with squads
@@ -293,7 +312,9 @@ getStartingPositions <- function (
 
   # reorder rows
   starting_positions <- starting_positions %>%
-    dplyr::arrange("matchId", "squadId", "playerId")
+    dplyr::arrange(
+      .data$matchId, .data$squadId, .data$position == "BENCH", .data$playerId
+    )
 
   return(starting_positions)
 }

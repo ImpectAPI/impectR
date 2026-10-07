@@ -8,3 +8,6 @@
 ^dev$
 ^examples$
 ^\.claude$
+^cran-comments\.md$
+^\.env$
+^\.env\.example$

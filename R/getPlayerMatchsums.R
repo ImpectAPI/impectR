@@ -142,12 +142,15 @@ getPlayerMatchsums <- function (
     dplyr::select(
       .data$id, playerName = .data$commonname, .data$firstname,
       .data$lastname, .data$birthdate, .data$birthplace, .data$leg,
-      .data$idMappings
+      .data$countryIds, .data$idMappings
     ) %>%
     base::unique()
 
   # clean data
   players <- .cleanData(players)
+
+  # add player country
+  players <- .addPlayerCountry(players, token = token, host = host)
 
 
   # get squad master data from API
@@ -312,7 +315,8 @@ getPlayerMatchsums <- function (
   matchsums <- matchsums %>%
     dplyr::left_join(
       matchplan,
-      by = c("matchId" = "id")
+      by = c("matchId" = "id"),
+      suffix = c("", "_matchplan")
     ) %>%
     dplyr::left_join(
       iterations,
@@ -325,7 +329,7 @@ getPlayerMatchsums <- function (
     dplyr::left_join(
       dplyr::select(players, .data$id, .data$playerName, .data$firstname,
                     .data$lastname, .data$birthdate, .data$birthplace,
-                    .data$leg, .data$wyscoutId, .data$heimSpielId,
+                    .data$playerCountry, .data$leg, .data$wyscoutId, .data$heimSpielId,
                     .data$skillCornerId, .data$optaId, .data$statsPerformId,
                     .data$transfermarktId, .data$soccerdonnaId, .data$dflId),
       by = c("playerId" = "id")
@@ -394,6 +398,7 @@ getPlayerMatchsums <- function (
     "lastname",
     "birthdate",
     "birthplace",
+    "playerCountry",
     "leg",
     "position",
     "matchShare",

@@ -9,9 +9,9 @@
 
 A package provided by: Impect GmbH
 
-Version: v2.5.6
+Version: v2.6.0
 
-**Updated: June 25th 2026**
+**Updated: October 7th 2026**
 
 ------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ You can also install it from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ImpectAPI/impectR@v2.5.6")
+devtools::install_github("ImpectAPI/impectR@v2.6.0")
 ```
 
 ## Usage
@@ -197,6 +197,9 @@ playerMatchScores <-
 
 # get squad scores and ratios for match per squad
 squadMatchScores <- getSquadMatchScores(matches = matchIds, token = token)
+
+# get squad style of play values for match per squad
+squadMatchStyleOfPlay <- getSquadMatchStyleOfPlay(matches = matchIds, token = token)
 ```
 
 ### Retrieve Iteration Level Data
@@ -239,6 +242,10 @@ playerIterationScores <-
 # get squad scores and ratios for iteration
 squadIterationScores <- 
   getSquadIterationScores(iteration = iteration, token = token)
+
+# get squad style of play values for iteration
+squadIterationStyleOfPlay <-
+  getSquadIterationStyleOfPlay(iteration = iteration, token = token)
 ```
 
 The squad rating values that you can find on the league ranking in the
@@ -254,6 +261,9 @@ squadRatings <- getSquadRatings(iteration = iteration, token = token)
 
 # get squad coefficients for iteration
 squadCoefficients <- getSquadCoefficients(iteration = iteration, token = token)
+
+# get match predictions for iteration
+matchPredictions <- getMatchPredictions(iteration = iteration, token = token)
 ```
 
 You can now also retrieve the positional profile scores for players via
@@ -277,6 +287,30 @@ playerProfileScores <-
     positions = positions,
     token = token
   )
+```
+
+### Create Video Clips
+
+You can also cut a short video clip around each row of a (filtered)
+events dataframe and merge them into a single video file. Each clip runs
+from `gameTimeInSec - lead` to `gameTimeInSec + duration + lag`. This
+requires [ffmpeg](https://ffmpeg.org/download.html) to be installed and
+available on your `PATH`. Please note that this is an interim solution
+that cuts the full match videos client-side and will most likely be
+replaced by an API endpoint that returns already-cut clips.
+
+``` r
+# filter events for shots
+shots <- events[events$actionType == "SHOT", ]
+
+# cut and merge video clips for all shots
+getVideoClips(
+  events = shots,
+  output_path = "shots.mp4",
+  token = token,
+  lead = 3, # seconds before the event
+  lag = 3   # seconds after the event
+)
 ```
 
 Please keep in mind that Impect enforces a rate limit of 10 requests per

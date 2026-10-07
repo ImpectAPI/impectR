@@ -5,7 +5,12 @@
 \title{Return a dataframe that contains all starting positions for a set of given
 match IDs}
 \usage{
-getStartingPositions(matches, token, host = "https://api.impect.com")
+getStartingPositions(
+  matches,
+  token,
+  host = "https://api.impect.com",
+  include_bench = FALSE
+)
 }
 \arguments{
 \item{matches}{'IMPECT' match ID or a list of match IDs}
@@ -13,10 +18,13 @@ getStartingPositions(matches, token, host = "https://api.impect.com")
 \item{token}{bearer token}
 
 \item{host}{host environment}
+
+\item{include_bench}{include players from the matchday squad who did not
+start, with \code{position = "BENCH"} and \code{positionSide = NA}}
 }
 \value{
 a dataframe containing all starting positions for a set of given
-match IDs
+match IDs, optionally including bench players
 }
 \description{
 Return a dataframe that contains all starting positions for a set of given
