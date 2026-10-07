@@ -1,6 +1,7 @@
 # impectR 2.5.7
 
 ## Minor Changes
+* Add new `getMatchPredictions()` function to retrieve market, model and expert match predictions for an iteration
 * Add `include_bench` parameter to `getStartingPositions()` to append all matchday squad players who did not start (including substitutes who came on) with `position = "BENCH"`
 
 # impectR 2.5.6
