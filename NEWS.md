@@ -1,3 +1,8 @@
+# impectR 2.7.0
+
+## Major Changes
+* Add new `getSeasonSimulations()` function to retrieve the actual table, projected final points and goals and finishing position probabilities of each squad per simulation date for an iteration
+
 # impectR 2.6.0
 
 ## Major Changes

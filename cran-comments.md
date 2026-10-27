@@ -1,7 +1,7 @@
 ## Submission
 
-This is a minor release (2.5.6 -> 2.6.0) that adds new functions and output
-columns. See NEWS.md for details.
+This is a minor release (2.6.0 -> 2.7.0) that adds the new function
+`getSeasonSimulations()`. See NEWS.md for details.
 
 ## R CMD check results
 
