@@ -264,6 +264,16 @@ squadCoefficients <- getSquadCoefficients(iteration = iteration, token = token)
 
 # get match predictions for iteration
 matchPredictions <- getMatchPredictions(iteration = iteration, token = token)
+
+# get season simulations for iteration
+seasonSimulations <- getSeasonSimulations(iteration = iteration, token = token)
+
+# get the current season simulation only
+currentSimulation <- getSeasonSimulations(
+  iteration = iteration,
+  token = token,
+  date = format(Sys.Date())
+)
 ```
 
 You can now also retrieve the positional profile scores for players via
